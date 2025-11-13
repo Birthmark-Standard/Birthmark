@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Birthmark Standard Foundation - Hardware-Backed Photo Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #1a4d7a;
+            --accent-blue: #2d8cbb;
+            --light-blue: #e8f4f8;
+            --dark-navy: #0f2537;
+            --gray-text: #4a5568;
+            --light-gray: #f7fafc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: var(--dark-navy);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-blue));
+            color: white;
+            padding: 5rem 0;
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            opacity: 0.95;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary-blue);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary-blue);
+        }
+
+        /* Problem Statement */
+        .problem-section {
+            padding: 4rem 0;
+            background: var(--light-gray);
+        }
+
+        .problem-section h2 {
+            font-size: 2rem;
+            color: var(--dark-navy);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .problem-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .problem-card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        /* Technical Sections */
+        .technical-section {
+            padding: 4rem 0;
+        }
+
+        .technical-section:nth-child(even) {
+            background: var(--light-blue);
+        }
+
+        .technical-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+        .technical-section h2 {
+            font-size: 2rem;
+            color: var(--dark-navy);
+            margin-bottom: 1rem;
+        }
+
+        .technical-section h3 {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .technical-text p {
+            color: var(--gray-text);
+            margin-bottom: 1rem;
+        }
+
+        .technical-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .technical-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--gray-text);
+        }
+
+        .technical-list li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .technical-diagram {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .technical-diagram img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .technical-diagram img:hover {
+            transform: scale(1.02);
+        }
+
+        .diagram-box {
+            border: 2px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: var(--light-blue);
+        }
+
+        .diagram-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .diagram-arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--accent-blue);
+            margin: 0.5rem 0;
+        }
+
+        .diagram-caption {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--gray-text);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .code-block {
+            background: var(--dark-navy);
+            color: #a0d8f1;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        /* Why Section */
+        .why-section {
+            padding: 4rem 0;
+            background: var(--light-gray);
+        }
+
+        .why-section h2 {
+            font-size: 2rem;
+            color: var(--dark-navy);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .why-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .why-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .why-card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark-navy);
+            color: white;
+            padding: 3rem 0;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .footer-section a:hover {
+            opacity: 1;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .technical-content {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <img src="birthmark-logo.jpg" alt="Birthmark Standard Foundation Logo">
+                    </div>
+                    <h1>The Birthmark Standard Foundation</h1>
+                </div>
+                <nav>
+                    <a href="#key-concepts">How It Works</a>
+                    <a href="#github">GitHub</a>
+                    <a href="#about">About</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h2>Hardware-Backed Photo Authentication</h2>
+            <p>A system that proves photos came from real cameras, not AI generators. By creating unforgeable digital signatures at the moment of capture and recording them on a permanent blockchain ledger, we're restoring trust in photography.</p>
+            <div class="cta-buttons">
+                <a href="#key-concepts" class="btn btn-primary">See How It Works</a>
+                <a href="https://github.com/Birthmark-Standard/Birthmark" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="problem-section">
+        <div class="container">
+            <h2>The Problem We're Solving</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <h3>Deepfake Proliferation</h3>
+                    <p>AI-generated images are increasingly indistinguishable from real photographs, creating a crisis of trust in visual media.</p>
+                </div>
+                <div class="problem-card">
+                    <h3>Metadata Stripping</h3>
+                    <p>Existing solutions like C2PA rely on metadata that's easily removed through format conversion, cropping, or screenshotting.</p>
+                </div>
+                <div class="problem-card">
+                    <h3>Credibility Crisis</h3>
+                    <p>Professional photographers' legitimate work is dismissed as fake, undermining journalism, legal evidence, and democratic discourse.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="key-concepts" class="technical-section" style="background: var(--light-gray);">
+        <div class="container">
+            <h2>Key Concepts</h2>
+            <div class="problem-grid" style="margin-top: 2rem;">
+                <div class="problem-card">
+                    <h3>What is Hashing?</h3>
+                    <p>A hash converts data of any size into a fixed-length unique fingerprint. The same input always produces the same hash, but even the tiniest change creates a completely different one. Critically, you cannot convert a hash back into the original data.</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--gray-text);">Example: An image produces hash "a3f2b8...". Change one pixel, and you get an entirely different hash like "d91e4c...".</p>
+                </div>
+                <div class="problem-card">
+                    <h3>What is Key Encryption?</h3>
+                    <p>Encryption scrambles data using a secret key so only authorized parties can decrypt and read it.</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--gray-text);">Example: Your camera encrypts its identity—only the manufacturer with the decryption key can verify it's legitimate.</p>
+                </div>
+                <div class="problem-card">
+                    <h3>Why Blockchain?</h3>
+                    <p>Blockchain is a permanent, tamper-proof public ledger. Once data is recorded on a blockchain, it cannot be changed or deleted—even if companies go out of business or try to censor records.</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--gray-text);">Example: When your photo's hash is recorded on Ethereum's blockchain, that record is permanent and publicly verifiable by anyone, forever.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="technical-section">
+        <div class="container">
+            <h2>1. Creating the Image Hash</h2>
+            <div class="technical-content">
+                <div class="technical-text">
+                    <h3>Camera-Side Authentication</h3>
+                    <p>At the moment of image capture, a secure chip in the camera creates an unforgeable digital signature before the image is even processed.</p>
+                    
+                    <ul class="technical-list">
+                        <li><strong>Raw image hashing:</strong> A hash is created from the raw image data before any processing like white balance or compression</li>
+                        <li><strong>Processed image hashing:</strong> A second hash is created from the processed image that you actually save</li>
+                        <li><strong>Timestamp and metadata:</strong> The camera records when the photo was taken and optionally a hash of the GPS coordinates</li>
+                        <li><strong>Parallel processing:</strong> Authentication happens in the background while your photo is being captured—no delays or extra steps</li>
+                    </ul>
+
+                    <p><strong>Result:</strong> A bundle containing both image hashes, timestamp, and optional location hash—ready to be sent to the aggregation server for validation and blockchain recording.</p>
+                </div>
+                
+                <div class="technical-diagram">
+                    <div>
+                        <img src="Take_a_picture.png" alt="Diagram showing the complete flow from camera capture through hashing, aggregation, manufacturer validation, and blockchain recording" onclick="window.open('Take_a_picture.png', '_blank')">
+                        <p class="diagram-caption">Click to view full size</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>2. Validating Camera Authenticity</h2>
+            <div class="technical-content">
+                <div class="technical-diagram">
+                    <div>
+                        <img src="Validate_the_camera.png" alt="Diagram showing privacy-preserving camera validation process using encrypted NUC maps and key table system between camera, aggregator, and manufacturer" onclick="window.open('Validate_the_camera.png', '_blank')">
+                        <p class="diagram-caption">Click to view full size - Note: "Calibration file" refers to the camera's unique sensor identifier</p>
+                    </div>
+                </div>
+
+                <div class="technical-text">
+                    <h3>Privacy-Preserving Validation</h3>
+                    <p>The manufacturer confirms that images come from real cameras without being able to see what photographers are capturing or track individual cameras.</p>
+                    
+                    <ul class="technical-list">
+                        <li><strong>Encrypted camera identifiers:</strong> Each camera's unique sensor identifier is encrypted using randomly assigned keys, so only the manufacturer can verify it</li>
+                        <li><strong>Separation of concerns:</strong> Manufacturers receive the encrypted camera ID but never see image hashes, timestamps, or locations</li>
+                        <li><strong>Anonymity sets:</strong> About 12,000 cameras share each encryption key, preventing tracking of individual cameras</li>
+                        <li><strong>Binary response:</strong> Manufacturer returns only PASS (legitimate camera) or FAIL (unknown/forged)—nothing else</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>3. Verifying Images on Blockchain</h2>
+            <div class="technical-content">
+                <div class="technical-text">
+                    <h3>Immutable Public Verification</h3>
+                    <p>Anyone can verify an image's authenticity by checking the blockchain record—no corporate gatekeepers or subscription services required.</p>
+                    
+                    <ul class="technical-list">
+                        <li><strong>Blockchain bundling (zkRollup):</strong> Groups of 1,000-5,000 images are bundled together before being recorded on the blockchain, reducing the cost to only $0.00003-0.00006 per image</li>
+                        <li><strong>Cryptographic proofs:</strong> Even though images are bundled, each one can be individually proven to be part of the validated batch without storing every hash separately</li>
+                        <li><strong>Ethereum permanence:</strong> Records are stored on Ethereum's blockchain, a system that is both censorship-resistant and designed to last 50+ years</li>
+                        <li><strong>Public verification API:</strong> Open protocol allows anyone to build verification tools without asking permission</li>
+                    </ul>
+                </div>
+                
+                <div class="technical-diagram">
+                    <div>
+                        <img src="Validate_a_picture.png" alt="Diagram showing user verification flow: hash image on local computer, query blockchain for matching hash, receive validation result with metadata" onclick="window.open('Validate_a_picture.png', '_blank')">
+                        <p class="diagram-caption">Click to view full size</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="why-section">
+        <div class="container">
+            <h2>Why Birthmark Standard?</h2>
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon">🔓</div>
+                    <h3>Open Source</h3>
+                    <p>Fully transparent system—no corporate secrets or proprietary control.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">🛡️</div>
+                    <h3>Privacy First</h3>
+                    <p>Anonymous camera identifiers prevent tracking while maintaining authentication integrity.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">⛓️</div>
+                    <h3>Blockchain Permanence</h3>
+                    <p>Records survive even if companies go bankrupt or images are cropped and reposted.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">💰</div>
+                    <h3>Sustainable Cost</h3>
+                    <p>Blockchain bundling achieves $0.00003-0.00006 per image—viable as a public service.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">🤝</div>
+                    <h3>Complementary</h3>
+                    <p>Works alongside existing standards—provides backup when metadata gets stripped.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">🌐</div>
+                    <h3>Federated</h3>
+                    <p>Anyone can run servers—no single point of control or censorship.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="about">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>The Birthmark Standard Foundation</h3>
+                    <p>Creating hardware-backed, blockchain-anchored photo authentication infrastructure as a public good.</p>
+                    <p style="margin-top: 1rem;">Target: 2028 Presidential Election</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
+                    <a href="#">Technical Specification</a>
+                    <a href="#">Grant Proposal</a>
+                    <a href="#">Development Roadmap</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <a href="mailto:samryan.pdx@gmail.com">samryan.pdx@gmail.com</a>
+                    <a href="https://www.linkedin.com/in/samuelcryan">LinkedIn</a>
+                    <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 The Birthmark Standard Foundation. Open source under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
