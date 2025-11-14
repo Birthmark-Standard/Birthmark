@@ -193,7 +193,7 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 
 - [Technical Architecture](./docs/architecture/) - System diagrams and component specifications
 - [Phase Plans](./docs/phase-plans/) - Detailed implementation roadmaps
-- [CLAUDE.md](./CLAUDE.md) - Development context for contributors
+- [CLAUDE.md](./CLAUDE.md) - Development context for use with Claude Code
 - [C2PA Comparison](./docs/birthmark-vs-c2pa-comparison.md) - How standards complement each other
 
 ---
@@ -209,7 +209,7 @@ Portland, Oregon
 
 ## License
 
-Open source (specific license TBD - will be permissive to encourage manufacturer adoption)
+Apache 2.0
 
 ---
 
