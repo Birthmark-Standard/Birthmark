@@ -205,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Birthmark - Sensitive cryptographic material
+# Key tables contain master keys and should NEVER be committed
+packages/sma/data/key_tables*.json
+packages/sma/data/*.pem
+packages/sma/data/*.key
+provisioned_devices/
