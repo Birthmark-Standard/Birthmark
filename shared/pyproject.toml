@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "birthmark-shared"
+version = "0.1.0"
+description = "Shared types, crypto utilities, and protocols for Birthmark Standard"
+readme = "README.md"
+authors = [
+    {name = "The Birthmark Standard Foundation", email = "contact@birthmark.org"}
+]
+license = {text = "TBD"}  # TODO: Specify license
+requires-python = ">=3.10"
+keywords = ["birthmark", "photo-authentication", "cryptography", "shared"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Security :: Cryptography",
+]
+
+dependencies = [
+    "cryptography>=41.0.0",  # AES-GCM, HKDF, hashing
+    "pydantic>=2.5.0",       # Data validation and serialization
+    "pyyaml>=6.0.1",         # YAML parsing for protocol specs
+    "web3>=6.11.0",          # For contract ABI wrapper
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-benchmark>=4.0.0",  # Performance benchmarking
+    "black>=23.7.0",
+    "ruff>=0.0.287",
+    "mypy>=1.5.0",
+]
+
+protocols = [
+    "openapi-core>=0.18.0",  # OpenAPI validation
+]
+
+[project.urls]
+Homepage = "https://github.com/Birthmark-Standard/Birthmark"
+Repository = "https://github.com/Birthmark-Standard/Birthmark"
+Issues = "https://github.com/Birthmark-Standard/Birthmark/issues"
+
+[tool.setuptools.packages.find]
+include = ["types*", "crypto*", "protocols*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--cov --cov-report=html --cov-report=term --benchmark-disable"
+
+[tool.coverage.run]
+source = ["types", "crypto", "protocols"]
+omit = ["*/tests/*"]

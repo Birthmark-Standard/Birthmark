@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "birthmark-verifier"
+version = "0.1.0"
+description = "Image verification client for Birthmark Standard"
+readme = "README.md"
+authors = [
+    {name = "The Birthmark Standard Foundation", email = "contact@birthmark.org"}
+]
+license = {text = "TBD"}  # TODO: Specify license
+requires-python = ">=3.10"
+keywords = ["birthmark", "photo-authentication", "verification", "merkle-proof"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Graphics",
+]
+
+dependencies = [
+    "requests>=2.31.0",      # HTTP client
+    "cryptography>=41.0.0",  # Hashing
+    "pillow>=10.0.0",        # Image processing
+    "web3>=6.11.0",          # Blockchain queries
+    "pydantic>=2.5.0",       # Data validation
+    "click>=8.1.0",          # CLI interface
+    "rich>=13.6.0",          # Rich terminal output
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "ruff>=0.0.287",
+    "mypy>=1.5.0",
+]
+
+web = [
+    "flask>=3.0.0",          # Web interface
+    "flask-cors>=4.0.0",     # CORS support
+]
+
+[project.scripts]
+birthmark-verify = "verifier.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Birthmark-Standard/Birthmark"
+Repository = "https://github.com/Birthmark-Standard/Birthmark"
+Issues = "https://github.com/Birthmark-Standard/Birthmark/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--cov=src --cov-report=html --cov-report=term"
