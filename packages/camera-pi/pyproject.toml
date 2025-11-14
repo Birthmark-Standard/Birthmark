@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "birthmark-camera-pi"
+version = "0.1.0"
+description = "Raspberry Pi camera prototype for Birthmark Standard"
+readme = "README.md"
+authors = [
+    {name = "The Birthmark Standard Foundation", email = "contact@birthmark.org"}
+]
+license = {text = "TBD"}  # TODO: Specify license
+requires-python = ">=3.10"
+keywords = ["birthmark", "photo-authentication", "raspberry-pi", "camera"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+]
+
+dependencies = [
+    "picamera2>=0.3.16",  # Raspberry Pi camera interface
+    "numpy>=1.24.0",      # Array operations for Bayer data
+    "cryptography>=41.0.0",  # TPM interface and encryption
+    "requests>=2.31.0",   # HTTP client for aggregator API
+    "python-tpm2-pytss>=2.1.0",  # TPM 2.0 interface
+    "pillow>=10.0.0",     # Image handling
+    "gpiozero>=2.0.0",    # GPIO for hardware control (optional)
+    "pydantic>=2.5.0",    # Data validation
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.7.0",
+    "ruff>=0.0.287",
+    "mypy>=1.5.0",
+]
+
+gps = [
+    "gpsd-py3>=0.3.0",    # GPS module support
+]
+
+[project.urls]
+Homepage = "https://github.com/Birthmark-Standard/Birthmark"
+Repository = "https://github.com/Birthmark-Standard/Birthmark"
+Issues = "https://github.com/Birthmark-Standard/Birthmark/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--cov=src --cov-report=html --cov-report=term"
