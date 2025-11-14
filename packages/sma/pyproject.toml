@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "birthmark-sma"
+version = "0.1.0"
+description = "Simulated Manufacturer Authority for Birthmark Standard"
+readme = "README.md"
+authors = [
+    {name = "The Birthmark Standard Foundation", email = "contact@birthmark.org"}
+]
+license = {text = "TBD"}  # TODO: Specify license
+requires-python = ">=3.10"
+keywords = ["birthmark", "photo-authentication", "manufacturer", "validation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: FastAPI",
+    "Topic :: Security :: Cryptography",
+]
+
+dependencies = [
+    "fastapi>=0.104.0",      # Web framework
+    "uvicorn[standard]>=0.24.0",  # ASGI server
+    "sqlalchemy>=2.0.0",     # ORM for PostgreSQL
+    "asyncpg>=0.29.0",       # Async PostgreSQL driver
+    "psycopg2-binary>=2.9.9",  # Sync PostgreSQL driver
+    "alembic>=1.12.0",       # Database migrations
+    "pydantic>=2.5.0",       # Data validation
+    "pydantic-settings>=2.1.0",  # Settings management
+    "cryptography>=41.0.0",  # AES-GCM, HKDF
+    "secrets",               # Secure random generation
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.25.0",         # Async HTTP client for testing
+    "black>=23.7.0",
+    "ruff>=0.0.287",
+    "mypy>=1.5.0",
+]
+
+hsm = [
+    "pkcs11>=0.7.0",         # HSM interface (production)
+]
+
+[project.urls]
+Homepage = "https://github.com/Birthmark-Standard/Birthmark"
+Repository = "https://github.com/Birthmark-Standard/Birthmark"
+Issues = "https://github.com/Birthmark-Standard/Birthmark/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--cov=src --cov-report=html --cov-report=term"
+asyncio_mode = "auto"
