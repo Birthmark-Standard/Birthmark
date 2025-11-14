@@ -96,18 +96,74 @@ Camera Device          Aggregation Server              Blockchain
 ```
 birthmark/
 ├── packages/
-│   ├── camera-pi/           # Raspberry Pi prototype
-│   ├── aggregator/          # Aggregation server
-│   ├── sma/                  # Simulated Manufacturer Authority
-│   ├── contracts/           # zkSync smart contracts
-│   ├── mobile-app/          # iOS app (Phase 2)
-│   └── verifier/            # Image validation client
+│   ├── camera-pi/                 # Raspberry Pi prototype (Phase 1)
+│   │   ├── src/
+│   │   │   ├── sensor_capture.py  # Raw Bayer data capture
+│   │   │   ├── hash_pipeline.py   # SHA-256 hashing
+│   │   │   ├── tpm_interface.py   # LetsTrust secure element
+│   │   │   └── submission.py      # Send to aggregator
+│   │   └── tests/
+│   │
+│   ├── aggregator/                # Aggregation Server
+│   │   ├── src/
+│   │   │   ├── api/               # FastAPI endpoints
+│   │   │   ├── validation/        # SMA validation worker
+│   │   │   ├── batching/          # Merkle tree generation
+│   │   │   └── blockchain/        # zkSync posting
+│   │   └── tests/
+│   │
+│   ├── sma/                       # Simulated Manufacturer Authority
+│   │   ├── src/
+│   │   │   ├── key_tables/        # 2,500 tables × 1,000 keys
+│   │   │   ├── provisioning/      # Device certificate issuance
+│   │   │   ├── validation/        # Token validation (PASS/FAIL)
+│   │   │   └── identity/          # NUC records (never sees image hash)
+│   │   └── tests/
+│   │
+│   ├── contracts/                 # zkSync Smart Contracts
+│   │   ├── contracts/
+│   │   │   └── BirthmarkRegistry.sol
+│   │   ├── scripts/               # Deploy scripts
+│   │   ├── test/                  # Hardhat tests
+│   │   └── hardhat.config.ts
+│   │
+│   ├── mobile-app/                # iOS App (Phase 2)
+│   │   └── (React Native or Swift structure)
+│   │
+│   └── verifier/                  # Image Viewer / Validation Client
+│       ├── src/
+│       │   ├── hash_image.py      # Client-side hashing
+│       │   └── query_blockchain.py # Merkle proof verification
+│       └── web/                   # Simple web UI for demo
+│
 ├── shared/
-│   ├── types/               # Common data structures
-│   ├── crypto/              # Shared cryptographic utilities
-│   └── protocols/           # API contracts (source of truth)
-└── docs/
-    └── (architecture diagrams, phase plans)
+│   ├── types/                     # Core data structures
+│   │   ├── submission.py          # What camera sends to aggregator
+│   │   ├── validation.py          # Aggregator ↔ SMA messages
+│   │   └── merkle.py              # Merkle tree/proof structures
+│   │
+│   ├── crypto/                    # Shared cryptographic utilities
+│   │   ├── hashing.py             # SHA-256 standardization
+│   │   ├── key_derivation.py      # HKDF for key table rotation
+│   │   └── encryption.py          # Symmetric encryption for NUC tokens
+│   │
+│   └── protocols/                 # API contracts (source of truth)
+│       ├── camera_to_aggregator.yaml   # OpenAPI spec
+│       ├── aggregator_to_sma.yaml      # Validation API
+│       └── aggregator_to_chain.py      # Contract ABI wrapper
+│
+├── docs/
+│   ├── architecture/              # Your diagrams live here
+│   │   ├── system_overview.png
+│   │   ├── validation_flow.png
+│   │   └── verification_flow.png
+│   ├── phase_plans/               # Your existing phase documentation
+│   └── CLAUDE_CODE_CONTEXT.md     # Key context for AI assistance
+│
+└── scripts/
+    ├── provision_device.sh        # Set up new camera
+    ├── deploy_testnet.sh          # Deploy contracts
+    └── integration_test.sh        # End-to-end test
 ```
 
 ---
