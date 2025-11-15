@@ -2,20 +2,30 @@
 
 import uuid
 import time
-from typing import Union
+import logging
+from typing import Union, Annotated
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+import httpx
 
 from src.database import get_db
 from src.models import Submission
+from src.config import settings
 from src.schemas import (
     CameraSubmissionRequest,
     SoftwareSubmissionRequest,
     SubmissionResponse,
     ErrorResponse,
+    CameraToken,
+    CameraValidationBatchRequest,
+    CameraValidationRequest,
+    SoftwareValidationBatchRequest,
+    SoftwareValidationRequest,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["submissions"])
 
@@ -117,7 +127,11 @@ async def handle_camera_submission(
 
     await db.commit()
 
-    # 5. Get queue position and estimate batch time
+    # 5. Validate with SMA (inline for Phase 1)
+    if settings.sma_enabled:
+        await validate_camera_transaction(transaction_id, request, db)
+
+    # 6. Get queue position and estimate batch time
     queue_position = await get_queue_position(db)
     estimated_batch_time = estimate_batch_time()
 
@@ -167,7 +181,11 @@ async def handle_software_submission(
     await db.commit()
     await db.refresh(submission)
 
-    # 3. Get queue position and estimate batch time
+    # 3. Validate with SSA (inline for Phase 1)
+    if settings.ssa_enabled:
+        await validate_software_submission(submission.submission_id, request, db)
+
+    # 4. Get queue position and estimate batch time
     queue_position = await get_queue_position(db)
     estimated_batch_time = estimate_batch_time()
 
@@ -201,3 +219,132 @@ def estimate_batch_time() -> str:
     # Simple estimate: next batch in ~15 minutes
     estimated_time = datetime.now(timezone.utc) + timedelta(minutes=15)
     return estimated_time.isoformat().replace("+00:00", "Z")
+
+
+async def validate_camera_transaction(
+    transaction_id: uuid.UUID, request: CameraSubmissionRequest, db: AsyncSession
+) -> None:
+    """
+    Validate camera transaction with SMA (inline for Phase 1).
+
+    All submissions with this transaction_id will be updated with validation result.
+    """
+    try:
+        # Build validation request
+        validation_req = CameraValidationRequest(
+            transaction_id=str(transaction_id),
+            camera_token=request.camera_token,
+            manufacturer_authority_id=request.manufacturer_cert.authority_id,
+        )
+
+        # Call SMA validation endpoint
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.sma_endpoint,
+                json={"validation_requests": [validation_req.model_dump()]},
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+
+        # Process validation result
+        if result["validation_results"]:
+            validation_result = result["validation_results"][0]
+            if validation_result["status"] == "pass":
+                # Update all submissions in this transaction as validated
+                stmt = (
+                    update(Submission)
+                    .where(Submission.transaction_id == transaction_id)
+                    .values(
+                        validation_status="validated",
+                        validated_at=datetime.now(timezone.utc),
+                    )
+                )
+                await db.execute(stmt)
+                await db.commit()
+                logger.info(f"Camera transaction {transaction_id} validated successfully")
+            else:
+                # Validation failed
+                error_msg = validation_result.get("status", "Unknown error")
+                stmt = (
+                    update(Submission)
+                    .where(Submission.transaction_id == transaction_id)
+                    .values(
+                        validation_status="validation_failed",
+                        validation_error=error_msg,
+                    )
+                )
+                await db.execute(stmt)
+                await db.commit()
+                logger.warning(
+                    f"Camera transaction {transaction_id} validation failed: {error_msg}"
+                )
+
+    except Exception as e:
+        logger.error(f"SMA validation error for transaction {transaction_id}: {e}")
+        # Leave submissions in pending state on error
+        # Could implement retry logic here for Phase 2
+
+
+async def validate_software_submission(
+    submission_id: uuid.UUID, request: SoftwareSubmissionRequest, db: AsyncSession
+) -> None:
+    """
+    Validate software submission with SSA (inline for Phase 1).
+    """
+    try:
+        # Build validation request
+        validation_req = SoftwareValidationRequest(
+            submission_id=str(submission_id),
+            program_token=request.program_token,
+            developer_authority_id=request.developer_cert.authority_id,
+            version_string=request.developer_cert.version_string,
+        )
+
+        # Call SSA validation endpoint
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.ssa_endpoint,
+                json={"validation_requests": [validation_req.model_dump()]},
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+
+        # Process validation result
+        if result["validation_results"]:
+            validation_result = result["validation_results"][0]
+            if validation_result["status"] == "pass":
+                # Update submission as validated
+                stmt = (
+                    update(Submission)
+                    .where(Submission.submission_id == submission_id)
+                    .values(
+                        validation_status="validated",
+                        validated_at=datetime.now(timezone.utc),
+                    )
+                )
+                await db.execute(stmt)
+                await db.commit()
+                logger.info(f"Software submission {submission_id} validated successfully")
+            else:
+                # Validation failed
+                error_msg = validation_result.get("status", "Unknown error")
+                stmt = (
+                    update(Submission)
+                    .where(Submission.submission_id == submission_id)
+                    .values(
+                        validation_status="validation_failed",
+                        validation_error=error_msg,
+                    )
+                )
+                await db.execute(stmt)
+                await db.commit()
+                logger.warning(
+                    f"Software submission {submission_id} validation failed: {error_msg}"
+                )
+
+    except Exception as e:
+        logger.error(f"SSA validation error for submission {submission_id}: {e}")
+        # Leave submission in pending state on error
+        # Could implement retry logic here for Phase 2

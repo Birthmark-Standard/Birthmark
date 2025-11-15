@@ -15,6 +15,9 @@ from src.schemas import (
     AuthorityInfo,
     BlockchainInfo,
     MerkleProofStep,
+    ProvenanceResponse,
+    ProvenanceEntry,
+    OriginalCaptureInfo,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["verification"])
@@ -156,3 +159,84 @@ def get_modification_description(modification_level: int, submission_type: str) 
         (2, "software"): "significant_modifications",
     }
     return descriptions.get((modification_level, submission_type), "unknown")
+
+
+@router.get("/provenance", response_model=ProvenanceResponse)
+async def get_provenance_chain(
+    image_hash: str = Query(..., min_length=64, max_length=64),
+    db: AsyncSession = Depends(get_db),
+) -> ProvenanceResponse:
+    """
+    Trace the complete provenance chain for an image.
+
+    Follows parent_image_hash references back to the original camera capture,
+    showing the full modification history.
+    """
+    image_hash = image_hash.lower()
+
+    # Build chain by following parent_image_hash references
+    chain: list[ProvenanceEntry] = []
+    current_hash = image_hash
+    max_depth = 100  # Prevent infinite loops
+    visited_hashes = set()
+
+    for _ in range(max_depth):
+        if current_hash in visited_hashes:
+            # Circular reference detected, break
+            break
+        visited_hashes.add(current_hash)
+
+        # Query submission
+        stmt = select(Submission).where(Submission.image_hash == current_hash)
+        result = await db.execute(stmt)
+        submission = result.scalar_one_or_none()
+
+        if not submission:
+            # Parent not found, break chain
+            break
+
+        # Build authority info
+        authority = build_authority_info(submission)
+
+        # Build provenance entry
+        entry = ProvenanceEntry(
+            image_hash=submission.image_hash,
+            submission_type=submission.submission_type,
+            modification_level=submission.modification_level,
+            modification_level_description=get_modification_description(
+                submission.modification_level, submission.submission_type
+            ),
+            authority=authority,
+            timestamp=submission.timestamp,
+            parent_image_hash=submission.parent_image_hash,
+        )
+        chain.append(entry)
+
+        # Move to parent
+        if submission.parent_image_hash is None:
+            # Reached original image
+            break
+        current_hash = submission.parent_image_hash
+
+    # Reverse chain to show oldest first (original capture at top)
+    chain.reverse()
+
+    # Extract original capture info (first entry in chain)
+    original_capture = None
+    if chain and chain[0].submission_type == "camera":
+        original_capture = OriginalCaptureInfo(
+            image_hash=chain[0].image_hash,
+            timestamp=chain[0].timestamp,
+            manufacturer=chain[0].authority.authority_id,
+        )
+
+    # Total modification level is the highest in the chain
+    total_modification_level = max((entry.modification_level for entry in chain), default=None)
+
+    return ProvenanceResponse(
+        image_hash=image_hash,
+        provenance_chain=chain,
+        chain_length=len(chain),
+        original_capture=original_capture,
+        total_modification_level=total_modification_level,
+    )
