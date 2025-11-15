@@ -1,0 +1,369 @@
+"""
+Simulated Manufacturer Authority (SMA) - Main Application
+
+FastAPI application providing:
+- Device provisioning endpoints (Phase 2)
+- NUC token validation endpoints
+- Health check and monitoring
+
+Phase 1: Manual provisioning via script
+Phase 2: Full API with automatic provisioning
+"""
+
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from pathlib import Path
+from datetime import datetime
+
+from .provisioning.certificate import CertificateAuthority
+from .provisioning.provisioner import (
+    DeviceProvisioner,
+    ProvisioningRequest,
+    ProvisioningResponse
+)
+from .key_tables.table_manager import KeyTableManager
+from .identity.device_registry import DeviceRegistry, DeviceRegistration
+
+
+# Pydantic models for API
+class ProvisionDeviceRequest(BaseModel):
+    """API request model for device provisioning."""
+    device_serial: str = Field(..., description="Unique device serial number")
+    device_family: str = Field(default="Raspberry Pi", description="Device type")
+    nuc_hash: Optional[str] = Field(None, description="Hex-encoded NUC hash (optional)")
+
+
+class ProvisionDeviceResponse(BaseModel):
+    """API response model for device provisioning."""
+    device_serial: str
+    device_certificate: str
+    certificate_chain: str
+    device_private_key: str
+    device_public_key: str
+    table_assignments: List[int]
+    nuc_hash: str
+    device_family: str
+
+
+class HealthResponse(BaseModel):
+    """Health check response."""
+    status: str
+    timestamp: str
+    total_devices: int
+    total_tables: int
+    service: str
+
+
+class StatsResponse(BaseModel):
+    """Statistics response."""
+    total_devices: int
+    devices_by_family: dict
+    total_table_assignments: int
+    unique_tables_used: int
+    table_statistics: dict
+
+
+# Create FastAPI app
+app = FastAPI(
+    title="Birthmark SMA (Simulated Manufacturer Authority)",
+    description="Device provisioning and NUC token validation service",
+    version="0.1.0"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure appropriately for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Global state (initialized on startup)
+ca: Optional[CertificateAuthority] = None
+table_manager: Optional[KeyTableManager] = None
+device_registry: Optional[DeviceRegistry] = None
+provisioner: Optional[DeviceProvisioner] = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize SMA components on startup."""
+    global ca, table_manager, device_registry, provisioner
+
+    # Define storage paths
+    base_path = Path(__file__).parent.parent / "data"
+    base_path.mkdir(exist_ok=True)
+
+    ca_cert_path = base_path / "intermediate-ca.crt"
+    ca_key_path = base_path / "intermediate-ca.key"
+    key_tables_path = base_path / "key_tables.json"
+    registry_path = base_path / "device_registry.json"
+
+    # Initialize or load CA
+    if ca_cert_path.exists() and ca_key_path.exists():
+        ca = CertificateAuthority(ca_cert_path, ca_key_path)
+        print(f"✓ Loaded CA certificates from {ca_cert_path}")
+    else:
+        print("⚠ CA certificates not found. Run setup script to generate CA.")
+        print(f"  Expected: {ca_cert_path} and {ca_key_path}")
+        ca = None  # Will fail on provisioning attempts
+
+    # Initialize or load key tables
+    table_manager = KeyTableManager(
+        total_tables=10,  # Phase 1: 10 tables
+        tables_per_device=3,
+        storage_path=key_tables_path
+    )
+
+    if key_tables_path.exists():
+        table_manager.load_from_file()
+        print(f"✓ Loaded {len(table_manager.key_tables)} key tables from {key_tables_path}")
+    else:
+        print(f"⚠ Key tables not found at {key_tables_path}")
+        print("  Run setup script to generate key tables.")
+
+    # Initialize device registry
+    device_registry = DeviceRegistry(storage_path=registry_path)
+    if registry_path.exists():
+        device_registry.load_from_file()
+        print(f"✓ Loaded {len(device_registry._registrations)} device registrations")
+    else:
+        print("✓ Initialized empty device registry")
+
+    # Initialize provisioner
+    if ca:
+        provisioner = DeviceProvisioner(ca, table_manager)
+        print("✓ Device provisioner ready")
+    else:
+        print("⚠ Device provisioner unavailable (CA not loaded)")
+
+
+@app.get("/", tags=["General"])
+async def root():
+    """Root endpoint."""
+    return {
+        "service": "Birthmark SMA",
+        "version": "0.1.0",
+        "status": "running"
+    }
+
+
+@app.get("/health", response_model=HealthResponse, tags=["Monitoring"])
+async def health_check():
+    """
+    Health check endpoint.
+
+    Returns service status and basic statistics.
+    """
+    return HealthResponse(
+        status="healthy",
+        timestamp=datetime.utcnow().isoformat(),
+        total_devices=len(device_registry._registrations) if device_registry else 0,
+        total_tables=len(table_manager.key_tables) if table_manager else 0,
+        service="sma"
+    )
+
+
+@app.get("/stats", response_model=StatsResponse, tags=["Monitoring"])
+async def get_statistics():
+    """
+    Get detailed statistics about provisioned devices.
+    """
+    if not device_registry or not table_manager:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not initialized"
+        )
+
+    device_stats = device_registry.get_statistics()
+    table_stats = table_manager.get_statistics()
+
+    return StatsResponse(
+        total_devices=device_stats["total_devices"],
+        devices_by_family=device_stats["devices_by_family"],
+        total_table_assignments=device_stats["total_table_assignments"],
+        unique_tables_used=device_stats["unique_tables_used"],
+        table_statistics=table_stats
+    )
+
+
+@app.post(
+    "/api/v1/devices/provision",
+    response_model=ProvisionDeviceResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Provisioning"]
+)
+async def provision_device(request: ProvisionDeviceRequest):
+    """
+    Provision a new device.
+
+    Phase 1: Manual provisioning via script (this endpoint for testing)
+    Phase 2: Production endpoint for automated provisioning
+
+    Args:
+        request: Device provisioning request
+
+    Returns:
+        Complete provisioning data including:
+        - Device certificate and private key
+        - Table assignments
+        - NUC hash (simulated in Phase 1)
+
+    Raises:
+        HTTPException: If provisioning fails or device already exists
+    """
+    if not provisioner:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Provisioner not initialized (CA certificates missing)"
+        )
+
+    # Check if device already registered
+    if device_registry.device_exists(request.device_serial):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Device {request.device_serial} already provisioned"
+        )
+
+    try:
+        # Convert hex NUC hash to bytes if provided
+        nuc_hash_bytes = None
+        if request.nuc_hash:
+            try:
+                nuc_hash_bytes = bytes.fromhex(request.nuc_hash)
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid NUC hash format (must be hex)"
+                )
+
+        # Provision device
+        prov_request = ProvisioningRequest(
+            device_serial=request.device_serial,
+            device_family=request.device_family,
+            nuc_hash=nuc_hash_bytes
+        )
+
+        response = provisioner.provision_device(prov_request)
+
+        # Register device in registry
+        registration = DeviceRegistration(
+            device_serial=response.device_serial,
+            nuc_hash=response.nuc_hash,
+            table_assignments=response.table_assignments,
+            device_certificate=response.device_certificate,
+            device_public_key=response.device_public_key,
+            device_family=response.device_family,
+            provisioned_at=datetime.utcnow().isoformat()
+        )
+
+        device_registry.register_device(registration)
+
+        # Save registry to disk
+        device_registry.save_to_file()
+
+        # Save key table assignments to disk
+        table_manager.save_to_file()
+
+        return ProvisionDeviceResponse(**response.to_dict())
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Provisioning failed: {str(e)}"
+        )
+
+
+@app.get("/api/v1/devices/{device_serial}", tags=["Provisioning"])
+async def get_device_info(device_serial: str):
+    """
+    Get device information (non-sensitive data only).
+
+    Args:
+        device_serial: Device serial number
+
+    Returns:
+        Device information (without private keys)
+    """
+    if not device_registry:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not initialized"
+        )
+
+    device = device_registry.get_device(device_serial)
+    if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device {device_serial} not found"
+        )
+
+    return {
+        "device_serial": device.device_serial,
+        "device_family": device.device_family,
+        "table_assignments": device.table_assignments,
+        "provisioned_at": device.provisioned_at,
+        # Exclude sensitive data like NUC hash, certificates, keys
+    }
+
+
+@app.get("/api/v1/devices", tags=["Provisioning"])
+async def list_devices(device_family: Optional[str] = None):
+    """
+    List all provisioned devices.
+
+    Args:
+        device_family: Optional filter by device family
+
+    Returns:
+        List of device serial numbers and basic info
+    """
+    if not device_registry:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not initialized"
+        )
+
+    devices = device_registry.list_devices(device_family)
+
+    return {
+        "total": len(devices),
+        "devices": [
+            {
+                "device_serial": d.device_serial,
+                "device_family": d.device_family,
+                "provisioned_at": d.provisioned_at
+            }
+            for d in devices
+        ]
+    }
+
+
+# Phase 2: Validation endpoints (placeholder for future implementation)
+@app.post("/api/v1/validate/nuc", tags=["Validation"])
+async def validate_nuc_token():
+    """
+    Validate encrypted NUC token.
+
+    Phase 2 endpoint: Receives encrypted NUC token from aggregator,
+    validates against stored NUC hash, returns PASS/FAIL.
+
+    NOTE: This is a placeholder. Full implementation in Phase 2.
+    """
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="NUC validation not implemented in Phase 1"
+    )
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
