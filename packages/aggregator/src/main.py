@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import settings
 from src.database import init_db, close_db, get_db
 from src.models import Submission, Batch
-from src.api import submissions, verification, sma, ssa
+from src.api import submissions, verification, sma, ssa, batching
 from src.schemas import HealthCheckResponse
 
 # Configure logging
@@ -65,6 +65,7 @@ app.add_middleware(
 # Include routers
 app.include_router(submissions.router)
 app.include_router(verification.router)
+app.include_router(batching.router)
 app.include_router(sma.router)
 app.include_router(ssa.router)
 
