@@ -1,7 +1,7 @@
 """Pydantic schemas for API requests and responses."""
 
 import re
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Union
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 
@@ -302,3 +302,10 @@ class HealthCheckResponse(BaseModel):
     pending_submissions: Optional[int] = None
     last_batch: Optional[str] = None
     timestamp: str
+
+
+# Union type for submission requests with discriminator
+# This helps FastAPI correctly parse camera vs software submissions
+# Pydantic 2.x will use the submission_type field (Literal) as discriminator
+
+SubmissionRequest = Union[CameraSubmissionRequest, SoftwareSubmissionRequest]
