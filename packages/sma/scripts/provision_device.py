@@ -32,7 +32,8 @@ from src.identity.device_registry import DeviceRegistry, DeviceRegistration
 
 def save_provisioning_data(
     response: ProvisioningResponse,
-    output_dir: Path
+    output_dir: Path,
+    table_manager: KeyTableManager = None
 ) -> Path:
     """
     Save provisioning data to JSON file.
@@ -40,6 +41,7 @@ def save_provisioning_data(
     Args:
         response: Provisioning response
         output_dir: Directory to save provisioning file
+        table_manager: Optional key table manager to include master keys
 
     Returns:
         Path to provisioning file
@@ -49,8 +51,19 @@ def save_provisioning_data(
     # Create provisioning file
     provisioning_file = output_dir / f"provisioning_{response.device_serial}.json"
 
+    # Build provisioning data
+    provisioning_data = response.to_dict()
+
+    # Add master keys for assigned tables (Phase 1 only)
+    if table_manager is not None:
+        master_keys = {}
+        for table_id in response.table_assignments:
+            master_key = table_manager.get_master_key(table_id)
+            master_keys[str(table_id)] = master_key.hex()
+        provisioning_data['master_keys'] = master_keys
+
     with open(provisioning_file, "w") as f:
-        json.dump(response.to_dict(), f, indent=2)
+        json.dump(provisioning_data, f, indent=2)
 
     # Set restrictive permissions (contains private key!)
     provisioning_file.chmod(0o600)
@@ -241,8 +254,13 @@ def main():
         # Display provisioning info
         display_provisioning_info(response)
 
-        # Save provisioning data
-        provisioning_file = save_provisioning_data(response, args.output_dir)
+        # Load key table manager to include master keys in provisioning file
+        key_tables_path = args.data_dir / "key_tables.json"
+        table_manager = KeyTableManager(storage_path=key_tables_path)
+        table_manager.load_from_file()
+
+        # Save provisioning data with master keys
+        provisioning_file = save_provisioning_data(response, args.output_dir, table_manager)
 
         print(f"\n💾 Provisioning Data Saved:")
         print(f"  File: {provisioning_file}")
