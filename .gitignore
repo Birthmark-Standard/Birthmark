@@ -212,3 +212,6 @@ packages/sma/data/key_tables*.json
 packages/sma/data/*.pem
 packages/sma/data/*.key
 provisioned_devices/
+
+# Camera provisioning data contains private keys and master keys
+packages/camera-pi/data/provisioning.json
