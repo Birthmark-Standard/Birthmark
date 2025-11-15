@@ -28,16 +28,13 @@ dependencies = [
     "uvicorn[standard]>=0.24.0",  # ASGI server
     "sqlalchemy>=2.0.0",     # ORM for PostgreSQL
     "asyncpg>=0.29.0",       # Async PostgreSQL driver
-    "psycopg2-binary>=2.9.9",  # Sync PostgreSQL driver
+    "psycopg2-binary>=2.9.9",  # Sync PostgreSQL driver for Alembic
     "alembic>=1.12.0",       # Database migrations
     "pydantic>=2.5.0",       # Data validation
     "pydantic-settings>=2.1.0",  # Settings management
-    "cryptography>=41.0.0",  # Encryption
-    "requests>=2.31.0",      # HTTP client for SMA
-    "web3>=6.11.0",          # Ethereum/zkSync interaction
-    "merkletools>=1.0.3",    # Merkle tree generation
-    "redis>=5.0.0",          # Caching and queuing
-    "celery>=5.3.0",         # Background task processing
+    "cryptography>=41.0.0",  # Encryption (AES-GCM)
+    "httpx>=0.25.0",         # Async HTTP client for authority calls
+    "python-dotenv>=1.0.0",  # Environment variable loading
 ]
 
 [project.optional-dependencies]
