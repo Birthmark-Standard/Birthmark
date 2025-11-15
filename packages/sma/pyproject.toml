@@ -32,8 +32,7 @@ dependencies = [
     "alembic>=1.12.0",       # Database migrations
     "pydantic>=2.5.0",       # Data validation
     "pydantic-settings>=2.1.0",  # Settings management
-    "cryptography>=41.0.0",  # AES-GCM, HKDF
-    "secrets",               # Secure random generation
+    "cryptography>=41.0.0",  # AES-GCM, HKDF (secrets is built-in to Python)
 ]
 
 [project.optional-dependencies]
