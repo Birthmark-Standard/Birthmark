@@ -1,69 +1,213 @@
-# Blockchain Package
+# Birthmark Blockchain
 
-**Phase:** Phase 1 (Architecture Planning)
-**Status:** In Development
-**Blockchain:** Custom Birthmark Blockchain
+**Status:** Planning Phase
+**Type:** Custom Blockchain Implementation
+**Purpose:** Direct on-chain storage of image hash authenticity records
 
 ## Overview
 
-The blockchain package will contain the implementation for the Birthmark Standard's custom blockchain that stores full image hashes on-chain rather than Merkle roots on a Layer 2 solution.
+This package will contain the custom blockchain implementation for the Birthmark Standard. Unlike traditional approaches using Ethereum Layer 2 solutions, this blockchain is designed specifically for storing full SHA-256 image hashes directly on-chain, providing a simpler, more cost-effective, and fully controlled verification system.
 
-## Architecture Change
+## Architecture Vision
 
-**Previous Approach (Removed):**
-- zkSync Era Layer 2 on Ethereum
-- Stored Merkle roots of batched image hashes
-- Off-chain Merkle proof verification
-- Cost: ~$0.00003 per image
+### Core Principles
 
-**New Approach (In Development):**
-- Custom blockchain hosted by Birthmark Standard
-- Stores full image hashes directly on-chain
-- Direct hash verification without Merkle proofs
-- Eliminates dependency on Ethereum/zkSync infrastructure
+1. **Direct Hash Storage:** Full SHA-256 hashes (64 hex characters) stored on-chain
+2. **No Gas Fees:** Eliminates blockchain transaction costs for users
+3. **Simple Verification:** Direct hash lookup without Merkle proof complexity
+4. **Full Control:** Complete ownership of infrastructure and consensus mechanism
+5. **Purpose-Built:** Optimized specifically for image hash verification use case
 
-## Benefits of Custom Blockchain
+### Blockchain Design (Proposed)
 
-1. **Full Control:** Complete ownership of infrastructure and consensus
-2. **Direct Storage:** Full SHA-256 hashes stored on-chain (no Merkle trees needed)
-3. **Cost Optimization:** No gas fees or Layer 2 costs
-4. **Simplified Architecture:** Direct hash lookups without proof generation
-5. **Independence:** No reliance on Ethereum ecosystem or zkSync
+**Block Structure:**
+- Block header with timestamp, previous hash, nonce
+- Transaction list containing image hash submissions
+- Aggregator signatures for batch authentication
+- Merkle tree for block integrity (internal use, not for image verification)
 
-## Directory Structure
+**Transaction Types:**
+- `RegisterHash`: Submit new image hash with metadata (timestamp, camera identity token)
+- `BatchRegister`: Bulk submission from aggregation server
+- `QueryHash`: Verification request (read-only, no transaction needed)
 
-### `contracts/` (To Be Determined)
-Blockchain implementation code - technology stack TBD
+**Consensus Mechanism:**
+- Proof-of-Authority (PoA) with trusted aggregators as validators
+- Simple, fast block production (target: 1-5 second blocks)
+- Minimal energy consumption
+- Suitable for permissioned network with known aggregators
 
-### `scripts/` (To Be Determined)
-Node deployment and management scripts
+**Data Model:**
+```
+ImageRecord {
+  hash: SHA256 (32 bytes)
+  timestamp: uint64
+  aggregator: AggregatorID
+  camera_token_hash: SHA256 (encrypted identity, optional)
+  gps_hash: SHA256 (optional location proof)
+  block_height: uint64
+  tx_index: uint32
+}
+```
 
-### `test/` (To Be Determined)
-Blockchain and consensus tests
+## Benefits vs. Previous Approach
+
+| Feature | zkSync L2 | Custom Blockchain |
+|---------|-----------|-------------------|
+| **Cost per image** | ~$0.00003 | $0 (hosting only) |
+| **Hash storage** | Merkle roots only | Full SHA-256 hashes |
+| **Verification** | Merkle proof required | Direct lookup |
+| **Infrastructure** | Ethereum dependency | Fully owned |
+| **Complexity** | High (L2 + L1) | Low (single chain) |
+| **Control** | Limited | Complete |
 
 ## Technology Stack (Under Evaluation)
 
-Options being considered:
-- Custom blockchain implementation
-- Fork of existing blockchain (e.g., Cosmos SDK, Substrate)
-- Simplified proof-of-authority consensus
-- Direct database-backed ledger with cryptographic verification
+### Option 1: Custom Implementation
+- **Language:** Rust or Go
+- **Database:** RocksDB or PostgreSQL
+- **Networking:** libp2p or custom P2P
+- **Consensus:** Simple PoA
+- **Pros:** Full control, minimal dependencies
+- **Cons:** More development work
 
-## Next Steps
+### Option 2: Cosmos SDK
+- **Framework:** Cosmos SDK (Tendermint consensus)
+- **Language:** Go
+- **Pros:** Battle-tested, rich ecosystem
+- **Cons:** Heavier than needed, complex setup
 
-1. Define blockchain architecture and consensus mechanism
-2. Choose technology stack
-3. Design block structure and data format
-4. Implement node software
-5. Create deployment infrastructure
-6. Build API for aggregation server integration
+### Option 3: Substrate
+- **Framework:** Substrate (Polkadot framework)
+- **Language:** Rust
+- **Pros:** Modular, customizable
+- **Cons:** Steep learning curve, complex
+
+### Option 4: Simplified Ledger
+- **Approach:** Database-backed ledger with cryptographic chain
+- **Language:** Python/TypeScript
+- **Storage:** PostgreSQL with cryptographic verification
+- **Pros:** Simplest, fastest to implement
+- **Cons:** Not a "true" blockchain (but may be sufficient)
+
+## Project Structure (Planned)
+
+```
+packages/blockchain/
+├── node/                    # Blockchain node implementation
+│   ├── consensus/          # PoA consensus logic
+│   ├── storage/            # Block and state storage
+│   ├── networking/         # P2P communication
+│   └── api/                # REST/gRPC API for queries
+├── cli/                    # Node management CLI
+├── genesis/                # Genesis block configuration
+├── scripts/                # Deployment and setup scripts
+├── tests/                  # Integration and unit tests
+└── docs/                   # Architecture documentation
+```
+
+## Integration Points
+
+### Aggregation Server → Blockchain
+- **Endpoint:** `POST /submit-batch`
+- **Payload:** Array of `{hash, timestamp, camera_token}`
+- **Response:** `{block_height, tx_hashes[]}`
+- **Authentication:** Aggregator signing key
+
+### Verifier Client → Blockchain
+- **Endpoint:** `GET /verify/{image_hash}`
+- **Response:** `{verified: bool, timestamp, block_height, aggregator}`
+- **Performance:** <100ms response time
+
+### Camera → Aggregator → Blockchain
+1. Camera captures image, computes SHA-256 hash
+2. Camera sends to aggregation server with encrypted identity token
+3. Aggregation server validates with manufacturer SMA
+4. Aggregation server submits to blockchain in batch
+5. Blockchain stores hash permanently
+6. Verifier can query hash anytime
+
+## Development Roadmap
+
+### Phase 1: Architecture Definition (Current)
+- [ ] Finalize technology stack decision
+- [ ] Define block structure and data format
+- [ ] Design consensus mechanism
+- [ ] Document API specifications
+
+### Phase 2: Prototype Implementation
+- [ ] Build minimal node software
+- [ ] Implement basic consensus
+- [ ] Create REST API for queries
+- [ ] Test with sample image hashes
+
+### Phase 3: Integration
+- [ ] Connect to aggregation server
+- [ ] End-to-end testing with camera prototype
+- [ ] Performance optimization
+- [ ] Deploy test network
+
+### Phase 4: Production (2028 Target)
+- [ ] Multi-node deployment
+- [ ] Production aggregator validators
+- [ ] Monitoring and alerting
+- [ ] Public verification interface
+
+## Performance Requirements
+
+- **Transaction throughput:** 1,000+ hashes/second (for batch submissions)
+- **Query latency:** <100ms for hash verification
+- **Storage:** ~100 bytes per image record
+- **Projected load:** 10M images/year = ~1GB/year storage
+- **Node requirements:** Modest (2-4 core CPU, 8GB RAM, 100GB SSD)
+
+## Security Considerations
+
+1. **Aggregator Authorization:** Only pre-approved aggregators can submit
+2. **Replay Protection:** Nonce-based or timestamp-based anti-replay
+3. **Data Integrity:** Cryptographic chain prevents tampering
+4. **Availability:** Multiple validator nodes prevent single point of failure
+5. **Privacy:** Only hash stored, not image content or camera identity
+
+## Why Not Ethereum/zkSync?
+
+**Decision rationale:**
+- Gas fees make micropayments impractical at scale
+- Merkle root batching adds verification complexity
+- Dependency on Ethereum ecosystem creates external risk
+- Smart contract upgrades and governance complexity
+- Layer 2 still requires Layer 1 settlement costs
+
+**Custom blockchain advantages:**
+- Zero per-transaction costs (only hosting)
+- Simplified verification (direct hash lookup)
+- Complete control over consensus and features
+- Purpose-built for image hash verification
+- Can optimize for specific use case
+
+## Open Questions
+
+1. **Node hosting:** Self-hosted vs. cloud vs. hybrid?
+2. **Validator count:** 3 nodes? 5 nodes? More?
+3. **Geographic distribution:** Multi-region for availability?
+4. **Public access:** Open read API or authenticated?
+5. **Archival strategy:** How long to retain old blocks?
+6. **Backup and recovery:** Disaster recovery procedures?
 
 ## Related Documentation
 
-- Project overview: `/CLAUDE.md`
-- Aggregation server: `/packages/aggregator/`
-- Camera prototype: `/packages/camera-pi/`
+- **Project Overview:** `/CLAUDE.md`
+- **Aggregation Server:** `/packages/aggregator/` (to be integrated)
+- **Camera Prototype:** `/packages/camera-pi/` (submits to aggregator)
+- **Phase Plans:** `/docs/phase-plans/`
+
+## Contributing
+
+This package is under active architectural design. Contributions and feedback welcome as we define the optimal blockchain structure for the Birthmark Standard.
 
 ---
 
-**Note:** This package previously contained zkSync Era smart contracts, which have been removed as the project pivots to a custom blockchain solution.
+**Note:** This package previously contained Ethereum smart contracts for zkSync Layer 2. Those have been removed as the project pivoted to a custom blockchain solution in November 2025.
+
+**The Birthmark Standard Foundation**
+*Proving images are real, not generated.*
