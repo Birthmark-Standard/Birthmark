@@ -8,7 +8,7 @@
 
 ## Project Overview
 
-The Birthmark Standard is an open-source, hardware-backed photo authentication system that proves images originated from legitimate cameras rather than AI generation. It uses camera sensors' unique Non-Uniformity Correction (NUC) maps as hardware fingerprints, combined with blockchain verification on zkSync Layer 2.
+The Birthmark Standard is an open-source, hardware-backed photo authentication system that proves images originated from legitimate cameras rather than AI generation. It uses camera sensors' unique Non-Uniformity Correction (NUC) maps as hardware fingerprints, combined with blockchain verification on a custom Birthmark blockchain operated by like-minded institutions.
 
 **Target:** Deployment for 2028 Presidential Election  
 **Organization:** The Birthmark Standard Foundation (501(c)(3) pending)
@@ -24,18 +24,18 @@ Unlike C2PA which embeds metadata that gets stripped by social media platforms, 
 ### Component Overview
 
 ```
-Camera Device          Aggregation Server              Blockchain
-─────────────         ──────────────────              ──────────
-│ Sensor     │        │ Server Queue    │  
-│ Secure Elem│   ──►  │ Decision Gate   │────────►   zkSync L2
-│ Wireless   │        │ Batch Accum     │            │ Smart Contract
-                      │ Merkle Tree Gen │            │ Merkle Root Ledger
-                      └────────┬────────┘            └─────────┬────────
-                               │                                │
-                               ▼                          Ethereum L1
-                      Manufacturer (SMA)                 ────────────
-                     ──────────────────                  │ Settlement Contract
-                     │ Validation Server│                │ Immutable State Root
+Camera Device          Aggregation Server              Birthmark Blockchain
+─────────────         ──────────────────              ────────────────────
+│ Sensor     │        │ Server Queue    │
+│ Secure Elem│   ──►  │ Decision Gate   │────────►   Blockchain Nodes
+│ Wireless   │        │ Batch Accum     │            │ (Like-Minded Institutions)
+                      │ Hash Storage    │            │ Direct Hash Registry
+                      └────────┬────────┘            │ Immutable Ledger
+                               │
+                               ▼
+                      Manufacturer (SMA)
+                     ──────────────────
+                     │ Validation Server│
                      │ Key Tables       │
                      │ NUC Records      │
                      │ Identity Mapping │
@@ -45,8 +45,8 @@ Camera Device          Aggregation Server              Blockchain
 1. Camera sends authentication bundle to Aggregation Server only
 2. Aggregation Server forwards encrypted token to SMA for validation
 3. SMA returns PASS/FAIL (never sees image hash)
-4. Aggregation Server batches validated hashes into Merkle trees
-5. Merkle roots posted to zkSync smart contract
+4. Aggregation Server submits validated hashes to Birthmark blockchain
+5. Full SHA-256 hashes stored directly on blockchain operated by trusted institutions
 
 ### Critical Privacy Invariants
 
@@ -67,13 +67,13 @@ Camera Device          Aggregation Server              Blockchain
 - Raspberry Pi 4 + HQ Camera + LetsTrust TPM
 - Aggregation Server (FastAPI + PostgreSQL)
 - Simulated Manufacturer Authority (SMA)
-- zkSync Testnet Smart Contract
+- Custom Birthmark Blockchain Nodes
 
 **Key Deliverables:**
 - Camera captures 12MP raw Bayer, hashes with TPM
 - <5 second background processing, zero user latency
 - Photography club validation (50-100 photographers)
-- 500+ test images verified on testnet
+- 500+ test images verified on blockchain
 
 ### Phase 2: iOS App
 **Timeline:** 3-4 months  
@@ -108,8 +108,8 @@ birthmark/
 │   │   ├── src/
 │   │   │   ├── api/               # FastAPI endpoints
 │   │   │   ├── validation/        # SMA validation worker
-│   │   │   ├── batching/          # Merkle tree generation
-│   │   │   └── blockchain/        # zkSync posting
+│   │   │   ├── batching/          # Batch accumulation
+│   │   │   └── blockchain/        # Birthmark blockchain submission
 │   │   └── tests/
 │   │
 │   ├── sma/                       # Simulated Manufacturer Authority
@@ -120,12 +120,11 @@ birthmark/
 │   │   │   └── identity/          # NUC records (never sees image hash)
 │   │   └── tests/
 │   │
-│   ├── contracts/                 # zkSync Smart Contracts
-│   │   ├── contracts/
-│   │   │   └── BirthmarkRegistry.sol
-│   │   ├── scripts/               # Deploy scripts
-│   │   ├── test/                  # Hardhat tests
-│   │   └── hardhat.config.ts
+│   ├── blockchain/                # Custom Birthmark Blockchain
+│   │   ├── node/                  # Blockchain node implementation
+│   │   ├── consensus/             # PoA consensus logic
+│   │   ├── api/                   # REST API for queries
+│   │   └── scripts/               # Deploy and management scripts
 │   │
 │   ├── mobile-app/                # iOS App (Phase 2)
 │   │   └── (React Native or Swift structure)
@@ -133,14 +132,14 @@ birthmark/
 │   └── verifier/                  # Image Viewer / Validation Client
 │       ├── src/
 │       │   ├── hash_image.py      # Client-side hashing
-│       │   └── query_blockchain.py # Merkle proof verification
+│       │   └── query_blockchain.py # Direct hash lookup
 │       └── web/                   # Simple web UI for demo
 │
 ├── shared/
 │   ├── types/                     # Core data structures
 │   │   ├── submission.py          # What camera sends to aggregator
 │   │   ├── validation.py          # Aggregator ↔ SMA messages
-│   │   └── merkle.py              # Merkle tree/proof structures
+│   │   └── blockchain.py          # Blockchain transaction structures
 │   │
 │   ├── crypto/                    # Shared cryptographic utilities
 │   │   ├── hashing.py             # SHA-256 standardization
@@ -150,7 +149,7 @@ birthmark/
 │   └── protocols/                 # API contracts (source of truth)
 │       ├── camera_to_aggregator.yaml   # OpenAPI spec
 │       ├── aggregator_to_sma.yaml      # Validation API
-│       └── aggregator_to_chain.py      # Contract ABI wrapper
+│       └── aggregator_to_chain.py      # Blockchain API client
 │
 ├── docs/
 │   ├── architecture/              # Your diagrams live here
@@ -162,7 +161,7 @@ birthmark/
 │
 └── scripts/
     ├── provision_device.sh        # Set up new camera
-    ├── deploy_testnet.sh          # Deploy contracts
+    ├── deploy_blockchain.sh       # Deploy blockchain node
     └── integration_test.sh        # End-to-end test
 ```
 
@@ -203,12 +202,17 @@ class ValidationRequest:
 
 ### Aggregator → Blockchain
 
-```solidity
-function postBatch(bytes32 merkleRoot, uint256 imageCount) external;
+```python
+POST /blockchain/submit-batch
+{
+    "hashes": List[str],  # Array of SHA-256 hashes (64 hex chars)
+    "timestamps": List[int],  # Unix timestamps for each hash
+    "aggregator_signature": str  # Signature over batch
+}
 ```
 
-**Batching:** 1,000-5,000 images per batch  
-**Cost target:** <$0.00003 per image on zkSync
+**Batching:** 100-1,000 images per batch
+**Cost:** Zero gas fees (blockchain operated by institutions)
 
 ### Verification Query
 
@@ -217,13 +221,13 @@ function postBatch(bytes32 merkleRoot, uint256 imageCount) external;
 class VerificationRequest:
     image_hash: str  # SHA-256 of image to verify
 
-@dataclass  
+@dataclass
 class VerificationResponse:
     verified: bool
     timestamp: Optional[int]
-    merkle_proof: Optional[List[str]]
-    batch_id: Optional[int]
-    blockchain_tx: Optional[str]
+    block_height: Optional[int]
+    aggregator: Optional[str]
+    blockchain_node: Optional[str]
 ```
 
 ---
@@ -277,10 +281,9 @@ CREATE TABLE pending_submissions (
 -- Completed batches
 CREATE TABLE batches (
     id SERIAL PRIMARY KEY,
-    merkle_root CHAR(64) NOT NULL,
     image_count INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    blockchain_tx VARCHAR(66),  -- Transaction hash
+    block_height BIGINT,  -- Blockchain block height
     confirmed BOOLEAN DEFAULT FALSE
 );
 
@@ -288,8 +291,8 @@ CREATE TABLE batches (
 CREATE TABLE image_batch_map (
     image_hash CHAR(64) PRIMARY KEY,
     batch_id INTEGER REFERENCES batches(id),
-    merkle_proof TEXT[],  -- Array of proof hashes
-    leaf_index INTEGER
+    block_height BIGINT,
+    timestamp BIGINT
 );
 ```
 
@@ -315,75 +318,59 @@ CREATE TABLE registered_devices (
 
 ---
 
-## Smart Contract (Solidity)
+## Blockchain API (Custom Birthmark Blockchain)
 
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+The Birthmark blockchain is operated by a network of nodes run by like-minded institutions (universities, archives, journalism organizations). It stores full SHA-256 image hashes directly on-chain.
 
-contract BirthmarkRegistry {
-    struct Batch {
-        bytes32 merkleRoot;
-        uint256 imageCount;
-        uint256 timestamp;
-        address aggregator;
-    }
-    
-    mapping(uint256 => Batch) public batches;
-    mapping(address => bool) public authorizedAggregators;
-    uint256 public nextBatchId;
-    address public owner;
-    
-    event BatchPosted(
-        uint256 indexed batchId,
-        bytes32 merkleRoot,
-        uint256 imageCount,
-        address aggregator
-    );
-    
-    modifier onlyAggregator() {
-        require(authorizedAggregators[msg.sender], "Not authorized");
-        _;
-    }
-    
-    function postBatch(bytes32 merkleRoot, uint256 imageCount) 
-        external 
-        onlyAggregator 
-        returns (uint256) 
-    {
-        uint256 batchId = nextBatchId++;
-        batches[batchId] = Batch({
-            merkleRoot: merkleRoot,
-            imageCount: imageCount,
-            timestamp: block.timestamp,
-            aggregator: msg.sender
-        });
-        
-        emit BatchPosted(batchId, merkleRoot, imageCount, msg.sender);
-        return batchId;
-    }
-    
-    function verifyInclusion(
-        uint256 batchId,
-        bytes32 imageHash,
-        bytes32[] calldata proof,
-        uint256 leafIndex
-    ) external view returns (bool) {
-        Batch memory batch = batches[batchId];
-        require(batch.timestamp > 0, "Batch does not exist");
-        
-        bytes32 computedRoot = imageHash;
-        for (uint256 i = 0; i < proof.length; i++) {
-            if (leafIndex % 2 == 0) {
-                computedRoot = keccak256(abi.encodePacked(computedRoot, proof[i]));
-            } else {
-                computedRoot = keccak256(abi.encodePacked(proof[i], computedRoot));
-            }
-            leafIndex /= 2;
-        }
-        
-        return computedRoot == batch.merkleRoot;
-    }
+### Node Architecture
+
+**Consensus:** Proof-of-Authority (PoA) with trusted validator nodes
+**Block Time:** 1-5 seconds
+**Storage:** Direct hash registry (no Merkle batching)
+**Cost:** Zero gas fees (institutions donate hosting)
+
+### REST API Endpoints
+
+**Submit Batch (Aggregator Only):**
+```
+POST /api/v1/submit-batch
+Authorization: Bearer <aggregator-token>
+
+{
+    "hashes": ["abc123...", "def456...", ...],
+    "timestamps": [1699999999, 1700000000, ...],
+    "signature": "aggregator_signature_over_batch"
+}
+
+Response: {
+    "block_height": 123456,
+    "transaction_id": "txn_abc123",
+    "hashes_stored": 100
+}
+```
+
+**Query Hash (Public):**
+```
+GET /api/v1/verify/{image_hash}
+
+Response: {
+    "verified": true,
+    "timestamp": 1699999999,
+    "block_height": 123456,
+    "aggregator": "institution_name"
+}
+```
+
+**Node Status:**
+```
+GET /api/v1/status
+
+Response: {
+    "node_id": "university_of_oregon",
+    "block_height": 123456,
+    "total_hashes": 1500000,
+    "validator_nodes": 5,
+    "uptime": "99.9%"
 }
 ```
 
@@ -470,7 +457,7 @@ Response: 200 OK
     "verified": true,
     "batch_id": 42,
     "timestamp": 1732000000,
-    "merkle_proof": ["hash1", "hash2", ...],
+    "block_height": 123456,
     "blockchain_tx": "0x...",
     "confirmation_time": "2024-11-13T10:30:00Z"
 }
@@ -517,7 +504,7 @@ Cross-component testing:
 - Hash computation time (target: <500ms on Pi)
 - API response time (target: <100ms for verification)
 - Batch processing time (target: <5s for 1000 images)
-- Merkle proof generation (target: <10ms)
+- Direct hash query (target: <10ms)
 
 ---
 
@@ -570,9 +557,8 @@ uvicorn src.main:app --port 8001 --reload
 cd packages/contracts
 npm install
 cp .env.example .env
-# Add zkSync testnet RPC and private key
-npx hardhat compile
-npx hardhat run scripts/deploy.ts --network zksync-testnet
+# Configure blockchain node settings
+python scripts/start_node.py --network testnet
 ```
 
 ### Running Camera Prototype
@@ -602,7 +588,7 @@ python src/main.py
 
 ### Phase 3 Requirements
 - Manufacturer API integration
-- Production smart contract deployment
+- Production blockchain network deployment
 - Federated aggregator network
 - Public verification interface
 
@@ -614,7 +600,7 @@ When Claude Code needs specific implementation details:
 
 - **Aggregator API design:** `docs/phase-plans/Birthmark_Phase_1_Plan_Aggregation_Server.md`
 - **SMA key table logic:** `docs/phase-plans/Birthmark_Phase_1-2_Plan_SMA.md`
-- **Smart contract specs:** `docs/phase-plans/Birthmark_Phase_1_Plan_zkSync_Smart_Contract.md`
+- **Blockchain specs:** `packages/blockchain/README.md`
 - **Camera hardware setup:** `docs/phase-plans/Birthmark_Phase_1_Plan_Simulated_Camera.md`
 - **iOS architecture:** `docs/phase-plans/Birthmark_Phase_2_Plan_iOS_App.md`
 - **Security architecture:** `docs/specs/Birthmark_Camera_Security_Architecture.md`
@@ -626,13 +612,13 @@ When Claude Code needs specific implementation details:
 ### Phase 1 (Current)
 - [ ] 99%+ uptime for aggregation server
 - [ ] <5 second hash time on Raspberry Pi
-- [ ] <$0.00003 per image on zkSync testnet
+- [ ] Zero gas fees on Birthmark blockchain
 - [ ] 80%+ photography club satisfaction
 - [ ] 500+ images verified end-to-end
 
 ### Technical Quality
 - [ ] 100% of valid tokens pass SMA validation
-- [ ] Merkle proofs verify 100% of the time
+- [ ] Direct hash queries verify 100% of the time
 - [ ] <100ms verification API response time
 - [ ] Zero false positives or negatives
 
