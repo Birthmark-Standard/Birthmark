@@ -12,9 +12,9 @@ Current solutions like C2PA embed authentication in image metadata, but this met
 
 ## Our Solution
 
-The Birthmark Standard authenticates images at the hardware level using each camera's unique sensor fingerprint. When a photo is taken, the camera's secure element cryptographically signs the image hash using rotating keys that only the manufacturer can validate. These hashes are batched and anchored to the Ethereum blockchain via zkSync Layer 2.
+The Birthmark Standard authenticates images at the hardware level using each camera's unique sensor fingerprint. When a photo is taken, the camera's secure element cryptographically signs the image hash using rotating keys that only the manufacturer can validate. These hashes are stored on a custom Birthmark blockchain operated by like-minded institutions (universities, archives, journalism organizations).
 
-**The result:** Anyone can verify that an image originated from a legitimate camera at a specific time, even after the image has been copied, compressed, cropped, or had its metadata stripped. No accounts required. No centralized gatekeepers. Just cryptographic proof.
+**The result:** Anyone can verify that an image originated from a legitimate camera at a specific time, even after the image has been copied, compressed, cropped, or had its metadata stripped. No accounts required. No gas fees. No centralized gatekeepers. Just cryptographic proof.
 
 ### Key Properties
 
@@ -34,21 +34,21 @@ The Birthmark Standard authenticates images at the hardware level using each cam
    Camera sensor captures image
    Secure element hashes raw sensor data
    NUC fingerprint encrypted with rotating key
-   
-2. SUBMIT  
+
+2. SUBMIT
    Authentication bundle sent to aggregation server
    Manufacturer validates camera authenticity (PASS/FAIL)
-   Image hash added to pending batch
-   
-3. ANCHOR
-   Batches of 1,000-5,000 hashes form Merkle tree
-   Merkle root posted to zkSync smart contract
-   Immutable timestamp on Ethereum blockchain
-   
+   Image hash submitted to blockchain
+
+3. STORE
+   Full SHA-256 hash stored directly on-chain
+   Birthmark blockchain nodes (operated by institutions)
+   Immutable timestamp with zero gas fees
+
 4. VERIFY
    Anyone can hash an image and query the blockchain
-   Merkle proof confirms inclusion in authenticated batch
-   No account needed, no API keys, just math
+   Direct hash lookup confirms authentication
+   No account needed, no API keys, no fees, just math
 ```
 
 ---
@@ -61,7 +61,7 @@ We're building a Raspberry Pi-based camera prototype that demonstrates the compl
 
 - Raspberry Pi 4 + HQ Camera + TPM secure element
 - Aggregation server with SMA validation
-- zkSync testnet smart contract
+- Custom blockchain nodes operated by institutions
 - Photography club user validation
 
 **Target:** 2028 Presidential Election deployment
@@ -90,13 +90,13 @@ The system consists of five main components:
 
 **Camera Device** - Captures raw sensor data, computes SHA-256 hash, encrypts device fingerprint with rotating keys from assigned key tables, submits authentication bundle.
 
-**Aggregation Server** - Receives submissions, validates camera authenticity via manufacturer, batches image hashes into Merkle trees, posts roots to blockchain.
+**Aggregation Server** - Receives submissions, validates camera authenticity via manufacturer, submits validated hashes to blockchain.
 
 **Simulated Manufacturer Authority (SMA)** - Maintains key tables and NUC records, validates encrypted tokens without seeing image content, returns PASS/FAIL.
 
-**Smart Contract (zkSync)** - Stores Merkle roots with timestamps, provides verification queries, maintains aggregator whitelist.
+**Birthmark Blockchain** - Custom blockchain operated by trusted institutions, stores full SHA-256 hashes directly on-chain, provides direct hash lookup queries, zero gas fees.
 
-**Verification Client** - Hashes image, queries blockchain for inclusion proof, displays authentication result.
+**Verification Client** - Hashes image, queries blockchain for direct hash match, displays authentication result.
 
 For detailed technical specifications, see [CLAUDE.md](./CLAUDE.md) and the documentation in `/docs`.
 
@@ -110,7 +110,7 @@ birthmark/
 │   ├── camera-pi/        # Raspberry Pi prototype
 │   ├── aggregator/       # Aggregation server
 │   ├── sma/              # Simulated Manufacturer Authority
-│   ├── contracts/        # zkSync smart contracts
+│   ├── blockchain/       # Custom Birthmark blockchain
 │   ├── mobile-app/       # iOS app (Phase 2)
 │   └── verifier/         # Verification client
 ├── shared/
@@ -179,11 +179,11 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 
 ## Roadmap
 
-**Phase 1** (Current) - Hardware prototype with Raspberry Pi, photography club validation, testnet deployment
+**Phase 1** (Current) - Hardware prototype with Raspberry Pi, photography club validation, initial blockchain deployment
 
 **Phase 2** - iOS mobile app, broader user testing (50-100 photographers), performance benchmarking
 
-**Phase 3** - Manufacturer partnerships, production smart contract, public verification tools
+**Phase 3** - Manufacturer partnerships, production blockchain network with institutional nodes, public verification tools
 
 **Target** - Deployed infrastructure for 2028 Presidential Election
 
