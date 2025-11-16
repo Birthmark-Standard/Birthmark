@@ -410,7 +410,7 @@
     <section class="hero">
         <div class="container">
             <h2>Hardware-Backed Photo Authentication</h2>
-            <p>A system that proves photos came from real cameras, not AI generators. By creating unforgeable digital signatures at the moment of capture and recording them on a permanent blockchain ledger, we're restoring trust in photography.</p>
+            <p>A system that proves photos came from real cameras, not AI generators. By creating unforgeable digital signatures at the moment of capture and recording them on a custom blockchain operated by trusted institutions, we're restoring trust in photography.</p>
             <div class="cta-buttons">
                 <a href="#key-concepts" class="btn btn-primary">See How It Works</a>
                 <a href="https://github.com/Birthmark-Standard/Birthmark" class="btn btn-secondary">View on GitHub</a>
@@ -455,7 +455,7 @@
                 <div class="problem-card">
                     <h3>Why Blockchain?</h3>
                     <p>Blockchain is a permanent, tamper-proof public ledger. Once data is recorded on a blockchain, it cannot be changed or deleted—even if companies go out of business or try to censor records.</p>
-                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--gray-text);">Example: When your photo's hash is recorded on Ethereum's blockchain, that record is permanent and publicly verifiable by anyone, forever.</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--gray-text);">Example: When your photo's hash is recorded on the Birthmark blockchain, that record is permanent and publicly verifiable by anyone, forever. The blockchain is operated by trusted institutions like universities and archives.</p>
                 </div>
             </div>
         </div>
@@ -522,11 +522,11 @@
                 <div class="technical-text">
                     <h3>Immutable Public Verification</h3>
                     <p>Anyone can verify an image's authenticity by checking the blockchain record—no corporate gatekeepers or subscription services required.</p>
-                    
+
                     <ul class="technical-list">
-                        <li><strong>Blockchain bundling (zkRollup):</strong> Groups of 1,000-5,000 images are bundled together before being recorded on the blockchain, reducing the cost to only $0.00003-0.00006 per image</li>
-                        <li><strong>Cryptographic proofs:</strong> Even though images are bundled, each one can be individually proven to be part of the validated batch without storing every hash separately</li>
-                        <li><strong>Ethereum permanence:</strong> Records are stored on Ethereum's blockchain, a system that is both censorship-resistant and designed to last 50+ years</li>
+                        <li><strong>Direct hash storage:</strong> Full SHA-256 image hashes are stored directly on-chain on the custom Birthmark blockchain, eliminating the need for complex cryptographic proofs</li>
+                        <li><strong>Institutional validators:</strong> The blockchain is operated by trusted institutions (universities, archives, journalism organizations) running validator nodes</li>
+                        <li><strong>Zero gas fees:</strong> No transaction costs—institutions donate hosting as a public service for truth in media</li>
                         <li><strong>Public verification API:</strong> Open protocol allows anyone to build verification tools without asking permission</li>
                     </ul>
                 </div>
@@ -562,8 +562,8 @@
                 </div>
                 <div class="why-card">
                     <div class="why-icon">💰</div>
-                    <h3>Sustainable Cost</h3>
-                    <p>Blockchain bundling achieves $0.00003-0.00006 per image—viable as a public service.</p>
+                    <h3>Zero Cost</h3>
+                    <p>No gas fees or transaction costs—institutional validators donate hosting as a public good.</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon">🤝</div>
@@ -584,7 +584,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>The Birthmark Standard Foundation</h3>
-                    <p>Creating hardware-backed, blockchain-anchored photo authentication infrastructure as a public good.</p>
+                    <p>Creating hardware-backed photo authentication infrastructure on a custom blockchain operated by trusted institutions as a public good.</p>
                     <p style="margin-top: 1rem;">Target: 2028 Presidential Election</p>
                 </div>
                 <div class="footer-section">
