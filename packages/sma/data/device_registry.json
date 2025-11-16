@@ -12,8 +12,21 @@
       "device_public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEr6IPMFcoRK31JNb4MYzU3HZtgBrV\nodUXwBq0CwfOCpGBM7yINvDDL7THyjLgTDx91yRYixQxlHKgnNSZQ8PyYQ==\n-----END PUBLIC KEY-----\n",
       "device_family": "Raspberry Pi",
       "provisioned_at": "2025-11-15T20:24:41.201985"
+    },
+    {
+      "device_serial": "TEST-CAMERA-002",
+      "nuc_hash": "6a893d6051b5782323c06707ed0a205b7357f1efe6ec840ebd4267848879aacc",
+      "table_assignments": [
+        3,
+        5,
+        6
+      ],
+      "device_certificate": "-----BEGIN CERTIFICATE-----\nMIIChTCCAiqgAwIBAgIUFfo+jDcR3T3V+7rkVGadY3ClAicwCgYIKoZIzj0EAwIw\neDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExJjAkBgNVBAoMHUJp\ncnRobWFyayBTdGFuZGFyZCBGb3VuZGF0aW9uMSwwKgYDVQQDDCNCaXJ0aG1hcmsg\nU2ltdWxhdGVkIEludGVybWVkaWF0ZSBDQTAeFw0yNTExMTUyMDMwNTlaFw0yNzEx\nMTUyMDMwNTlaMIGRMQswCQYDVQQGEwJVUzEmMCQGA1UECgwdQmlydGhtYXJrIFN0\nYW5kYXJkIEZvdW5kYXRpb24xFTATBgNVBAsMDFJhc3BiZXJyeSBQaTEpMCcGA1UE\nAwwgQmlydGhtYXJrIERldmljZSBURVNULUNBTUVSQS0wMDIxGDAWBgNVBAUTD1RF\nU1QtQ0FNRVJBLTAwMjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABIrQnphviIe/\nyVN2ir0+TbKra4vMZ+9Rl3o2Aoa60PGOZ5u5q0q0o0xDyi6x2pvhFmPqsXfSy+fZ\njmJ+lVLJ33+jeDB2MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMBYGA1Ud\nJQEB/wQMMAoGCCsGAQUFBwMCMB0GA1UdDgQWBBRu1/6CLlKzSnmJ3yWuu8ylH+r7\npzAfBgNVHSMEGDAWgBSpNKX+pDUS1SmXIC+A3Pepc/o8GDAKBggqhkjOPQQDAgNJ\nADBGAiEAg5tb7sRm5MiquQ9HqyQ7k4l5qL94zdTkD6XgFJp6RGYCIQDu58giccQG\nRCWhJ3Ie/fF9UHcxLQvcyT7ym9qatuQwlQ==\n-----END CERTIFICATE-----\n",
+      "device_public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEitCemG+Ih7/JU3aKvT5Nsqtri8xn\n71GXejYChrrQ8Y5nm7mrSrSjTEPKLrHam+EWY+qxd9LL59mOYn6VUsnffw==\n-----END PUBLIC KEY-----\n",
+      "device_family": "Raspberry Pi",
+      "provisioned_at": "2025-11-15T20:30:59.556817"
     }
   ],
-  "total_devices": 1,
-  "last_updated": "2025-11-15T20:24:41.202081"
+  "total_devices": 2,
+  "last_updated": "2025-11-15T20:30:59.556912"
 }
