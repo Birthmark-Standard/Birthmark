@@ -1,158 +1,69 @@
-# Contracts Package
+# Blockchain Package
 
-**Phase:** Phase 1
+**Phase:** Phase 1 (Architecture Planning)
 **Status:** In Development
-**Blockchain:** zkSync Layer 2 (Testnet)
+**Blockchain:** Custom Birthmark Blockchain
 
 ## Overview
 
-The contracts package contains Solidity smart contracts for the Birthmark Standard blockchain registry. These contracts store Merkle roots of batched image hashes on zkSync Layer 2 for efficient, low-cost verification.
+The blockchain package will contain the implementation for the Birthmark Standard's custom blockchain that stores full image hashes on-chain rather than Merkle roots on a Layer 2 solution.
 
-## Key Contract: BirthmarkRegistry.sol
+## Architecture Change
 
-### Responsibilities
+**Previous Approach (Removed):**
+- zkSync Era Layer 2 on Ethereum
+- Stored Merkle roots of batched image hashes
+- Off-chain Merkle proof verification
+- Cost: ~$0.00003 per image
 
-1. **Store Merkle Roots:** Accept batches of image hashes as Merkle tree roots
-2. **Access Control:** Only authorized aggregators can post batches
-3. **Verification:** Provide on-chain Merkle proof verification
-4. **Immutability:** Once posted, batch records are permanent
+**New Approach (In Development):**
+- Custom blockchain hosted by Birthmark Standard
+- Stores full image hashes directly on-chain
+- Direct hash verification without Merkle proofs
+- Eliminates dependency on Ethereum/zkSync infrastructure
 
-### Key Functions
+## Benefits of Custom Blockchain
 
-```solidity
-function postBatch(bytes32 merkleRoot, uint256 imageCount) external onlyAggregator returns (uint256)
-```
-Posts a new batch Merkle root. Returns batch ID.
-
-```solidity
-function verifyInclusion(uint256 batchId, bytes32 imageHash, bytes32[] calldata proof, uint256 leafIndex) external view returns (bool)
-```
-Verifies that an image hash is included in a specific batch using a Merkle proof.
-
-## Architecture
-
-```
-Aggregator → zkSync L2 (BirthmarkRegistry) → Ethereum L1 (Settlement)
-                    ↓
-            Merkle Root Storage
-                    ↓
-            Verifiable Proofs
-```
-
-## Cost Model
-
-**Target:** <$0.00003 per image
-**Batch size:** 1,000-5,000 images
-**Total cost per batch:** ~$0.10-0.15 on zkSync
+1. **Full Control:** Complete ownership of infrastructure and consensus
+2. **Direct Storage:** Full SHA-256 hashes stored on-chain (no Merkle trees needed)
+3. **Cost Optimization:** No gas fees or Layer 2 costs
+4. **Simplified Architecture:** Direct hash lookups without proof generation
+5. **Independence:** No reliance on Ethereum ecosystem or zkSync
 
 ## Directory Structure
 
-### `contracts/`
-Solidity smart contracts:
-- `BirthmarkRegistry.sol` - Main registry contract
-- Future: Access control contracts, upgrade mechanisms
+### `contracts/` (To Be Determined)
+Blockchain implementation code - technology stack TBD
 
-### `scripts/`
-Deployment and management scripts:
-- `deploy.ts` - Deploy contracts to zkSync testnet
-- `authorize.ts` - Manage authorized aggregators
-- `query.ts` - Query batch information
+### `scripts/` (To Be Determined)
+Node deployment and management scripts
 
-### `test/`
-Hardhat test suite:
-- Unit tests for all contract functions
-- Gas optimization tests
-- Access control tests
-- Merkle proof verification tests
+### `test/` (To Be Determined)
+Blockchain and consensus tests
 
-## Development
+## Technology Stack (Under Evaluation)
 
-### Setup
+Options being considered:
+- Custom blockchain implementation
+- Fork of existing blockchain (e.g., Cosmos SDK, Substrate)
+- Simplified proof-of-authority consensus
+- Direct database-backed ledger with cryptographic verification
 
-```bash
-cd packages/contracts
-npm install
-cp .env.example .env
-# Add zkSync testnet RPC URL and deployer private key
-```
+## Next Steps
 
-### Compile
-
-```bash
-npx hardhat compile
-```
-
-### Test
-
-```bash
-npx hardhat test
-```
-
-### Deploy (Testnet)
-
-```bash
-npx hardhat run scripts/deploy.ts --network zksync-testnet
-```
-
-### Verify Contract
-
-```bash
-npx hardhat verify --network zksync-testnet <CONTRACT_ADDRESS>
-```
-
-## Configuration
-
-### `hardhat.config.ts`
-
-Configures:
-- zkSync network settings
-- Compiler versions
-- Gas reporter
-- Etherscan verification
-
-### Environment Variables
-
-```
-ZKSYNC_TESTNET_RPC=https://testnet.era.zksync.dev
-DEPLOYER_PRIVATE_KEY=0x...
-ETHERSCAN_API_KEY=...
-```
-
-## Security Considerations
-
-- Only authorized aggregators can post batches
-- Merkle roots are immutable once posted
-- Ownership transfer mechanisms for aggregator authorization
-- Upgrade path for contract improvements (future)
-
-## Phase 1 Limitations
-
-- Testnet only (no real monetary value)
-- Single authorized aggregator
-- Manual aggregator authorization
-
-## Phase 3 Production Requirements
-
-- Mainnet deployment
-- Multi-signature aggregator authorization
-- Upgradeable contract pattern
-- Emergency pause mechanism
-- Governance for aggregator management
-
-## Gas Optimization
-
-- Batch posting optimized for minimal gas
-- Merkle proof verification uses efficient keccak256 hashing
-- Minimal storage usage per batch
-- Event emission for off-chain indexing
+1. Define blockchain architecture and consensus mechanism
+2. Choose technology stack
+3. Design block structure and data format
+4. Implement node software
+5. Create deployment infrastructure
+6. Build API for aggregation server integration
 
 ## Related Documentation
 
-- Smart contract plan: `docs/phase-plans/Birthmark_Phase_1_Plan_zkSync_Smart_Contract.md`
-- Blockchain interface: `shared/protocols/aggregator_to_chain.py`
+- Project overview: `/CLAUDE.md`
+- Aggregation server: `/packages/aggregator/`
+- Camera prototype: `/packages/camera-pi/`
 
-## zkSync Resources
+---
 
-- zkSync Era Docs: https://era.zksync.io/docs/
-- zkSync Testnet Explorer: https://goerli.explorer.zksync.io/
-- zkSync Hardhat Plugin: https://era.zksync.io/docs/tools/hardhat/
+**Note:** This package previously contained zkSync Era smart contracts, which have been removed as the project pivots to a custom blockchain solution.
