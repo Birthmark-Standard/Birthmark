@@ -106,7 +106,8 @@ class CameraService: NSObject, ObservableObject {
     // MARK: - Photo Library
 
     func saveToPhotoLibrary(_ imageData: Data, completion: @escaping (Result<Void, Error>) -> Void) {
-        PHPhotoLibrary.requestAuthorization { status in
+        // Use iOS 14+ API for photo library authorization
+        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
             guard status == .authorized else {
                 completion(.failure(CameraError.photoLibraryUnauthorized))
                 return
