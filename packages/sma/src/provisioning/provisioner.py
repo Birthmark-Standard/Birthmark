@@ -4,10 +4,11 @@ Device provisioning module.
 Handles complete device provisioning workflow:
 1. Generate device keypair
 2. Assign random key tables
-3. Generate device certificate
+3. Generate device certificate (with Birthmark extensions)
 4. Generate simulated NUC hash
-5. Store device registration
-6. Return provisioning data to device
+5. Encrypt NUC hash with table key
+6. Store device registration
+7. Return provisioning data to device
 """
 
 import hashlib
@@ -16,6 +17,7 @@ from dataclasses import dataclass
 from typing import Optional, List
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography import x509
 
 from .certificate import (
@@ -123,6 +125,52 @@ class DeviceProvisioner:
         nuc_hash = hashlib.sha256(simulated_sensor_data).digest()
         return nuc_hash
 
+    def encrypt_nuc_for_certificate(
+        self,
+        nuc_hash: bytes,
+        table_id: int,
+        key_index: int
+    ) -> bytes:
+        """
+        Encrypt NUC hash for embedding in certificate.
+
+        Uses AES-256-GCM with the master key from the assigned table.
+        This creates a 60-byte encrypted token: 32 (ciphertext) + 12 (nonce) + 16 (tag).
+
+        Args:
+            nuc_hash: 32-byte NUC hash to encrypt
+            table_id: Key table ID (0-2499)
+            key_index: Key index within table (0-999) - used for key derivation
+
+        Returns:
+            60 bytes: ciphertext (32) || nonce (12) || auth_tag (16)
+        """
+        # Get master key for table
+        master_key = self.table_manager.get_master_key(table_id)
+        if master_key is None:
+            raise ValueError(f"No master key found for table {table_id}")
+
+        # For Phase 1, use master key directly
+        # Phase 2 TODO: Derive key from master_key + key_index using HKDF
+        encryption_key = master_key
+
+        # Generate random nonce
+        nonce = secrets.token_bytes(12)
+
+        # Encrypt NUC hash with AES-256-GCM
+        aesgcm = AESGCM(encryption_key)
+        ciphertext = aesgcm.encrypt(nonce, nuc_hash, None)
+
+        # ciphertext includes auth_tag (16 bytes) appended to encrypted data
+        # Format: 32 bytes encrypted + 16 bytes tag = 48 bytes total
+        # Pack as: ciphertext (48 bytes) + nonce (12 bytes) = 60 bytes
+        encrypted_token = ciphertext + nonce
+
+        if len(encrypted_token) != 60:
+            raise ValueError(f"Encrypted token must be 60 bytes, got {len(encrypted_token)}")
+
+        return encrypted_token
+
     def provision_device(
         self,
         request: ProvisioningRequest
@@ -132,10 +180,11 @@ class DeviceProvisioner:
 
         Steps:
         1. Generate device keypair (ECDSA P-256)
-        2. Assign 3 random key tables
-        3. Generate device certificate signed by CA
-        4. Generate/validate NUC hash
-        5. Return provisioning data
+        2. Assign 3 random key tables (keep for backward compatibility)
+        3. Generate/validate NUC hash
+        4. Encrypt NUC with first table's key
+        5. Generate device certificate with Birthmark extensions
+        6. Return provisioning data
 
         Args:
             request: Provisioning request with device details
@@ -154,17 +203,10 @@ class DeviceProvisioner:
         # Step 1: Generate device keypair
         private_key, public_key = self.generate_device_keypair()
 
-        # Step 2: Assign 3 random key tables
+        # Step 2: Assign 3 random key tables (for backward compatibility)
         table_assignments = self.table_manager.assign_random_tables(request.device_serial)
 
-        # Step 3: Generate device certificate
-        device_cert = self.ca.generate_device_certificate(
-            device_serial=request.device_serial,
-            device_public_key=public_key,
-            device_family=request.device_family
-        )
-
-        # Step 4: Generate or use provided NUC hash
+        # Step 3: Generate or use provided NUC hash
         if request.nuc_hash is None:
             nuc_hash = self.generate_simulated_nuc_hash()
         else:
@@ -173,7 +215,29 @@ class DeviceProvisioner:
                 raise ValueError(f"NUC hash must be 32 bytes, got {len(request.nuc_hash)}")
             nuc_hash = request.nuc_hash
 
-        # Step 5: Build provisioning response
+        # Step 4: Encrypt NUC for certificate
+        # Use first table assignment for certificate extension
+        cert_table_id = table_assignments[0]
+        cert_key_index = secrets.randbelow(1000)  # Random key index (0-999)
+
+        encrypted_nuc = self.encrypt_nuc_for_certificate(
+            nuc_hash=nuc_hash,
+            table_id=cert_table_id,
+            key_index=cert_key_index
+        )
+
+        # Step 5: Generate device certificate with Birthmark extensions
+        device_cert = self.ca.generate_device_certificate(
+            device_serial=request.device_serial,
+            device_public_key=public_key,
+            device_family=request.device_family,
+            encrypted_nuc=encrypted_nuc,
+            key_table_id=cert_table_id,
+            key_index=cert_key_index,
+            ma_endpoint="http://localhost:8001/validate-cert"
+        )
+
+        # Step 6: Build provisioning response
         response = ProvisioningResponse(
             device_serial=request.device_serial,
             device_certificate=certificate_to_pem_string(device_cert),
