@@ -1,6 +1,48 @@
-# Birthmark Blockchain
+# Birthmark Blockchain (Deprecated)
 
-**Status:** Planning Phase
+**Status:** Replaced by `packages/blockchain/`
+**Previous Type:** Smart Contracts for zkSync Layer 2
+**New Implementation:** Custom blockchain in `packages/blockchain/`
+
+---
+
+## Important: Package Moved
+
+This package previously contained Ethereum smart contracts for zkSync Layer 2 deployment.
+
+**The project has pivoted to a custom blockchain implementation.**
+
+**New location:** `packages/blockchain/`
+
+Please see:
+- `/packages/blockchain/README.md` - Architecture and design
+- `/packages/blockchain/USAGE.md` - Quick start guide
+
+---
+
+## Why the Change?
+
+The Birthmark Standard pivoted from Ethereum Layer 2 (zkSync) to a custom blockchain for several reasons:
+
+1. **Zero Gas Fees:** Eliminates per-transaction costs
+2. **Direct Hash Storage:** Full SHA-256 hashes on-chain (not Merkle roots)
+3. **Simpler Verification:** Direct lookup instead of Merkle proofs
+4. **Complete Control:** Owned infrastructure and consensus
+5. **Purpose-Built:** Optimized for image hash verification
+
+See `/packages/blockchain/README.md` for detailed comparison.
+
+---
+
+# Original Documentation (Archived)
+
+**Below is the original planning documentation for reference only.**
+
+---
+
+# Birthmark Blockchain (Original Plan)
+
+**Status:** Archived
 **Type:** Custom Blockchain Implementation
 **Purpose:** Direct on-chain storage of image hash authenticity records
 
