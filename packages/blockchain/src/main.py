@@ -11,7 +11,7 @@ import uvicorn
 
 from src.shared.config import settings
 from src.shared.crypto.signatures import ValidatorKeys
-from src.aggregator.api import submissions
+from src.aggregator.api import submissions, modifications
 from src.node.api import verification, status
 from src.aggregator.batching_service import BatchingService
 
@@ -87,6 +87,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(submissions.router)  # Camera submission API
+app.include_router(modifications.router)  # Modification tracking (Phase 3)
 app.include_router(verification.router)  # Public verification API
 app.include_router(status.router)  # Health and status
 

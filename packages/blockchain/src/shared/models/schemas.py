@@ -249,3 +249,59 @@ class TransactionInfo(BaseModel):
     aggregator_id: str
     batch_size: int
     created_at: str
+
+
+class ModificationRecord(BaseModel):
+    """Modification record from editing software (Phase 3)."""
+
+    original_image_hash: str = Field(..., min_length=64, max_length=64, description="SHA-256 of original image")
+    final_image_hash: str = Field(..., min_length=64, max_length=64, description="SHA-256 of modified image")
+    modification_level: int = Field(..., ge=0, le=2, description="0=unmodified, 1=minor, 2=heavy")
+    authenticated: bool = Field(..., description="Whether original was authenticated")
+    original_dimensions: Optional[List[int]] = Field(None, min_length=2, max_length=2)
+    final_dimensions: Optional[List[int]] = Field(None, min_length=2, max_length=2)
+    software_id: str = Field(..., description="Certified software ID")
+    plugin_version: str = Field(..., description="Software version")
+    initialized_at: str = Field(..., description="ISO timestamp when tracking started")
+    exported_at: str = Field(..., description="ISO timestamp when record exported")
+    authority_type: str = Field(default="software", description="Always 'software' for editing")
+
+    @field_validator("original_image_hash", "final_image_hash")
+    @classmethod
+    def validate_hash(cls, v: str) -> str:
+        """Validate SHA-256 hash format."""
+        if not re.match(r'^[a-f0-9]{64}$', v, re.IGNORECASE):
+            raise ValueError("Hash must be 64 hexadecimal characters")
+        return v.lower()
+
+
+class ModificationResponse(BaseModel):
+    """Response after modification record submission."""
+
+    status: str  # recorded, pending, error
+    final_image_hash: str
+    modification_level: int
+    chain_id: Optional[str] = None
+    verification_url: Optional[str] = None
+    message: Optional[str] = None
+
+
+class ProvenanceItem(BaseModel):
+    """Single item in provenance chain."""
+
+    hash: str
+    type: str  # capture, modification
+    timestamp: str
+    authority_type: str  # manufacturer, software
+    authority_id: Optional[str] = None
+    modification_level: Optional[int] = None
+    software_version: Optional[str] = None
+
+
+class ProvenanceChain(BaseModel):
+    """Complete provenance chain for an image."""
+
+    image_hash: str
+    verified: bool
+    chain: List[ProvenanceItem]
+    chain_length: int
