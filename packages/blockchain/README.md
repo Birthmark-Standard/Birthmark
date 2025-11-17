@@ -418,23 +418,35 @@ mypy src/
 
 ### Phase 1: Single Node (Current)
 - [x] Architecture design
-- [ ] Core models and database schema
-- [ ] Aggregator API (camera submissions)
-- [ ] SMA validation client
-- [ ] Transaction validator
-- [ ] Block storage engine
-- [ ] Single-node consensus (auto-accept)
-- [ ] Verification API
-- [ ] Docker deployment
-- [ ] Genesis block initialization
+- [x] Core models and database schema
+- [x] Aggregator API (camera submissions)
+- [x] SMA validation client
+- [x] Transaction validator
+- [x] Block storage engine
+- [x] Single-node consensus (auto-accept)
+- [x] Verification API
+- [x] Docker deployment
+- [x] Genesis block initialization
 - [ ] Integration with camera-pi package
 - [ ] 500+ test images verified
+
+**Phase 1 Scope:**
+- ✅ Camera validation (via SMA)
+- ❌ Software validation (via SSA) - deferred to Phase 2+
+- ❌ Provenance chain tracking - deferred to Phase 2+
+- ❌ Multi-image submissions - Phase 1 accepts one hash per submission
 
 **Success Criteria:**
 - Camera → Aggregator → Blockchain → Verification works end-to-end
 - <100ms verification query response
 - Zero false positives/negatives
 - Docker deployment runs on single server
+
+**Phase 1 Limitations:**
+- Camera-only validation (no software edits)
+- SMA validation uses format checking (full cryptographic validation in Phase 2)
+- Single blockchain node (no redundancy)
+- Batch size minimum lowered to 1 for testing (production will use 100-1000)
 
 ### Phase 2: Multi-Node Deployment
 - [ ] P2P networking (gossip protocol)
