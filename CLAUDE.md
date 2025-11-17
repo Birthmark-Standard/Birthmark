@@ -104,13 +104,13 @@ birthmark/
 │   │   │   └── submission.py      # Send to aggregator
 │   │   └── tests/
 │   │
-│   ├── aggregator/                # Aggregation Server
+│   ├── blockchain/                # Birthmark Blockchain Node (Merged Aggregator+Validator)
 │   │   ├── src/
-│   │   │   ├── api/               # FastAPI endpoints
-│   │   │   ├── validation/        # SMA validation worker
-│   │   │   ├── batching/          # Batch accumulation
-│   │   │   └── blockchain/        # Birthmark blockchain submission
-│   │   └── tests/
+│   │   │   ├── aggregator/        # Camera submission API, SMA validation, batching
+│   │   │   ├── node/              # Block storage, consensus, verification API
+│   │   │   └── shared/            # Database models, crypto, config
+│   │   ├── scripts/               # Genesis block initialization
+│   │   └── tests/                 # Unit and integration tests
 │   │
 │   ├── sma/                       # Simulated Manufacturer Authority
 │   │   ├── src/
@@ -119,12 +119,6 @@ birthmark/
 │   │   │   ├── validation/        # Token validation (PASS/FAIL)
 │   │   │   └── identity/          # NUC records (never sees image hash)
 │   │   └── tests/
-│   │
-│   ├── blockchain/                # Custom Birthmark Blockchain
-│   │   ├── node/                  # Blockchain node implementation
-│   │   ├── consensus/             # PoA consensus logic
-│   │   ├── api/                   # REST API for queries
-│   │   └── scripts/               # Deploy and management scripts
 │   │
 │   ├── mobile-app/                # iOS App (Phase 2)
 │   │   └── (React Native or Swift structure)
@@ -532,14 +526,16 @@ Cross-component testing:
 
 ## Common Development Tasks
 
-### Running the Aggregation Server
+### Running the Blockchain Node (Merged Aggregator+Validator)
 
 ```bash
-cd packages/aggregator
-pip install -r requirements.txt
+cd packages/blockchain
+pip install -e ".[dev]"
 cp .env.example .env
-# Edit .env with database credentials
-uvicorn src.main:app --reload
+# Edit .env with database and SMA settings
+alembic upgrade head
+python scripts/init_genesis.py  # First time only
+uvicorn src.main:app --reload --port 8545
 ```
 
 ### Running the SMA
@@ -549,16 +545,6 @@ cd packages/sma
 pip install -r requirements.txt
 python scripts/generate_key_tables.py  # First time only
 uvicorn src.main:app --port 8001 --reload
-```
-
-### Deploying Contracts (Testnet)
-
-```bash
-cd packages/contracts
-npm install
-cp .env.example .env
-# Configure blockchain node settings
-python scripts/start_node.py --network testnet
 ```
 
 ### Running Camera Prototype
