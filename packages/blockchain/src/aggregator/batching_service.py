@@ -98,6 +98,17 @@ class BatchingService:
                 signature=self._sign_batch([s.image_hash for s in pending]),
             )
 
+            # Validate transaction before proposing block
+            from src.node.consensus.transaction_validator import transaction_validator
+            is_valid, error_msg = await transaction_validator.validate_transaction(batch, db)
+            if not is_valid:
+                logger.error(f"Transaction validation failed: {error_msg}")
+                logger.error(f"Rejecting batch of {len(pending)} submissions")
+                # Don't mark as batched - leave for retry or manual inspection
+                return
+
+            logger.info(f"Transaction validation passed for batch of {len(pending)} hashes")
+
             # Get consensus engine
             consensus = get_consensus_engine(
                 settings.consensus_mode,
