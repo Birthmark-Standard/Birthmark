@@ -4,389 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Birthmark Standard Foundation - Hardware-Backed Photo Authentication</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-blue: #1a4d7a;
-            --accent-blue: #2d8cbb;
-            --light-blue: #e8f4f8;
-            --dark-navy: #0f2537;
-            --gray-text: #4a5568;
-            --light-gray: #f7fafc;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Header */
-        header {
-            background: var(--dark-navy);
-            color: white;
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 2rem;
-            transition: color 0.3s;
-        }
-
-        nav a:hover {
-            color: var(--accent-blue);
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, var(--primary-blue), var(--accent-blue));
-            color: white;
-            padding: 5rem 0;
-            text-align: center;
-        }
-
-        .hero h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            max-width: 800px;
-            margin: 0 auto 2rem;
-            opacity: 0.95;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 0.75rem 2rem;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: white;
-            color: var(--primary-blue);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-        }
-
-        .btn-secondary:hover {
-            background: white;
-            color: var(--primary-blue);
-        }
-
-        /* Problem Statement */
-        .problem-section {
-            padding: 4rem 0;
-            background: var(--light-gray);
-        }
-
-        .problem-section h2 {
-            font-size: 2rem;
-            color: var(--dark-navy);
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        .problem-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .problem-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .problem-card h3 {
-            color: var(--primary-blue);
-            margin-bottom: 1rem;
-        }
-
-        /* Technical Sections */
-        .technical-section {
-            padding: 4rem 0;
-        }
-
-        .technical-section:nth-child(even) {
-            background: var(--light-blue);
-        }
-
-        .technical-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            align-items: center;
-            margin-top: 2rem;
-        }
-
-        .technical-section h2 {
-            font-size: 2rem;
-            color: var(--dark-navy);
-            margin-bottom: 1rem;
-        }
-
-        .technical-section h3 {
-            font-size: 1.5rem;
-            color: var(--primary-blue);
-            margin-bottom: 1rem;
-        }
-
-        .technical-text p {
-            color: var(--gray-text);
-            margin-bottom: 1rem;
-        }
-
-        .technical-list {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .technical-list li {
-            padding: 0.5rem 0;
-            padding-left: 1.5rem;
-            position: relative;
-            color: var(--gray-text);
-        }
-
-        .technical-list li:before {
-            content: "→";
-            position: absolute;
-            left: 0;
-            color: var(--accent-blue);
-            font-weight: bold;
-        }
-
-        .technical-diagram {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .technical-diagram img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .technical-diagram img:hover {
-            transform: scale(1.02);
-        }
-
-        .diagram-box {
-            border: 2px solid var(--accent-blue);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            background: var(--light-blue);
-        }
-
-        .diagram-box h4 {
-            color: var(--primary-blue);
-            margin-bottom: 0.5rem;
-        }
-
-        .diagram-arrow {
-            text-align: center;
-            font-size: 2rem;
-            color: var(--accent-blue);
-            margin: 0.5rem 0;
-        }
-
-        .diagram-caption {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--gray-text);
-            margin-top: 0.5rem;
-            font-style: italic;
-        }
-
-        .code-block {
-            background: var(--dark-navy);
-            color: #a0d8f1;
-            padding: 1rem;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
-            margin: 1rem 0;
-        }
-
-        /* Why Section */
-        .why-section {
-            padding: 4rem 0;
-            background: var(--light-gray);
-        }
-
-        .why-section h2 {
-            font-size: 2rem;
-            color: var(--dark-navy);
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .why-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-
-        .why-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .why-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .why-card h3 {
-            color: var(--primary-blue);
-            margin-bottom: 1rem;
-        }
-
-        /* Footer */
-        footer {
-            background: var(--dark-navy);
-            color: white;
-            padding: 3rem 0;
-            margin-top: 4rem;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-
-        .footer-section h3 {
-            margin-bottom: 1rem;
-        }
-
-        .footer-section a {
-            color: white;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 0.5rem;
-            opacity: 0.8;
-            transition: opacity 0.3s;
-        }
-
-        .footer-section a:hover {
-            opacity: 1;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            opacity: 0.7;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .technical-content {
-                grid-template-columns: 1fr;
-            }
-
-            .hero h2 {
-                font-size: 2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            nav {
-                display: none;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
@@ -399,9 +17,10 @@
                     <h1>The Birthmark Standard Foundation</h1>
                 </div>
                 <nav>
-                    <a href="#key-concepts">How It Works</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="technical-architecture.html">Technical</a>
+                    <a href="governance.html">Governance</a>
                     <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
-                    <a href="#about">About</a>
                 </nav>
             </div>
         </div>
@@ -412,7 +31,7 @@
             <h2>Hardware-Backed Photo Authentication</h2>
             <p>A system that proves photos came from real cameras, not AI generators. By creating unforgeable digital signatures at the moment of capture and recording them on a blockchain operated by a coalition of journalism and fact-checking organizations, we're restoring trust in photography.</p>
             <div class="cta-buttons">
-                <a href="#key-concepts" class="btn btn-primary">See How It Works</a>
+                <a href="#how-it-works" class="btn btn-primary">See How It Works</a>
                 <a href="https://github.com/Birthmark-Standard/Birthmark" class="btn btn-secondary">View on GitHub</a>
             </div>
         </div>
@@ -438,7 +57,7 @@
         </div>
     </section>
 
-    <section id="key-concepts" class="technical-section" style="background: var(--light-gray);">
+    <section class="technical-section" style="background: var(--light-gray);">
         <div class="container">
             <h2>Key Concepts</h2>
             <div class="problem-grid" style="margin-top: 2rem;">
@@ -461,7 +80,7 @@
         </div>
     </section>
 
-    <section id="how-it-works" class="technical-section">
+    <section id="how-it-works" class="technical-section" style="scroll-margin-top: 80px;">
         <div class="container">
             <h2>1. Creating the Image Hash</h2>
             <div class="technical-content">
@@ -541,82 +160,24 @@
         </div>
     </section>
 
-    <section class="technical-section" style="background: var(--light-blue);">
+    <section class="problem-section">
         <div class="container">
-            <h2>4. Modification Levels & Editing Workflow</h2>
-            <div class="technical-content">
-                <div class="technical-diagram">
-                    <div style="width: 100%;">
-                        <div class="diagram-box">
-                            <h4>Level 0: Validated Raw</h4>
-                            <p>Unprocessed sensor data from verified camera hardware. This is the raw output directly from the camera sensor before any processing.</p>
-                        </div>
-                        <div class="diagram-arrow">↓</div>
-                        <div class="diagram-box">
-                            <h4>Level 1: Validated</h4>
-                            <p>Camera ISP processing or minor edits (exposure, cropping, white balance). The image traces back to verified camera hardware.</p>
-                        </div>
-                        <div class="diagram-arrow">↓</div>
-                        <div class="diagram-box">
-                            <h4>Level 2: Modified</h4>
-                            <p>Significant modifications (content-aware fill, cloning, compositing). Still traces back to authenticated original through provenance chain.</p>
-                        </div>
-                    </div>
+            <h2>Learn More</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <h3>📐 Technical Architecture</h3>
+                    <p>Deep dive into the cryptographic foundations, system components, privacy guarantees, and security model.</p>
+                    <p style="margin-top: 1rem;"><a href="technical-architecture.html" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Read Technical Details →</a></p>
                 </div>
-
-                <div class="technical-text">
-                    <h3>Editing Provenance</h3>
-                    <p>When photographers edit authenticated images in validated software (like Adobe Lightroom), the editing software can submit the edited version with a link to the parent image.</p>
-
-                    <ul class="technical-list">
-                        <li><strong>Software validation:</strong> Editing software is validated by the Software Authority, proving it's legitimate software (not which edits were made)</li>
-                        <li><strong>Provenance chain:</strong> Each edit creates a new blockchain record linking the edited image back to its authenticated parent</li>
-                        <li><strong>Transparency:</strong> Verification shows the complete editing history: "Validated Raw → Edited in Lightroom → Modified in Photoshop"</li>
-                        <li><strong>GPS opt-in:</strong> Location and capture time hashing is disabled by default—photographers must explicitly enable it for privacy protection</li>
-                    </ul>
+                <div class="problem-card">
+                    <h3>⚖️ Governance Model</h3>
+                    <p>Coalition membership, node ownership, voting structure, and the legal framework that makes the system censorship-resistant.</p>
+                    <p style="margin-top: 1rem;"><a href="governance.html" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Read Governance Charter →</a></p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="technical-section">
-        <div class="container">
-            <h2>Media Validation Network & Governance</h2>
-            <div class="technical-content">
-                <div class="technical-text">
-                    <h3>Coalition-Operated Blockchain</h3>
-                    <p>The Birthmark Media Registry is not controlled by a single company or government. It's operated by the Media Validation Network—a coalition of journalism, fact-checking, and press freedom organizations.</p>
-
-                    <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Coalition Members (Target Organizations):</h4>
-                    <ul class="technical-list">
-                        <li>National Press Photographers Association (NPPA)</li>
-                        <li>International Fact-Checking Network (IFCN/Poynter)</li>
-                        <li>Committee to Protect Journalists (CPJ)</li>
-                        <li>Bellingcat (open-source intelligence investigation)</li>
-                        <li>Academic journalism schools</li>
-                        <li>Regional press freedom organizations</li>
-                    </ul>
-
-                    <p style="margin-top: 1rem;"><strong>Ineligible:</strong> News outlets (Reuters, AP, BBC) and content creators are excluded due to conflict of interest. Coalition Members must be organizations that analyze or validate media, not produce it.</p>
-                </div>
-
-                <div class="technical-text">
-                    <h3>Node Ownership Model</h3>
-                    <p>Organizations purchase validator node slots (one-time fee) that give them:</p>
-
-                    <ul class="technical-list">
-                        <li><strong>Validator authority:</strong> Right to operate a node that participates in network consensus</li>
-                        <li><strong>Governance rights:</strong> One vote per node in coalition governance decisions</li>
-                        <li><strong>No ownership limits:</strong> Maximum 2 nodes or 10% of total nodes per organization</li>
-                        <li><strong>Operational costs:</strong> ~$15-30/month VPS hosting per node (no ongoing fees to Foundation)</li>
-                    </ul>
-
-                    <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Governance Structure:</h4>
-                    <p style="color: var(--gray-text); margin-bottom: 0.5rem;"><strong>Phase 1 (Development):</strong> Foundation builds and validates the Registry technology</p>
-                    <p style="color: var(--gray-text); margin-bottom: 0.5rem;"><strong>Phase 2 (Production):</strong> Node sales begin, Foundation retains voting authority for 1 year after first sale</p>
-                    <p style="color: var(--gray-text);"><strong>Phase 3 (Coalition Governance):</strong> Full coalition governance with supermajority (67%) required for major decisions</p>
-
-                    <p style="margin-top: 1rem;"><strong>Legal Resilience:</strong> If a government tries to compel a coalition member to violate the charter, that member is removed from the network. Governments can only remove individual nodes—they cannot subvert the network itself.</p>
+                <div class="problem-card">
+                    <h3>💻 Source Code</h3>
+                    <p>All code is open source under Apache License 2.0. Explore the implementation, contribute, or deploy your own node.</p>
+                    <p style="margin-top: 1rem;"><a href="https://github.com/Birthmark-Standard/Birthmark" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">View on GitHub →</a></p>
                 </div>
             </div>
         </div>
@@ -676,9 +237,9 @@
                 </div>
                 <div class="footer-section">
                     <h3>Resources</h3>
+                    <a href="technical-architecture.html">Technical Architecture</a>
+                    <a href="governance.html">Governance Charter</a>
                     <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
-                    <a href="https://github.com/Birthmark-Standard/Birthmark/blob/main/docs/org/Birthmark%20Standard%20Technical%20Architecture.docx">Technical Architecture</a>
-                    <a href="https://github.com/Birthmark-Standard/Birthmark/blob/main/docs/org/Birthmark%20Media%20Registry%20Governance%20Charter.docx">Governance Charter</a>
                     <a href="https://github.com/Birthmark-Standard/Birthmark/blob/main/CLAUDE.md">Development Context</a>
                 </div>
                 <div class="footer-section">

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Architecture - The Birthmark Standard Foundation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <img src="./birthmark-logo.jpg" alt="Birthmark Standard Foundation Logo">
+                    </div>
+                    <h1>The Birthmark Standard Foundation</h1>
+                </div>
+                <nav>
+                    <a href="index.html">Home</a>
+                    <a href="technical-architecture.html">Technical</a>
+                    <a href="governance.html">Governance</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero" style="padding: 3rem 0;">
+        <div class="container">
+            <h2>Technical Architecture</h2>
+            <p style="max-width: 800px; margin: 0 auto;">Deep dive into the cryptographic foundations, system components, and privacy guarantees of the Birthmark Standard.</p>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>System Overview</h2>
+            <div class="content-block">
+                <h3>Core Problem Solved</h3>
+                <p>Existing solutions like C2PA embed authentication metadata directly in image files. When images are converted, cropped, or shared on social media, this metadata is stripped—making authentication useless for 95% of real-world image distribution. The Birthmark Standard stores authentication records on an independent blockchain, surviving all forms of metadata loss.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Architecture Principles</h3>
+                <ul class="technical-list">
+                    <li><strong>Hardware Root of Trust:</strong> Camera sensor NUC (Non-Uniformity Correction) maps provide unforgeable device fingerprints at the atomic level</li>
+                    <li><strong>Privacy by Design:</strong> Manufacturers validate camera authenticity without seeing image content, timestamps, or location</li>
+                    <li><strong>Decentralized Verification:</strong> Coalition of aligned organizations operates blockchain, preventing single-point-of-failure</li>
+                    <li><strong>Metadata Independence:</strong> Authentication survives format conversion and platform stripping</li>
+                    <li><strong>Open Infrastructure:</strong> All specifications published as prior art, preventing monopolization</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>Component Architecture</h2>
+
+            <div class="content-block">
+                <h3>1. Camera Authentication (Hardware Layer)</h3>
+                <p><strong>Function:</strong> Generate cryptographic proof that specific camera hardware captured specific image data</p>
+
+                <h4 style="margin-top: 1.5rem;">Two Parallel Processes:</h4>
+
+                <div class="diagram-box">
+                    <h4>Process A: Image Hashing</h4>
+                    <div class="code-block">
+Sensor Array → Raw Bayer Data
+                    ↓
+      [Parallel Split via DMA]
+                    ↓
+    ┌───────────────┴───────────────┐
+    ↓                               ↓
+Secure Element                     ISP
+(SHA-256 hash of raw data)    (Process to JPEG)
+    ↓                               ↓
+Raw Image Hash                Processed Image
+    ↓                               ↓
+[Hash processed image]        Camera Memory
+    ↓                         (User's photo)
+Processed Image Hash
+                    </div>
+                </div>
+
+                <div class="diagram-box" style="margin-top: 1rem;">
+                    <h4>Process B: Camera Token Generation</h4>
+                    <div class="code-block">
+NUC Hash (stored in Secure Element)
+                    ↓
+[Randomly select key from 3 assigned tables]
+                    ↓
+[Encrypt NUC hash with selected key]
+                    ↓
+Camera Token:
+- Encrypted NUC hash
+- Authentication tag
+- Nonce
+                    </div>
+                </div>
+
+                <p style="margin-top: 1rem;"><strong>Key Innovation:</strong> Raw sensor data is hashed before Image Signal Processor (ISP) manipulation. This occurs in parallel with normal image processing via DMA, causing zero user-facing delay.</p>
+
+                <p><strong>NUC Hash Permanence:</strong> The NUC hash used for camera validation is captured once during manufacturing and stored permanently in the Secure Element. This is separate from the camera's live NUC calibration used for image correction.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>2. Submission Server (Entry Layer)</h3>
+                <p><strong>Function:</strong> Receive authentication submissions from cameras and editing software, validate through manufacturer/developer authorities, post to Birthmark Media Registry</p>
+
+                <h4 style="margin-top: 1.5rem;">Camera Submissions (GPS Disabled - Default):</h4>
+                <div class="code-block">
+{
+  "submission_type": "camera",
+  "image_hashes": [
+    {"image_hash": "raw_hash", "modification_level": 0, "parent_image_hash": null},
+    {"image_hash": "processed_hash", "modification_level": 1, "parent_image_hash": "raw_hash"}
+  ],
+  "manufacturer_cert": {
+    "authority_id": "CANON_001",
+    "validation_endpoint": "https://mfg.birthmarkstandard.org/validate",
+    "camera_token": {
+      "ciphertext": "encrypted_nuc_hash_hex",
+      "auth_tag": "aes_gcm_authentication_tag",
+      "nonce": "random_96_bit_value"
+    },
+    "key_reference": {
+      "table_id": 847,
+      "key_index": 234
+    }
+  },
+  "timestamp": 1699564800
+}
+                </div>
+
+                <h4 style="margin-top: 1.5rem;">Validation Flow:</h4>
+                <ul class="technical-list">
+                    <li>Receive submission from camera/software</li>
+                    <li>Route to appropriate authority (manufacturer for cameras, developer for software)</li>
+                    <li>Authority returns PASS/FAIL without seeing image hash</li>
+                    <li>If PASS, queue submission for blockchain posting</li>
+                    <li>Post individual image hashes directly to Birthmark Media Registry</li>
+                </ul>
+
+                <p><strong>Technology Stack:</strong> Python FastAPI (async), PostgreSQL (submission records), Redis (queue management)</p>
+            </div>
+
+            <div class="content-block">
+                <h3>3. Simulated Manufacturer Authority (SMA)</h3>
+                <p><strong>Function:</strong> Reference implementation of manufacturer validation server that verifies camera tokens without seeing image content</p>
+
+                <h4 style="margin-top: 1.5rem;">What SMA Does:</h4>
+                <ul class="technical-list">
+                    <li>Receives manufacturer certificate containing encrypted NUC hash + key reference</li>
+                    <li>Extracts key table ID and index from certificate</li>
+                    <li>Looks up decryption key from global key database</li>
+                    <li>Decrypts NUC hash from camera token</li>
+                    <li>Compares against production database of legitimate cameras</li>
+                    <li>Returns PASS/FAIL (never reveals which camera or any other information)</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">Privacy Guarantees:</h4>
+                <ul class="technical-list">
+                    <li>SMA never sees image hashes, timestamps, or GPS data</li>
+                    <li>SMA knows only "one of my cameras took a photo"</li>
+                    <li>Cannot track individual photographers or correlate images</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>4. Birthmark Media Registry (Verification Layer)</h3>
+                <p><strong>Architecture:</strong> Consortium blockchain operated by the Media Validation Network—a coalition of journalism, fact-checking, and press freedom organizations. Individual image hashes are stored directly on-chain.</p>
+
+                <h4 style="margin-top: 1.5rem;">Why Consortium Blockchain:</h4>
+                <p>Storing individual hashes directly and distributing trust across mission-aligned organizations solves data availability problems. If any single Submission Server disappears, the Registry remains fully functional and queryable.</p>
+
+                <h4 style="margin-top: 1.5rem;">Technical Implementation:</h4>
+                <ul class="technical-list">
+                    <li>Cosmos SDK with Proof of Authority consensus</li>
+                    <li>10 initial validator nodes (Foundation-operated until sold)</li>
+                    <li>Block time: ~5 seconds</li>
+                    <li>Storage: Individual image hash records</li>
+                    <li>Query: Direct verification without intermediary</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">Registry Record Structure:</h4>
+                <div class="code-block">
+{
+  "image_hash": "sha256_hex_64_chars",
+  "submission_type": "camera" | "software",
+  "modification_level": 0 | 1 | 2,
+  "modification_display": "Validated Raw" | "Validated" | "Modified",
+  "parent_image_hash": "sha256_hex_64_chars" | null,
+  "authority_id": "CANON_001" | "ADOBE_LIGHTROOM",
+  "submission_server_id": "server_public_key",
+  "timestamp": 1699564800,
+  "block_number": 12345
+}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Privacy Architecture</h2>
+
+            <div class="content-block">
+                <h3>What Different Parties See</h3>
+
+                <div class="diagram-box">
+                    <h4>Camera Manufacturer (via Authority)</h4>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ "One of my cameras authenticated a photo"</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Which specific camera (table/index shared by thousands)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content or hash</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ When photo was taken</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Where photo was taken</p>
+                    <p style="color: red;">✗ Which Submission Server received it</p>
+                </div>
+
+                <div class="diagram-box">
+                    <h4>Submission Server</h4>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Image hash (to submit to Registry)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Camera certificate table/index (not camera identity)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Manufacturer validation result (PASS/FAIL)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Which specific camera (table shared by ~12,000 cameras)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ NUC hash (encrypted, cannot decrypt without key)</p>
+                    <p style="color: red;">✗ Image content</p>
+                </div>
+
+                <div class="diagram-box">
+                    <h4>Coalition Blockchain Nodes</h4>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Image hashes (SHA-256, not reversible)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Modification levels</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Authority IDs</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Timestamps (when Submission Server processed, not capture time)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content</p>
+                    <p style="color: red;">✗ Specific camera identity or photographer identity</p>
+                </div>
+
+                <div class="diagram-box">
+                    <h4>Public Verifier</h4>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ "This hash was authenticated by this manufacturer on this date"</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Who took the photo</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Where specifically (only if GPS-enabled version exists and they have that image)</p>
+                    <p style="color: red;">✗ Which specific camera unit</p>
+                </div>
+            </div>
+
+            <div class="content-block">
+                <h3>Privacy Mechanisms</h3>
+                <ul class="technical-list">
+                    <li><strong>Key Table Anonymity:</strong> Camera randomly selects from 3 tables shared by ~12,000 devices</li>
+                    <li><strong>Transaction Spacing:</strong> Camera token table/index combinations are not reused until at least 3,000 intervening transactions</li>
+                    <li><strong>Hash-Only Storage:</strong> Image content never transmitted or stored</li>
+                    <li><strong>GPS Opt-In:</strong> Location and capture time hashing disabled by default, user must explicitly enable</li>
+                    <li><strong>Separated Concerns:</strong> No single entity has complete information</li>
+                    <li><strong>Timestamp Obfuscation:</strong> Registry timestamps reflect Submission Server processing time, not photo capture time</li>
+                </ul>
+
+                <p style="margin-top: 1rem;"><strong>Source Protection:</strong> Certificate references stored in the Registry require manufacturer cooperation to trace to specific devices, and even then require possession of the original image to identify relevant records. This architecture prevents fishing expeditions and protects source confidentiality by design.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>Cryptographic Standards</h2>
+
+            <div class="content-block">
+                <h3>Algorithms & Specifications</h3>
+                <ul class="technical-list">
+                    <li><strong>Image Hashing:</strong> SHA-256 (industry standard, 256-bit output)</li>
+                    <li><strong>NUC Hash Encryption:</strong> AES-256-GCM (authenticated encryption)</li>
+                    <li><strong>Key Derivation:</strong> HKDF-SHA256 (derives table keys from master keys)</li>
+                    <li><strong>Digital Signatures:</strong> ECDSA secp256k1 (blockchain transaction signing)</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Performance Targets</h3>
+                <ul class="technical-list">
+                    <li><strong>Camera Authentication Overhead:</strong> &lt;100ms (parallel with ISP)</li>
+                    <li><strong>Submission Server Processing:</strong> &lt;200ms per request</li>
+                    <li><strong>Blockchain Confirmation:</strong> ~5 seconds (Cosmos SDK block time)</li>
+                    <li><strong>Verification Query:</strong> &lt;500ms response time</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Scalability Estimates</h3>
+                <ul class="technical-list">
+                    <li><strong>Target Volume:</strong> 1 million images/day at scale</li>
+                    <li><strong>Blockchain Storage:</strong> ~150 bytes per image record</li>
+                    <li><strong>Node Storage Growth:</strong> ~55 GB/year at 1M images/day</li>
+                    <li><strong>Network Bandwidth:</strong> Minimal (small transaction data)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Security Model</h2>
+
+            <div class="content-block">
+                <h3>Threat Mitigations</h3>
+
+                <div class="diagram-box">
+                    <h4>Threat: Submission Server Compromise</h4>
+                    <p><strong>Risk:</strong> Server manipulates submissions or goes offline</p>
+                    <p><strong>Mitigation:</strong> All data on Registry, server is stateless relay. Spin up new server, continues from blockchain state. Multiple servers can operate simultaneously.</p>
+                </div>
+
+                <div class="diagram-box">
+                    <h4>Threat: Node Operator Collusion</h4>
+                    <p><strong>Protection:</strong> Supermajority (67%) needed for malicious action—would need 7 of 10 journalism organizations to collude. Coalition Members have reputational stake in integrity. Media producers excluded, reducing conflict of interest.</p>
+                </div>
+
+                <div class="diagram-box">
+                    <h4>Threat: Government Subversion</h4>
+                    <p><strong>Protection:</strong> Legal compulsion triggers removal, not compliance. Government can only remove nodes, not control them. Network continues operating with remaining nodes. Organizations become less valuable targets.</p>
+                </div>
+
+                <div class="diagram-box">
+                    <h4>Threat: Camera Token Forgery</h4>
+                    <p><strong>Protection:</strong> NUC maps physically unforgeable (atomic-scale manufacturing variance). Attack cost: $100K-1M per camera (destructive hardware analysis). Manufacturer validates against production records.</p>
+                </div>
+            </div>
+
+            <div class="content-block">
+                <h3>What the System Does NOT Protect Against</h3>
+                <ul class="technical-list">
+                    <li>Staged scenes (real camera, fake scene)</li>
+                    <li>Images taken of screens (camera authenticates the screen, not original)</li>
+                    <li>Side-channel information leakage (careful with GPS, timestamps)</li>
+                    <li>Social engineering of coalition members</li>
+                    <li>Legal compulsion to reveal information (triggers removal instead)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>Integration with Existing Standards</h2>
+
+            <div class="content-block">
+                <h3>Relationship to C2PA</h3>
+                <p><strong>Complementary, Not Competitive:</strong></p>
+                <ul class="technical-list">
+                    <li><strong>C2PA:</strong> Rich metadata, existing tool ecosystem, but lost when metadata stripped</li>
+                    <li><strong>Birthmark:</strong> Blockchain fail-safe that survives metadata loss</li>
+                    <li><strong>Together:</strong> Comprehensive authentication covering all distribution scenarios</li>
+                </ul>
+
+                <p style="margin-top: 1rem;"><strong>Key Differentiator:</strong></p>
+                <ul class="technical-list">
+                    <li>C2PA validates "something with certificate signed this"</li>
+                    <li>Birthmark validates "this specific physical camera sensor captured this"</li>
+                    <li>C2PA vulnerable to firmware exploits (Nikon Z6 III incident)</li>
+                    <li>Birthmark requires physical sensor access to forge</li>
+                </ul>
+
+                <div class="diagram-box" style="margin-top: 1rem; background: white;">
+                    <p style="font-style: italic;">"Implement Birthmark alongside C2PA for comprehensive authentication. C2PA handles rich metadata and existing workflows. Birthmark handles the 95% of images that lose metadata through social media sharing."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="about">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>The Birthmark Standard Foundation</h3>
+                    <p>Creating hardware-backed photo authentication infrastructure on a custom blockchain operated by trusted institutions as a public good.</p>
+                    <p style="margin-top: 1rem;">Target: 2028 Presidential Election</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <a href="index.html">Home</a>
+                    <a href="technical-architecture.html">Technical Architecture</a>
+                    <a href="governance.html">Governance</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <a href="mailto:samryan.pdx@gmail.com">samryan.pdx@gmail.com</a>
+                    <a href="https://www.linkedin.com/in/samuelcryan">LinkedIn</a>
+                    <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 The Birthmark Standard Foundation. Open source under Apache License 2.0.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
