@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Governance - The Birthmark Standard Foundation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <img src="./birthmark-logo.jpg" alt="Birthmark Standard Foundation Logo">
+                    </div>
+                    <h1>The Birthmark Standard Foundation</h1>
+                </div>
+                <nav>
+                    <a href="index.html">Home</a>
+                    <a href="technical-architecture.html">Technical</a>
+                    <a href="governance.html">Governance</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero" style="padding: 3rem 0;">
+        <div class="container">
+            <h2>Media Registry Governance</h2>
+            <p style="max-width: 800px; margin: 0 auto;">The Birthmark Media Registry is governed by a coalition of independent journalism, fact-checking, and press freedom organizations—not by a single company or government.</p>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Purpose and Mission</h2>
+
+            <div class="content-block">
+                <h3>Registry Purpose</h3>
+                <p>The Birthmark Media Registry provides a decentralized, tamper-evident ledger for recording image authentication data. The Registry stores cryptographic hashes of authenticated photographs along with associated metadata (timestamps, submitter identifiers), enabling anyone to verify whether a photograph has been authenticated by a legitimate camera and when that authentication occurred.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Core Principles</h3>
+                <ul class="technical-list">
+                    <li><strong>Independence:</strong> No single entity controls the Registry. Trust is distributed among Coalition Members.</li>
+                    <li><strong>Transparency:</strong> All Registry operations, governance decisions, and technical specifications are publicly documented.</li>
+                    <li><strong>Neutrality:</strong> The Registry verifies technical authenticity, not editorial content. It makes no judgment on the subject matter of photographs.</li>
+                    <li><strong>Permanence:</strong> Data recorded on the Registry is immutable and must remain accessible for verification indefinitely.</li>
+                    <li><strong>Public Good:</strong> The Registry serves the public interest and is not operated for profit.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>Coalition Membership</h2>
+
+            <div class="content-block">
+                <h3>Eligibility Requirements</h3>
+                <p>Coalition Membership is open to organizations that demonstrate commitment to information integrity and meet the following criteria:</p>
+                <ul class="technical-list">
+                    <li>Established nonprofit, educational institution, news organization, or professional association</li>
+                    <li>Mission aligned with journalism, fact-checking, press freedom, archival preservation, or information integrity</li>
+                    <li>Technical capability to operate a validator node (server infrastructure, technical staff) or willingness to contract for managed support services</li>
+                    <li>Commitment to maintaining node uptime of 95% or greater</li>
+                    <li>No conflicts of interest that would compromise Registry neutrality</li>
+                </ul>
+
+                <div class="diagram-box" style="margin-top: 1rem;">
+                    <p><strong>Important:</strong> Organizations whose primary mission is media production (news outlets, content creators, photography agencies) are <strong>ineligible</strong> for Coalition Membership due to inherent conflict of interest. Organizations that consume, analyze, or validate media (fact-checkers, press freedom advocates, academic institutions, archival organizations) are eligible.</p>
+                </div>
+            </div>
+
+            <div class="content-block">
+                <h3>Target Coalition Members</h3>
+                <ul class="technical-list">
+                    <li><strong>National Press Photographers Association (NPPA)</strong> - Professional photography organization</li>
+                    <li><strong>International Fact-Checking Network (IFCN/Poynter)</strong> - Global fact-checking network</li>
+                    <li><strong>Committee to Protect Journalists (CPJ)</strong> - Press freedom advocacy</li>
+                    <li><strong>Bellingcat</strong> - Open-source intelligence investigation journalism</li>
+                    <li><strong>First Draft</strong> - Misinformation research</li>
+                    <li><strong>Academic journalism schools</strong> - University-based journalism programs</li>
+                    <li><strong>Regional press freedom organizations</strong> - Local and regional advocacy groups</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Node Ownership</h3>
+                <p>Each Coalition Member purchases ownership of one or more validator node slots in the Media Validation Network. Node ownership includes:</p>
+                <ul class="technical-list">
+                    <li><strong>Validator Authority:</strong> The right to operate a validator node that participates in Network consensus</li>
+                    <li><strong>Governance Rights:</strong> One vote per node in Coalition governance decisions</li>
+                    <li><strong>Technical Assets:</strong> Pre-configured node software, documentation, and setup support</li>
+                    <li><strong>Coalition Seat:</strong> Representation in the Birthmark Media Registry Coalition</li>
+                </ul>
+
+                <div class="diagram-box" style="margin-top: 1rem; background: white;">
+                    <p><strong>Important:</strong> Node ownership and operation confers no editorial authority over authenticated content. The Registry verifies technical provenance, not content accuracy or editorial merit. Coalition Members shall not represent their node operation as endorsement of specific authenticated images.</p>
+                </div>
+            </div>
+
+            <div class="content-block">
+                <h3>Ownership Limits</h3>
+                <p>To prevent concentration of control and maintain decentralization:</p>
+                <ul class="technical-list">
+                    <li>No single organization may own more than 2 nodes or 10% of total nodes, whichever is higher</li>
+                    <li>Related organizations (parent/subsidiary relationships, shared governance) are counted as a single entity for ownership limits</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Pricing & Costs</h3>
+                <p>The initial node ownership fee is set by The Birthmark Standard Foundation and funds Registry development, deployment, and initial operational support. This fee is a <strong>one-time purchase, not a recurring charge</strong>.</p>
+                <p style="margin-top: 1rem;">Ongoing operational costs (server hosting, bandwidth, maintenance) are the responsibility of each Coalition Member for their own nodes, estimated at <strong>~$15-30/month</strong> for VPS hosting.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Governance Structure</h2>
+
+            <div class="content-block">
+                <h3>Phase 1: Development Phase (Current)</h3>
+                <p>During the initial development phase, The Birthmark Standard Foundation builds and validates the Registry infrastructure. Organizations interested in future Coalition Membership may participate as <strong>Founding Advisors</strong>, providing input on technical specifications, governance structure, and operational requirements.</p>
+
+                <h4 style="margin-top: 1rem;">Founding Advisors:</h4>
+                <ul class="technical-list">
+                    <li>Provide advisory input on Registry development and charter refinement</li>
+                    <li>Have no voting rights or governance authority during this phase</li>
+                    <li>Are not obligated to purchase node ownership when Phase 2 begins</li>
+                    <li>Receive priority consideration for Coalition Membership upon production launch</li>
+                </ul>
+
+                <p style="margin-top: 1rem;">During Phase 1, the Foundation Board of Directors retains full authority over technical development, governance design, and charter amendments.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Phase 2: Production Phase</h3>
+                <p>Phase 2 begins when:</p>
+                <ul class="technical-list">
+                    <li>Registry technology completes its validation checklist</li>
+                    <li>10 validator nodes have been functionally stood up by the Foundation</li>
+                </ul>
+                <p style="margin-top: 1rem;">Upon Phase 2 commencement, node ownership becomes available for purchase by eligible organizations.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Governance Transition</h3>
+                <p>The Foundation retains voting authority in Coalition governance until <strong>one year after the first node sale</strong> to a Coalition Member.</p>
+                <p style="margin-top: 1rem;">Once the Foundation's voting authority ends, governance transitions to the full Coalition model.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Coalition Governance (Full Model)</h3>
+                <p>Under full Coalition governance:</p>
+                <ul class="technical-list">
+                    <li><strong>Voting Rights:</strong> One vote per owned node</li>
+                    <li><strong>Quorum:</strong> Majority of purchased nodes (&gt;50%) must participate for valid vote</li>
+                    <li><strong>Standard Decisions:</strong> Simple majority (&gt;50% of votes cast) for routine matters</li>
+                    <li><strong>Major Decisions:</strong> Supermajority (≥67% of votes cast) for charter amendments, protocol upgrades, and membership changes</li>
+                    <li><strong>Emergency Decisions:</strong> Foundation retains authority for time-critical security issues, subject to Coalition ratification within 30 days</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Decision Categories</h3>
+
+                <div class="diagram-box">
+                    <h4>Standard Decisions (Simple Majority)</h4>
+                    <ul class="technical-list">
+                        <li>Operational procedures and documentation updates</li>
+                        <li>Technical support policies</li>
+                        <li>Communication and outreach activities</li>
+                        <li>Minor parameter adjustments</li>
+                    </ul>
+                </div>
+
+                <div class="diagram-box">
+                    <h4>Major Decisions (Supermajority - 67%)</h4>
+                    <ul class="technical-list">
+                        <li>Charter amendments</li>
+                        <li>Protocol upgrades affecting consensus or data structure</li>
+                        <li>Admission of new Coalition Members</li>
+                        <li>Removal or suspension of Coalition Members</li>
+                        <li>Changes to ownership limits or voting structure</li>
+                        <li>Integration with external systems or standards</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>Member Responsibilities</h2>
+
+            <div class="content-block">
+                <h3>Technical Obligations</h3>
+                <p>Each Coalition Member operating a validator node agrees to:</p>
+                <ul class="technical-list">
+                    <li><strong>Maintain Uptime:</strong> Operate node with minimum 95% uptime availability</li>
+                    <li><strong>Apply Updates:</strong> Install Coalition-approved software updates within specified timeframes</li>
+                    <li><strong>Secure Infrastructure:</strong> Implement reasonable security measures for node infrastructure</li>
+                    <li><strong>Monitor Performance:</strong> Monitor node health and respond to technical issues promptly</li>
+                    <li><strong>Report Issues:</strong> Report technical problems or security concerns to the Coalition</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Governance Participation</h3>
+                <p>Coalition Members are expected to:</p>
+                <ul class="technical-list">
+                    <li>Participate in governance votes (quorum requirement)</li>
+                    <li>Designate a primary contact for Coalition communications</li>
+                    <li>Attend or send representative to Coalition meetings (quarterly minimum)</li>
+                    <li>Provide technical feedback on proposed protocol changes</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Financial Obligations</h3>
+                <p>Coalition Members are responsible for all operational costs associated with their nodes, including but not limited to server hosting, bandwidth, electricity, and technical staff time. The Registry does not charge ongoing fees to members.</p>
+                <p style="margin-top: 1rem;">Optional technical support and managed services are available from the Foundation under separate service agreements.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Node Failure and Member Removal</h2>
+
+            <div class="content-block">
+                <h3>Temporary Node Failure</h3>
+                <p>If a Coalition Member's node experiences temporary downtime (hardware failure, network issues), the Media Validation Network continues operation with remaining nodes. The member is expected to restore service as soon as reasonably possible.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Extended Absence</h3>
+                <p>If a node remains offline for more than <strong>30 consecutive days</strong> without communication, or if a Coalition Member indicates they can no longer operate their node:</p>
+                <ul class="technical-list">
+                    <li>The Foundation may spin up a temporary replacement node to maintain Network redundancy</li>
+                    <li>The member retains ownership rights but loses voting rights until node is restored</li>
+                    <li>Coalition will work to recruit a replacement member to purchase the node slot</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Grounds for Removal</h3>
+                <p>A Coalition Member may be removed from the Media Validation Network for the following reasons:</p>
+                <ul class="technical-list">
+                    <li>Sustained failure to maintain minimum uptime (below 95% for 90 or more consecutive days)</li>
+                    <li>Security breach resulting from negligence or willful misconduct</li>
+                    <li>Actions that compromise Registry integrity, security, or neutrality</li>
+                    <li>Material breach of this charter that remains uncured after 30-day written notice</li>
+                    <li>Change in organizational mission or ownership that conflicts with Registry principles</li>
+                    <li>Criminal conduct by the organization or its representatives related to Registry operations</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Removal Process</h3>
+                <ol class="technical-list" style="list-style-type: decimal; padding-left: 2rem;">
+                    <li><strong>Notice:</strong> Written notice of alleged violation delivered to the member with 30-day cure period (for curable issues)</li>
+                    <li><strong>Proposal:</strong> If issue remains uncured, any Coalition Member or the Foundation may submit formal removal proposal</li>
+                    <li><strong>Response:</strong> Accused member has right to submit written response within 14 days of proposal</li>
+                    <li><strong>Vote:</strong> Supermajority vote (≥67% of votes cast) required for removal</li>
+                    <li><strong>Immediate Effect:</strong> Removed member loses voting rights immediately upon vote passage</li>
+                    <li><strong>Transition Period:</strong> 90-day period to transfer node ownership to another eligible organization or revert to Foundation</li>
+                    <li><strong>No Refund:</strong> Initial node purchase fee is not refundable upon removal</li>
+                </ol>
+            </div>
+
+            <div class="content-block">
+                <h3>Legal Compulsion</h3>
+                <div class="diagram-box" style="background: white;">
+                    <p><strong>Critical Protection:</strong> If a Coalition Member is compelled by legal authority to take actions that violate this charter, that member shall be removed from the Media Validation Network.</p>
+                    <p style="margin-top: 0.5rem;">This provision protects both the Registry's integrity and the member organization, as it ensures governments cannot subvert the network through captured nodes—they can only remove individual nodes from a network designed to continue operating with remaining members.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>Role of the Foundation</h2>
+
+            <div class="content-block">
+                <p>The Birthmark Standard Foundation serves as the <strong>administrative coordinator</strong> for the Registry, not its owner or controller. Foundation responsibilities include:</p>
+
+                <ul class="technical-list">
+                    <li><strong>Initial Node Setup:</strong> One-time provisioning and transfer of configured node software to new Coalition Members</li>
+                    <li><strong>Documentation:</strong> Maintaining comprehensive technical documentation for node operation</li>
+                    <li><strong>Administrative Coordination:</strong> Facilitating Coalition meetings, votes, and communications</li>
+                    <li><strong>Open Source Maintenance:</strong> Maintaining the public code repository and documentation</li>
+                    <li><strong>Emergency Response:</strong> Acting as first responder for critical security issues (subject to Coalition ratification)</li>
+                    <li><strong>Training:</strong> Offering technical training to Coalition Member IT staff for self-managed node operation</li>
+                </ul>
+
+                <div class="diagram-box" style="margin-top: 1rem;">
+                    <h4>Ongoing Technical Support</h4>
+                    <p>The Foundation does not provide indefinite technical support as part of node ownership. Coalition Members requiring ongoing technical assistance have two options:</p>
+                    <ul class="technical-list" style="margin-top: 0.5rem;">
+                        <li><strong>Service Contract:</strong> Optional paid service agreements with the Foundation for ongoing maintenance, troubleshooting, and updates</li>
+                        <li><strong>Self-Management:</strong> Technical training provided to Member's IT staff to enable independent node operation and maintenance</li>
+                    </ul>
+                </div>
+
+                <p style="margin-top: 1rem;">The Foundation <strong>does not control</strong> the Registry's data, cannot unilaterally modify the Birthmark Blockchain, and cannot override Coalition governance decisions except in documented emergency procedures.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Foundation Node Reserve</h3>
+                <p>To ensure Media Validation Network resilience and maintain minimum operational requirements, The Birthmark Standard Foundation reserves the right to operate up to <strong>10 validator nodes</strong>. These Foundation-operated nodes are subject to the following conditions:</p>
+                <ul class="technical-list">
+                    <li><strong>No Voting Rights:</strong> Foundation-operated nodes do not carry voting rights in Coalition governance</li>
+                    <li><strong>Target of Zero Ownership:</strong> The Foundation's goal is to own zero nodes, with member-operated nodes preferred</li>
+                    <li><strong>Transition Priority:</strong> Foundation nodes may be transitioned to new Coalition Members as they join the Network</li>
+                    <li><strong>Operational Costs:</strong> The Foundation bears all operational costs for nodes it operates</li>
+                    <li><strong>Emergency Use:</strong> Foundation nodes serve primarily as backup capacity when member nodes fail or during Network growth phases</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Foundation Sustainability</h3>
+                <p>The Foundation sustains operations through:</p>
+                <ul class="technical-list">
+                    <li>Node sales to Coalition Members</li>
+                    <li>Optional service contracts for ongoing maintenance</li>
+                    <li>Technical training services for self-managed nodes</li>
+                    <li>Grant funding for capability expansion</li>
+                </ul>
+
+                <p style="margin-top: 1rem;">The Foundation commits to maintaining <strong>minimum 12-month operating reserves</strong>. If the Foundation determines it can no longer sustain operations, it shall execute an orderly transition: transferring all administrative functions to the Coalition, ensuring all documentation and code repositories remain accessible, and providing 6-month advance notice to Coalition Members.</p>
+
+                <div class="diagram-box" style="margin-top: 1rem; background: white;">
+                    <p><strong>Registry Independence:</strong> The Registry and Media Validation Network are designed to operate independently of the Foundation's continued existence.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Registry Continuity</h2>
+
+            <div class="content-block">
+                <p>The Registry is designed to operate independently of any single organization, including the Foundation. In the event the Foundation ceases operations:</p>
+
+                <ul class="technical-list">
+                    <li>All node software and documentation is open source and publicly available</li>
+                    <li>Coalition Members retain full ownership and operational control of their nodes</li>
+                    <li>The Birthmark Blockchain continues operating as long as minimum node count (3) is maintained</li>
+                    <li>Coalition governance structure remains in effect</li>
+                    <li>Coalition may elect to transfer administrative functions to another organization</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>Privacy & Data Architecture</h2>
+
+            <div class="content-block">
+                <h3>Data Minimization</h3>
+                <p>The Registry stores only cryptographic hashes and associated metadata (timestamps, certificate references). Individual image content is never stored on the Birthmark Blockchain.</p>
+                <p style="margin-top: 1rem;">Certificate references require manufacturer cooperation to trace to specific devices, and even then require possession of the original image to identify relevant records. This architecture prevents fishing expeditions and protects source confidentiality by design.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Right to Be Forgotten</h3>
+                <p>The Registry stores cryptographic hashes, not images. Authenticated images can be effectively de-authenticated by any unvalidated modification (cropping, format conversion), which generates a new hash with no Registry record.</p>
+                <p style="margin-top: 1rem;">Validated edits create new hashes that are recorded on the blockchain, maintaining provenance. The Registry does not support hash deletion requests, as processing such requests would require identifying which hashes correspond to specific individuals—creating greater privacy risk than the immutable hash record itself.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer id="about">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>The Birthmark Standard Foundation</h3>
+                    <p>Creating hardware-backed photo authentication infrastructure on a custom blockchain operated by trusted institutions as a public good.</p>
+                    <p style="margin-top: 1rem;">Target: 2028 Presidential Election</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <a href="index.html">Home</a>
+                    <a href="technical-architecture.html">Technical Architecture</a>
+                    <a href="governance.html">Governance</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <a href="mailto:samryan.pdx@gmail.com">samryan.pdx@gmail.com</a>
+                    <a href="https://www.linkedin.com/in/samuelcryan">LinkedIn</a>
+                    <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 The Birthmark Standard Foundation. Open source under Apache License 2.0.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
