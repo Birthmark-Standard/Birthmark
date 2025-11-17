@@ -375,7 +375,8 @@ class SubmissionQueue:
     def __init__(
         self,
         client: AggregationClient,
-        max_queue_size: int = 100
+        max_queue_size: int = 100,
+        device_private_key=None
     ):
         """
         Initialize submission queue.
@@ -383,11 +384,13 @@ class SubmissionQueue:
         Args:
             client: AggregationClient for submissions
             max_queue_size: Maximum queue size (blocks if full)
+            device_private_key: Device private key for certificate signing (optional)
         """
         self.client = client
         self.queue = queue.Queue(maxsize=max_queue_size)
         self.worker_thread: Optional[threading.Thread] = None
         self.running = False
+        self.device_private_key = device_private_key
 
         # Statistics
         self.submitted = 0
@@ -432,12 +435,14 @@ class SubmissionQueue:
 
         print("✓ Submission worker stopped")
 
-    def enqueue(self, bundle: AuthenticationBundle) -> None:
+    def enqueue(self, bundle) -> None:
         """
         Enqueue bundle for background submission.
 
+        Supports both AuthenticationBundle (legacy) and CertificateBundle (new).
+
         Args:
-            bundle: AuthenticationBundle to submit
+            bundle: AuthenticationBundle or CertificateBundle to submit
 
         Raises:
             queue.Full: If queue is full
@@ -461,7 +466,16 @@ class SubmissionQueue:
 
                 # Submit bundle
                 try:
-                    receipt = self.client.submit_bundle(bundle, retry=True)
+                    # Check bundle type and call appropriate method
+                    if isinstance(bundle, CertificateBundle):
+                        if not self.device_private_key:
+                            raise RuntimeError("device_private_key required for certificate submission")
+                        receipt = self.client.submit_certificate(bundle, self.device_private_key, retry=True)
+                    elif isinstance(bundle, AuthenticationBundle):
+                        receipt = self.client.submit_bundle(bundle, retry=True)
+                    else:
+                        raise ValueError(f"Unknown bundle type: {type(bundle)}")
+
                     self.submitted += 1
                     print(f"✓ Submitted: {receipt.receipt_id} (total: {self.submitted})")
 
