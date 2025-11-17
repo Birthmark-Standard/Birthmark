@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "birthmark-blockchain"
+version = "0.1.0"
+description = "Birthmark Custom Blockchain Node (Aggregator + Validator)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "TBD"}
+authors = [
+    {name = "The Birthmark Standard Foundation"}
+]
+keywords = ["blockchain", "photo-authentication", "proof-of-authority"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Web framework
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.9",
+
+    # Database
+    "sqlalchemy>=2.0.25",
+    "alembic>=1.13.1",
+    "psycopg2-binary>=2.9.9",
+    "asyncpg>=0.29.0",
+
+    # Data validation
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+
+    # Cryptography
+    "cryptography>=42.0.0",
+
+    # HTTP client for SMA validation
+    "httpx>=0.26.0",
+
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "python-json-logger>=2.0.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.3",
+    "pytest-cov>=4.1.0",
+    "black>=24.1.0",
+    "ruff>=0.2.0",
+    "mypy>=1.8.0",
+    "httpx>=0.26.0",
+]
+
+[project.scripts]
+birthmark-node = "src.main:main"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "N", "W"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"

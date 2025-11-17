@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: birthmark-postgres
+    environment:
+      POSTGRES_DB: birthmark_chain
+      POSTGRES_USER: birthmark
+      POSTGRES_PASSWORD: birthmark
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U birthmark"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  blockchain-node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: birthmark-node
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - NODE_ID=validator_001
+      - DATABASE_URL=postgresql://birthmark:birthmark@postgres:5432/birthmark_chain
+      - SMA_VALIDATION_ENDPOINT=http://host.docker.internal:8001/validate
+      - API_HOST=0.0.0.0
+      - API_PORT=8545
+    ports:
+      - "8545:8545"  # API port
+      - "26656:26656"  # P2P port (for Phase 2+)
+    volumes:
+      - blockchain-data:/data
+      - ./genesis:/app/genesis:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  blockchain-data:
