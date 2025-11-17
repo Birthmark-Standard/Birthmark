@@ -139,3 +139,46 @@ class NodeState(Base):
             session.add(state)
             session.commit()
         return state
+
+
+class ModificationRecordDB(Base):
+    """
+    Modification records from editing software (Phase 3).
+
+    Tracks the editing provenance chain from authenticated captures
+    through software modifications.
+    """
+
+    __tablename__ = "modification_records"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    original_image_hash = Column(CHAR(64), nullable=False, index=True)
+    final_image_hash = Column(CHAR(64), nullable=False, unique=True, index=True)
+    modification_level = Column(Integer, nullable=False)  # 0=unmodified, 1=minor, 2=heavy
+    authenticated = Column(Boolean, nullable=False)  # Was original authenticated?
+
+    # Dimensions
+    original_width = Column(Integer, nullable=True)
+    original_height = Column(Integer, nullable=True)
+    final_width = Column(Integer, nullable=True)
+    final_height = Column(Integer, nullable=True)
+
+    # Software info
+    software_id = Column(String(255), nullable=False, index=True)
+    plugin_version = Column(String(50), nullable=False)
+    authority_type = Column(String(50), default="software", nullable=False)
+
+    # Timestamps
+    initialized_at = Column(DateTime, nullable=False)  # When tracking started
+    exported_at = Column(DateTime, nullable=False)  # When record exported
+    recorded_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # When stored in DB
+
+    # TODO Phase 3: Link to blockchain transaction when final hash is batched
+    tx_id = Column(Integer, ForeignKey("transactions.tx_id"), nullable=True)
+
+    __table_args__ = (
+        Index("idx_mod_original", "original_image_hash"),
+        Index("idx_mod_final", "final_image_hash"),
+        Index("idx_mod_software", "software_id"),
+        Index("idx_mod_level", "modification_level"),
+    )
