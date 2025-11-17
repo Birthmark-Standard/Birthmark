@@ -58,60 +58,60 @@ Both formats are fully supported. The certificate format is the recommended path
   - Phase 1: Format validation
   - Phase 2 TODO: Full cryptographic validation
 
-## What Needs to Be Done
+- **Updated Provisioning** (`provisioning/provisioner.py` and `provisioning/certificate.py`):
+  - `encrypt_nuc_for_certificate()`: AES-256-GCM encryption of NUC hash
+  - `provision_device()`: Now encrypts NUC and embeds in certificate extensions
+  - Dual-path certificate generation: With extensions (new) or without (legacy)
+  - All new device certificates include Birthmark extensions
 
-### 🔲 Camera-Pi Package Updates
+### ✅ Camera-Pi Package Updates
 
-The camera-pi package currently uses the legacy format. To migrate to certificates:
+The camera-pi package now supports both legacy and certificate formats:
 
-#### Option A: Dual Support (Recommended for Testing)
+- **Updated Aggregation Client** (`aggregation_client.py`):
+  - `CertificateBundle` dataclass for certificate-based submissions
+  - `submit_certificate()` method sends to `/api/v1/submit-cert`
+  - PEM certificate converted to DER, then base64-encoded
+  - Bundle signature generated using device private key
+  - `SubmissionQueue` updated with type detection (routes based on `isinstance()`)
 
-Keep both formats working during transition:
+- **Updated Main Application** (`main.py`):
+  - `use_certificates` parameter in `BirthmarkCamera.__init__()`
+  - `capture_photo()` supports both modes:
+    - **Certificate mode**: Sends `CertificateBundle` with `camera_cert_pem`
+    - **Legacy mode**: Generates token and sends `AuthenticationBundle`
+  - `--use-certificates` CLI flag for dual-format testing
+  - Token generator only initialized when using legacy format
 
-1. **Update SMA Provisioning** (`packages/sma/src/provisioning/provisioner.py`):
-   - Import `CameraCertificateBuilder` from shared/certificates
-   - When generating device certificate, add Birthmark extensions:
-     ```python
-     from shared.certificates import CameraCertificateBuilder
+- **Implementation Example**:
+  ```python
+  # Certificate mode
+  python -m camera_pi capture --use-certificates
 
-     builder = CameraCertificateBuilder(
-         device_serial=serial,
-         manufacturer_name="Simulated Manufacturer",
-         device_public_key=device_public_key
-     )
-     builder.set_manufacturer_id("simulated_ma")
-     builder.set_ma_endpoint("http://localhost:8001/validate-cert")
-     builder.set_encrypted_nuc(encrypted_nuc)  # 60 bytes
-     builder.set_key_table_id(table_id)
-     builder.set_key_index(key_index)
-     builder.set_device_family(device_family)
+  # Legacy mode (default)
+  python -m camera_pi capture
+  ```
 
-     cert = builder.build(ca_private_key)
-     cert_der = builder.to_der(ca_private_key)
-     ```
+## Migration Complete
 
-2. **Update Camera Submission** (`packages/camera-pi/src/camera_pi/aggregation_client.py`):
-   - Add `submit_certificate()` method alongside existing `submit()`
-   - Convert provisioning certificate to base64
-   - Create `CertificateBundle` instead of `AuthenticationBundle`
-   - Send to `/api/v1/submit-cert`
+All components now support the certificate format! The system operates in **dual-format mode** with:
+- ✅ SMA provisioning generates certificates with Birthmark extensions
+- ✅ Camera can submit using either format (controlled by CLI flag)
+- ✅ Blockchain aggregator accepts both endpoints (`/submit` and `/submit-cert`)
+- ✅ SMA validates both formats (`/validate` and `/validate-cert`)
 
-3. **Add CLI Flag** (`packages/camera-pi/src/camera_pi/main.py`):
-   ```python
-   parser.add_argument(
-       '--use-certificates',
-       action='store_true',
-       help='Use certificate-based authentication (new format)'
-   )
-   ```
+## Future Migration Path
 
-#### Option B: Full Migration
+### Option A: Keep Dual Support (Current Approach)
+Maintain both formats indefinitely for maximum compatibility.
 
-Replace legacy format entirely:
+### Option B: Deprecate Legacy Format (Future)
+After production testing proves certificate format stable:
 
-1. Deprecate `AuthenticationBundle` and `/api/v1/submit`
-2. Update all camera code to use certificates
-3. Remove legacy validation code
+1. Default camera to certificate mode (remove `--use-certificates` flag, make it default)
+2. Deprecate `/api/v1/submit` endpoint (return 410 Gone)
+3. Remove legacy validation code from SMA
+4. Clean up `AuthenticationBundle` and token generation code
 
 ## Certificate Flow
 
@@ -154,59 +154,81 @@ Blockchain:
 
 ## Testing Certificate Format
 
-Once provisioning is updated to generate certificate extensions:
+The certificate format is now fully implemented and ready to test:
 
 ```bash
 # Terminal 1: Start SMA
 cd packages/sma
 uvicorn src.main:app --port 8001
 
-# Terminal 2: Start Blockchain
+# Terminal 2: Start Blockchain Node
 cd packages/blockchain
 uvicorn src.main:app --port 8545
 
-# Terminal 3: Provision device with certificate extensions
+# Terminal 3: Provision device (generates certificate with extensions)
 cd packages/sma
-python scripts/generate_ca.py  # If not done
+python scripts/generate_ca.py  # If not done already
 python scripts/provision_device.py --device-serial TEST-001
+# Copy provisioning.json to packages/camera-pi/data/
 
-# Terminal 4: Test camera submission
+# Terminal 4: Test camera with certificate format
 cd packages/camera-pi
-python -m camera_pi capture --use-certificates  # If implementing dual support
+python -m camera_pi capture --use-certificates
+
+# Terminal 5 (Optional): Test legacy format for comparison
+python -m camera_pi capture  # Without --use-certificates flag
 ```
+
+### Verification Steps
+
+After capturing with `--use-certificates`:
+
+1. **Check blockchain logs**: Should show `/api/v1/submit-cert` endpoint hit
+2. **Check SMA logs**: Should show `/validate-cert` endpoint hit
+3. **Verify certificate parsing**: Logs should show extracted extension data
+4. **Query verification**: `curl http://localhost:8545/api/v1/verify/{image_hash}`
 
 ## Migration Strategy
 
-### Phase 1 (Current)
-- ✅ Certificate utilities implemented
-- ✅ Blockchain accepts both formats
-- ✅ SMA accepts both formats
-- 🔲 Camera uses legacy format
+### Phase 1: Infrastructure ✅ COMPLETE
+- ✅ Certificate utilities implemented (`shared/certificates/`)
+- ✅ Blockchain accepts both formats (`/submit` and `/submit-cert`)
+- ✅ SMA accepts both formats (`/validate` and `/validate-cert`)
 
-### Phase 2 (Next Steps)
-- 🔲 Update SMA provisioning to generate certificate extensions
-- 🔲 Update camera to support both formats
+### Phase 2: Full Integration ✅ COMPLETE
+- ✅ SMA provisioning generates certificate extensions
+- ✅ Camera supports both formats (dual-mode via CLI flag)
+- ✅ Type-based routing in submission queue
+- ✅ End-to-end certificate flow implemented
+
+### Phase 3: Hardware Testing (CURRENT)
+- 🔲 Test certificate format with Raspberry Pi hardware (waiting on parts)
 - 🔲 Test both formats side-by-side
 - 🔲 Verify certificate validation works end-to-end
+- 🔲 Performance benchmarking
 
-### Phase 3 (Production)
+### Phase 4: Production Migration (FUTURE)
 - 🔲 Default camera to certificate format
-- 🔲 Deprecate legacy format
-- 🔲 Remove legacy code
+- 🔲 Deprecate legacy endpoints
+- 🔲 Remove legacy validation code
+- 🔲 Clean up dual-format support code
 
-## Questions to Resolve
+## Design Decisions Made
 
-1. **Should we support both formats simultaneously?**
-   - Pros: Easier testing, gradual migration
-   - Cons: More code to maintain
+1. **Dual-format support** ✅ DECIDED
+   - **Decision**: Support both formats simultaneously during transition
+   - **Rationale**: Enables A/B testing, easier debugging, gradual migration
+   - **Implementation**: CLI flag `--use-certificates` controls mode
 
-2. **When to deprecate legacy format?**
-   - After successful testing of certificate format
-   - After all cameras migrated
+2. **Deprecation timeline** ⏸️ DEFERRED
+   - **Decision**: Defer until after hardware testing validates certificate format
+   - **Next milestone**: After 500+ successful certificate-based captures
+   - **Action**: Will issue deprecation notice for `/api/v1/submit` endpoint
 
-3. **Should we update existing provisioning data?**
-   - Re-provision all test devices with new certificates
-   - Or add extensions to existing certificates
+3. **Existing provisioning data** ✅ DECIDED
+   - **Decision**: Re-provision all test devices with new certificates
+   - **Rationale**: Ensures all devices have Birthmark extensions from start
+   - **Action**: Run `provision_device.py` for each test device
 
 ## Technical Notes
 
@@ -240,5 +262,35 @@ Camera certificates include these custom extensions:
 
 ---
 
-**Status**: Certificate infrastructure ready, awaiting camera-pi integration
-**Next**: Update SMA provisioning to generate certificate extensions
+## Current Status
+
+**Implementation**: ✅ COMPLETE - All components support certificate format
+**Testing**: ⏸️ PENDING - Waiting on Raspberry Pi hardware parts
+**Production**: 🔲 NOT READY - Requires hardware validation first
+
+### What Works Now
+
+- ✅ Certificate generation with Birthmark extensions (SMA provisioning)
+- ✅ Certificate-based submission flow (camera → blockchain → SMA)
+- ✅ Self-routing MA validation (endpoint from certificate)
+- ✅ Dual-format support (legacy and certificate modes)
+- ✅ Type detection and automatic routing
+
+### Next Steps
+
+1. **Hardware arrives** → Test with actual Raspberry Pi camera
+2. **Capture images** → Use `--use-certificates` flag
+3. **Validate end-to-end** → Ensure blockchain accepts and SMA validates
+4. **Performance test** → Compare certificate vs legacy format overhead
+5. **Make production decision** → Default to certificates or keep dual-mode
+
+### Documentation
+
+- 📄 This document: Migration guide and implementation status
+- 📄 `Birthmark_Phase_1_Plan_Blockchain_Node.md`: Complete technical specification
+- 📄 `shared/certificates/README.md`: Certificate utilities usage (if exists)
+
+---
+
+**Last Updated**: 2024-11-17
+**Next Review**: After hardware testing complete
