@@ -400,7 +400,7 @@
                 </div>
                 <nav>
                     <a href="#key-concepts">How It Works</a>
-                    <a href="#github">GitHub</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
                     <a href="#about">About</a>
                 </nav>
             </div>
@@ -410,7 +410,7 @@
     <section class="hero">
         <div class="container">
             <h2>Hardware-Backed Photo Authentication</h2>
-            <p>A system that proves photos came from real cameras, not AI generators. By creating unforgeable digital signatures at the moment of capture and recording them on a custom blockchain operated by trusted institutions, we're restoring trust in photography.</p>
+            <p>A system that proves photos came from real cameras, not AI generators. By creating unforgeable digital signatures at the moment of capture and recording them on a blockchain operated by a coalition of journalism and fact-checking organizations, we're restoring trust in photography.</p>
             <div class="cta-buttons">
                 <a href="#key-concepts" class="btn btn-primary">See How It Works</a>
                 <a href="https://github.com/Birthmark-Standard/Birthmark" class="btn btn-secondary">View on GitHub</a>
@@ -530,12 +530,93 @@
                         <li><strong>Public verification API:</strong> Open protocol allows anyone to build verification tools without asking permission</li>
                     </ul>
                 </div>
-                
+
                 <div class="technical-diagram">
                     <div>
                         <img src="./Validate_a_picture.png" alt="Diagram showing user verification flow: hash image on local computer, query blockchain for matching hash, receive validation result with metadata" onclick="window.open('./Validate_a_picture.png', '_blank')">
                         <p class="diagram-caption">Click to view full size</p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>4. Modification Levels & Editing Workflow</h2>
+            <div class="technical-content">
+                <div class="technical-diagram">
+                    <div style="width: 100%;">
+                        <div class="diagram-box">
+                            <h4>Level 0: Validated Raw</h4>
+                            <p>Unprocessed sensor data from verified camera hardware. This is the raw output directly from the camera sensor before any processing.</p>
+                        </div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box">
+                            <h4>Level 1: Validated</h4>
+                            <p>Camera ISP processing or minor edits (exposure, cropping, white balance). The image traces back to verified camera hardware.</p>
+                        </div>
+                        <div class="diagram-arrow">↓</div>
+                        <div class="diagram-box">
+                            <h4>Level 2: Modified</h4>
+                            <p>Significant modifications (content-aware fill, cloning, compositing). Still traces back to authenticated original through provenance chain.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="technical-text">
+                    <h3>Editing Provenance</h3>
+                    <p>When photographers edit authenticated images in validated software (like Adobe Lightroom), the editing software can submit the edited version with a link to the parent image.</p>
+
+                    <ul class="technical-list">
+                        <li><strong>Software validation:</strong> Editing software is validated by the Software Authority, proving it's legitimate software (not which edits were made)</li>
+                        <li><strong>Provenance chain:</strong> Each edit creates a new blockchain record linking the edited image back to its authenticated parent</li>
+                        <li><strong>Transparency:</strong> Verification shows the complete editing history: "Validated Raw → Edited in Lightroom → Modified in Photoshop"</li>
+                        <li><strong>GPS opt-in:</strong> Location and capture time hashing is disabled by default—photographers must explicitly enable it for privacy protection</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Media Validation Network & Governance</h2>
+            <div class="technical-content">
+                <div class="technical-text">
+                    <h3>Coalition-Operated Blockchain</h3>
+                    <p>The Birthmark Media Registry is not controlled by a single company or government. It's operated by the Media Validation Network—a coalition of journalism, fact-checking, and press freedom organizations.</p>
+
+                    <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Coalition Members (Target Organizations):</h4>
+                    <ul class="technical-list">
+                        <li>National Press Photographers Association (NPPA)</li>
+                        <li>International Fact-Checking Network (IFCN/Poynter)</li>
+                        <li>Committee to Protect Journalists (CPJ)</li>
+                        <li>Bellingcat (open-source intelligence investigation)</li>
+                        <li>Academic journalism schools</li>
+                        <li>Regional press freedom organizations</li>
+                    </ul>
+
+                    <p style="margin-top: 1rem;"><strong>Ineligible:</strong> News outlets (Reuters, AP, BBC) and content creators are excluded due to conflict of interest. Coalition Members must be organizations that analyze or validate media, not produce it.</p>
+                </div>
+
+                <div class="technical-text">
+                    <h3>Node Ownership Model</h3>
+                    <p>Organizations purchase validator node slots (one-time fee) that give them:</p>
+
+                    <ul class="technical-list">
+                        <li><strong>Validator authority:</strong> Right to operate a node that participates in network consensus</li>
+                        <li><strong>Governance rights:</strong> One vote per node in coalition governance decisions</li>
+                        <li><strong>No ownership limits:</strong> Maximum 2 nodes or 10% of total nodes per organization</li>
+                        <li><strong>Operational costs:</strong> ~$15-30/month VPS hosting per node (no ongoing fees to Foundation)</li>
+                    </ul>
+
+                    <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Governance Structure:</h4>
+                    <p style="color: var(--gray-text); margin-bottom: 0.5rem;"><strong>Phase 1 (Development):</strong> Foundation builds and validates the Registry technology</p>
+                    <p style="color: var(--gray-text); margin-bottom: 0.5rem;"><strong>Phase 2 (Production):</strong> Node sales begin, Foundation retains voting authority for 1 year after first sale</p>
+                    <p style="color: var(--gray-text);"><strong>Phase 3 (Coalition Governance):</strong> Full coalition governance with supermajority (67%) required for major decisions</p>
+
+                    <p style="margin-top: 1rem;"><strong>Legal Resilience:</strong> If a government tries to compel a coalition member to violate the charter, that member is removed from the network. Governments can only remove individual nodes—they cannot subvert the network itself.</p>
                 </div>
             </div>
         </div>
@@ -567,13 +648,18 @@
                 </div>
                 <div class="why-card">
                     <div class="why-icon">🤝</div>
-                    <h3>Complementary</h3>
-                    <p>Works alongside existing standards—provides backup when metadata gets stripped.</p>
+                    <h3>Complementary to C2PA</h3>
+                    <p>C2PA provides rich metadata embedded in files. Birthmark provides independent blockchain verification that survives when metadata gets stripped by social media.</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon">🌐</div>
                     <h3>Federated</h3>
                     <p>Anyone can run servers—no single point of control or censorship.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">🛡️</div>
+                    <h3>Censorship Resistant</h3>
+                    <p>Legal compulsion triggers node removal, not compliance. Governments cannot subvert the network—only remove individual nodes from it.</p>
                 </div>
             </div>
         </div>
@@ -586,23 +672,25 @@
                     <h3>The Birthmark Standard Foundation</h3>
                     <p>Creating hardware-backed photo authentication infrastructure on a custom blockchain operated by trusted institutions as a public good.</p>
                     <p style="margin-top: 1rem;">Target: 2028 Presidential Election</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;"><strong>Foundation Sustainability:</strong> Node sales, optional service contracts, technical training, and grant funding. Commits to 12-month operating reserves.</p>
                 </div>
                 <div class="footer-section">
                     <h3>Resources</h3>
                     <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
-                    <a href="#">Technical Specification</a>
-                    <a href="#">Grant Proposal</a>
-                    <a href="#">Development Roadmap</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark/blob/main/docs/org/Birthmark%20Standard%20Technical%20Architecture.docx">Technical Architecture</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark/blob/main/docs/org/Birthmark%20Media%20Registry%20Governance%20Charter.docx">Governance Charter</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark/blob/main/CLAUDE.md">Development Context</a>
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
                     <a href="mailto:samryan.pdx@gmail.com">samryan.pdx@gmail.com</a>
                     <a href="https://www.linkedin.com/in/samuelcryan">LinkedIn</a>
                     <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.8;">Complementary to C2PA: Provides backup authentication when metadata gets stripped through social media sharing.</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 The Birthmark Standard Foundation. Open source under MIT License.</p>
+                <p>&copy; 2025 The Birthmark Standard Foundation. Open source under Apache License 2.0.</p>
             </div>
         </div>
     </footer>
