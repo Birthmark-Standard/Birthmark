@@ -347,21 +347,85 @@ async def list_devices(device_family: Optional[str] = None):
     }
 
 
-# Phase 2: Validation endpoints (placeholder for future implementation)
-@app.post("/api/v1/validate/nuc", tags=["Validation"])
-async def validate_nuc_token():
-    """
-    Validate encrypted NUC token.
+# Validation endpoint - matches blockchain expectation
+class ValidationRequest(BaseModel):
+    """Request model for token validation from blockchain aggregator."""
+    ciphertext: str = Field(..., description="Hex-encoded encrypted NUC token")
+    table_references: List[int] = Field(..., min_length=3, max_length=3, description="3 table IDs")
+    key_indices: List[int] = Field(..., min_length=3, max_length=3, description="3 key indices")
 
-    Phase 2 endpoint: Receives encrypted NUC token from aggregator,
-    validates against stored NUC hash, returns PASS/FAIL.
 
-    NOTE: This is a placeholder. Full implementation in Phase 2.
+class ValidationResponse(BaseModel):
+    """Response model for validation."""
+    valid: bool
+    message: Optional[str] = None
+
+
+@app.post("/validate", response_model=ValidationResponse, tags=["Validation"])
+async def validate_token(request: ValidationRequest):
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="NUC validation not implemented in Phase 1"
-    )
+    Validate encrypted NUC token from blockchain aggregator.
+
+    Phase 1: Simplified validation (format checking + table existence)
+    Phase 2: Full cryptographic validation (decrypt + compare NUC hash)
+
+    Args:
+        request: Validation request with encrypted token and table references
+
+    Returns:
+        Validation response (PASS/FAIL)
+
+    Note: This endpoint is called by the blockchain aggregator, NOT directly by cameras.
+    The aggregator never sends the image hash - only the encrypted camera token.
+    """
+    if not table_manager:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="SMA not initialized (key tables not loaded)"
+        )
+
+    # Validate request format
+    try:
+        # Check encrypted token is valid hex
+        try:
+            encrypted_bytes = bytes.fromhex(request.ciphertext)
+        except ValueError:
+            return ValidationResponse(
+                valid=False,
+                message="Invalid ciphertext format (must be hex)"
+            )
+
+        # Check table references are valid
+        for table_id in request.table_references:
+            if table_id not in table_manager.key_tables:
+                return ValidationResponse(
+                    valid=False,
+                    message=f"Invalid table reference: {table_id}"
+                )
+
+        # Check key indices are in valid range (0-999)
+        for key_idx in request.key_indices:
+            if not (0 <= key_idx < 1000):
+                return ValidationResponse(
+                    valid=False,
+                    message=f"Invalid key index: {key_idx} (must be 0-999)"
+                )
+
+        # Phase 1: Simple validation (format checks passed)
+        # Phase 2: TODO - Decrypt token using table keys and validate against NUC hash
+        # For Phase 1 testing, we accept valid format as PASS
+        return ValidationResponse(
+            valid=True,
+            message="Phase 1 validation: format valid"
+        )
+
+    except Exception as e:
+        # Log error but don't expose details to aggregator
+        print(f"Validation error: {str(e)}")
+        return ValidationResponse(
+            valid=False,
+            message="Validation failed"
+        )
 
 
 if __name__ == "__main__":
