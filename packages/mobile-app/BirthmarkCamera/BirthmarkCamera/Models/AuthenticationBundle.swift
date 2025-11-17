@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CryptoKit
 
 /// Authentication bundle sent to aggregation server
 struct AuthenticationBundle: Codable {
@@ -25,15 +26,15 @@ struct AuthenticationBundle: Codable {
         case gpsHash = "gps_hash"
     }
 
-    /// Convert to API format (different from the Phase 1 format)
+    /// Convert to API format for aggregation server
     func toAPIFormat() -> [String: Any] {
         var dict: [String: Any] = [
             "image_hash": imageHash,
-            "encrypted_nuc_token": cameraToken.ciphertext.base64EncodedString(),
+            "encrypted_nuc_token": cameraToken.toSealedBoxData().base64EncodedString(),
             "table_references": [tableId, tableId, tableId], // iOS uses single table, repeat 3x for compatibility
             "key_indices": [keyIndex, keyIndex, keyIndex], // iOS uses single key, repeat 3x
             "timestamp": timestamp,
-            "device_signature": Data().base64EncodedString() // Placeholder for now
+            "device_signature": createBundleSignature().base64EncodedString()
         ]
 
         if let gpsHash = gpsHash {
@@ -41,6 +42,25 @@ struct AuthenticationBundle: Codable {
         }
 
         return dict
+    }
+
+    /// Create signature over bundle data
+    /// For Phase 2 demo: simple hash-based signature (not cryptographically secure)
+    /// Production should use ECDSA with device's private key
+    private func createBundleSignature() -> Data {
+        // Concatenate bundle fields for signing
+        let signatureInput = imageHash +
+                           cameraToken.toSealedBoxData().base64EncodedString() +
+                           "\(tableId)\(keyIndex)\(timestamp)"
+
+        guard let data = signatureInput.data(using: .utf8) else {
+            return Data()
+        }
+
+        // Use SHA-256 as mock signature for Phase 2
+        // TODO Phase 3: Replace with ECDSA signature using device private key
+        let hash = SHA256.hash(data: data)
+        return Data(hash)
     }
 }
 
@@ -54,6 +74,16 @@ struct CameraToken: Codable {
         case ciphertext
         case authTag = "auth_tag"
         case nonce
+    }
+
+    /// Combine into standard AES-GCM sealed box format: nonce + ciphertext + tag
+    /// This is the format expected by the aggregation server
+    func toSealedBoxData() -> Data {
+        var combined = Data()
+        combined.append(nonce)        // 12 bytes
+        combined.append(ciphertext)   // variable length (fingerprint size)
+        combined.append(authTag)      // 16 bytes
+        return combined
     }
 }
 
