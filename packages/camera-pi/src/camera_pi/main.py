@@ -34,7 +34,8 @@ class BirthmarkCamera:
         provisioning_path: Optional[Path] = None,
         aggregation_url: str = "http://localhost:8545",
         output_dir: Optional[Path] = None,
-        use_mock_camera: bool = False
+        use_mock_camera: bool = False,
+        use_certificates: bool = False
     ):
         """
         Initialize Birthmark camera.
@@ -44,12 +45,16 @@ class BirthmarkCamera:
             aggregation_url: Birthmark blockchain node URL
             output_dir: Output directory for images
             use_mock_camera: Use mock camera for testing
+            use_certificates: Use certificate-based authentication (new format)
         """
         # Set up output directory
         if output_dir is None:
             output_dir = Path("./data/captures")
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Store mode
+        self.use_certificates = use_certificates
 
         # Load provisioning data
         print("Loading provisioning data...")
@@ -63,9 +68,14 @@ class BirthmarkCamera:
         self.capture_manager = create_capture_manager(use_mock=use_mock_camera)
         self.capture_manager.initialize()
 
-        self.token_generator = create_token_generator_from_provisioning(
-            self.provisioning_data
-        )
+        # Token generator only needed for legacy format
+        if not use_certificates:
+            self.token_generator = create_token_generator_from_provisioning(
+                self.provisioning_data
+            )
+        else:
+            print("✓ Using certificate-based authentication (token generator not needed)")
+            self.token_generator = None
 
         self.tpm = create_tpm_interface_from_provisioning(
             self.provisioning_data
@@ -73,8 +83,11 @@ class BirthmarkCamera:
 
         self.aggregation_client = create_aggregation_client(aggregation_url)
 
-        # Initialize submission queue
-        self.submission_queue = SubmissionQueue(self.aggregation_client)
+        # Initialize submission queue (pass private key for certificate signing)
+        self.submission_queue = SubmissionQueue(
+            self.aggregation_client,
+            device_private_key=self.tpm._private_key
+        )
         self.submission_queue.start_worker()
 
         # Statistics
@@ -86,7 +99,15 @@ class BirthmarkCamera:
         """
         Capture authenticated photo.
 
-        Workflow:
+        Workflow (Certificate mode):
+        1. Capture raw Bayer data
+        2. Hash raw data
+        3. Create certificate bundle
+        4. Sign bundle
+        5. Queue submission (background)
+        6. Save image (if requested)
+
+        Workflow (Legacy mode):
         1. Capture raw Bayer data
         2. Hash raw data
         3. Generate camera token
@@ -107,29 +128,53 @@ class BirthmarkCamera:
         # Step 1: Capture raw data and hash
         capture_result = self.capture_manager.capture_with_hash()
 
-        # Step 2: Generate camera token
-        token_start = time.time()
-        camera_token = self.token_generator.generate_token()
-        token_time = time.time() - token_start
-        print(f"✓ Camera token: table={camera_token.table_id}, "
-              f"key_index={camera_token.key_index} ({token_time:.3f}s)")
+        if self.use_certificates:
+            # Certificate mode: No token generation needed
+            token_time = 0.0
+            print(f"✓ Using embedded certificate (no token generation needed)")
 
-        # Step 3: Create authentication bundle
-        bundle = AuthenticationBundle(
-            image_hash=capture_result.image_hash,
-            camera_token=camera_token.to_dict(),
-            timestamp=capture_result.timestamp,
-            table_assignments=self.provisioning_data.table_assignments,
-            gps_hash=None,  # TODO: GPS integration
-            device_signature=None  # Sign below
-        )
+            # Step 3: Create certificate bundle
+            from .aggregation_client import CertificateBundle
 
-        # Step 4: Sign bundle
-        sign_start = time.time()
-        signature = sign_bundle(bundle.to_json(), self.tpm._private_key)
-        bundle.device_signature = signature.hex()
-        sign_time = time.time() - sign_start
-        print(f"✓ Bundle signed ({sign_time:.3f}s)")
+            bundle = CertificateBundle(
+                image_hash=capture_result.image_hash,
+                camera_cert_pem=self.provisioning_data.device_certificate,
+                timestamp=capture_result.timestamp,
+                gps_hash=None,  # TODO: GPS integration
+                bundle_signature=None  # Sign in to_json()
+            )
+
+            # Step 4: Sign bundle (happens in to_json())
+            sign_start = time.time()
+            # Bundle is signed when to_json() is called with private key
+            sign_time = time.time() - sign_start
+            print(f"✓ Certificate bundle created")
+
+        else:
+            # Legacy mode: Generate camera token
+            # Step 2: Generate camera token
+            token_start = time.time()
+            camera_token = self.token_generator.generate_token()
+            token_time = time.time() - token_start
+            print(f"✓ Camera token: table={camera_token.table_id}, "
+                  f"key_index={camera_token.key_index} ({token_time:.3f}s)")
+
+            # Step 3: Create authentication bundle
+            bundle = AuthenticationBundle(
+                image_hash=capture_result.image_hash,
+                camera_token=camera_token.to_dict(),
+                timestamp=capture_result.timestamp,
+                table_assignments=self.provisioning_data.table_assignments,
+                gps_hash=None,  # TODO: GPS integration
+                device_signature=None  # Sign below
+            )
+
+            # Step 4: Sign bundle
+            sign_start = time.time()
+            signature = sign_bundle(bundle.to_json(), self.tpm._private_key)
+            bundle.device_signature = signature.hex()
+            sign_time = time.time() - sign_start
+            print(f"✓ Bundle signed ({sign_time:.3f}s)")
 
         # Step 5: Queue for submission (non-blocking)
         self.submission_queue.enqueue(bundle)
@@ -252,14 +297,17 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Single capture
+  # Single capture (legacy format)
   python -m camera_pi capture
+
+  # Single capture (certificate format)
+  python -m camera_pi capture --use-certificates
 
   # Timelapse (30 second interval, 100 photos)
   python -m camera_pi timelapse --interval 30 --count 100
 
-  # Continuous timelapse
-  python -m camera_pi timelapse --interval 10
+  # Continuous timelapse with certificates
+  python -m camera_pi timelapse --interval 10 --use-certificates
 
   # Test connection
   python -m camera_pi test
@@ -312,6 +360,12 @@ Examples:
         help='Use mock camera for testing'
     )
 
+    parser.add_argument(
+        '--use-certificates',
+        action='store_true',
+        help='Use certificate-based authentication (new format)'
+    )
+
     args = parser.parse_args()
 
     try:
@@ -320,7 +374,8 @@ Examples:
             provisioning_path=args.provisioning,
             aggregation_url=args.aggregator,
             output_dir=args.output,
-            use_mock_camera=args.mock
+            use_mock_camera=args.mock,
+            use_certificates=args.use_certificates
         )
 
         # Execute command
