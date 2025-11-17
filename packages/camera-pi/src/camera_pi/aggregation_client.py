@@ -94,6 +94,66 @@ class AuthenticationBundle:
 
 
 @dataclass
+class CertificateBundle:
+    """
+    Certificate-based authentication bundle (NEW format).
+
+    Uses self-contained X.509 certificates with Birthmark extensions instead
+    of separate authentication fields.
+    """
+    image_hash: str  # SHA-256 of raw Bayer data (64 hex chars)
+    camera_cert_pem: str  # PEM-encoded device certificate
+    timestamp: int  # Unix timestamp
+    gps_hash: Optional[str] = None
+    bundle_signature: Optional[str] = None  # ECDSA signature (hex)
+
+    def to_json(self, private_key) -> dict:
+        """
+        Convert to JSON for blockchain certificate API submission.
+
+        Args:
+            private_key: Device private key for signing bundle
+
+        Returns:
+            Dictionary ready for /api/v1/submit-cert endpoint
+        """
+        import base64
+        from cryptography import x509
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import serialization, hashes
+        from cryptography.hazmat.primitives.asymmetric import ec
+
+        # Convert PEM certificate to DER bytes
+        cert_pem_bytes = self.camera_cert_pem.encode('utf-8')
+        cert = x509.load_pem_x509_certificate(cert_pem_bytes, default_backend())
+        cert_der = cert.public_bytes(serialization.Encoding.DER)
+
+        # Sign the bundle (image_hash + timestamp)
+        if self.bundle_signature is None:
+            message = f"{self.image_hash}{self.timestamp}".encode('utf-8')
+            signature = private_key.sign(message, ec.ECDSA(hashes.SHA256()))
+            bundle_signature_b64 = base64.b64encode(signature).decode('utf-8')
+        else:
+            bundle_signature_b64 = base64.b64encode(
+                bytes.fromhex(self.bundle_signature)
+            ).decode('utf-8')
+
+        # Prepare payload
+        payload = {
+            "image_hash": self.image_hash,
+            "camera_cert": base64.b64encode(cert_der).decode('utf-8'),
+            "software_cert": None,  # Phase 2
+            "timestamp": self.timestamp,
+            "bundle_signature": bundle_signature_b64,
+        }
+
+        if self.gps_hash:
+            payload["gps_hash"] = self.gps_hash
+
+        return payload
+
+
+@dataclass
 class SubmissionReceipt:
     """Receipt from aggregation server."""
     receipt_id: str
@@ -209,6 +269,85 @@ class AggregationClient:
         # All retries failed
         raise requests.exceptions.RequestException(
             f"Submission failed after {max_attempts} attempts"
+        )
+
+    def submit_certificate(
+        self,
+        bundle: CertificateBundle,
+        private_key,
+        retry: bool = True
+    ) -> SubmissionReceipt:
+        """
+        Submit certificate-based authentication bundle (NEW format).
+
+        Args:
+            bundle: CertificateBundle to submit
+            private_key: Device private key for signing
+            retry: Whether to retry on failure
+
+        Returns:
+            SubmissionReceipt from server
+
+        Raises:
+            requests.exceptions.RequestException: If submission fails after retries
+        """
+        endpoint = f"{self.server_url}/api/v1/submit-cert"
+        payload = bundle.to_json(private_key)
+
+        attempts = 0
+        max_attempts = self.max_retries if retry else 1
+
+        while attempts < max_attempts:
+            try:
+                response = self.session.post(
+                    endpoint,
+                    json=payload,
+                    timeout=self.timeout
+                )
+
+                # Check response status
+                if response.status_code in [200, 202]:
+                    data = response.json()
+                    return SubmissionReceipt(
+                        receipt_id=data.get('receipt_id', 'unknown'),
+                        status=data.get('status', 'pending_validation'),
+                        timestamp=data.get('timestamp'),
+                        message=data.get('message')
+                    )
+                else:
+                    print(f"⚠ Certificate submission failed: {response.status_code} {response.text}")
+
+                    if response.status_code >= 500 and retry:
+                        # Server error - retry
+                        attempts += 1
+                        if attempts < max_attempts:
+                            time.sleep(2 ** attempts)  # Exponential backoff
+                            continue
+                    else:
+                        # Client error - don't retry
+                        raise requests.exceptions.HTTPError(
+                            f"HTTP {response.status_code}: {response.text}"
+                        )
+
+            except requests.exceptions.Timeout:
+                print(f"⚠ Request timeout (attempt {attempts + 1}/{max_attempts})")
+                attempts += 1
+                if attempts < max_attempts:
+                    time.sleep(2 ** attempts)
+                    continue
+                raise
+
+            except requests.exceptions.ConnectionError as e:
+                print(f"⚠ Connection error: {e}")
+                attempts += 1
+                if attempts < max_attempts:
+                    time.sleep(2 ** attempts)
+                    continue
+                raise
+
+        # All retries failed
+        raise requests.exceptions.RequestException(
+            f"Certificate submission failed after {max_attempts} attempts"
         )
 
     def test_connection(self) -> bool:

@@ -3,16 +3,25 @@ Certificate generation utilities for device provisioning.
 
 Generates X.509 device certificates signed by manufacturer CA.
 Uses ECDSA P-256 as specified in Birthmark architecture.
+
+Phase 2: Generates certificates with Birthmark extensions (encrypted NUC, key info, MA endpoint).
 """
 
 from datetime import datetime, timedelta
 from typing import Tuple, Optional
 from pathlib import Path
+import sys
 from cryptography import x509
 from cryptography.x509.oid import NameOID, ExtensionOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
+
+# Add shared certificates to path
+shared_path = Path(__file__).resolve().parents[4] / "shared"
+sys.path.insert(0, str(shared_path))
+
+from certificates.builder import CameraCertificateBuilder
 
 
 class CertificateAuthority:
@@ -195,24 +204,59 @@ class CertificateAuthority:
         device_serial: str,
         device_public_key: ec.EllipticCurvePublicKey,
         device_family: str = "Raspberry Pi",
+        encrypted_nuc: Optional[bytes] = None,
+        key_table_id: Optional[int] = None,
+        key_index: Optional[int] = None,
+        ma_endpoint: str = "http://localhost:8001/validate-cert",
         validity_days: int = 730
     ) -> x509.Certificate:
         """
-        Generate a device certificate signed by the intermediate CA.
+        Generate a device certificate with Birthmark extensions.
+
+        NEW: Generates certificates with encrypted NUC, key table info, and MA endpoint
+        embedded as X.509 custom extensions.
 
         Args:
             device_serial: Unique device serial number
             device_public_key: Device's public key
             device_family: Device type (e.g., "Raspberry Pi", "iOS")
+            encrypted_nuc: Encrypted NUC hash (60 bytes: ciphertext + nonce + tag)
+            key_table_id: Key table ID (0-2499)
+            key_index: Key index within table (0-999)
+            ma_endpoint: MA validation endpoint URL
             validity_days: Certificate validity period (default 2 years)
 
         Returns:
-            Signed X.509 device certificate
+            Signed X.509 device certificate with Birthmark extensions
         """
         if not self._ca_cert or not self._ca_key:
             raise ValueError("CA credentials not loaded. Call _load_ca_credentials() first.")
 
-        # Build certificate subject
+        # If Birthmark extensions provided, use CameraCertificateBuilder
+        if encrypted_nuc is not None and key_table_id is not None and key_index is not None:
+            builder = CameraCertificateBuilder(
+                device_serial=device_serial,
+                manufacturer_name="Birthmark Standard Foundation",
+                device_public_key=device_public_key,
+            )
+
+            builder.set_manufacturer_id("birthmark_simulated_ma")
+            builder.set_ma_endpoint(ma_endpoint)
+            builder.set_encrypted_nuc(encrypted_nuc)
+            builder.set_key_table_id(key_table_id)
+            builder.set_key_index(key_index)
+            builder.set_device_family(device_family)
+
+            cert = builder.build(
+                ca_private_key=self._ca_key,
+                ca_name="Birthmark Simulated Intermediate CA",
+                validity_years=validity_days // 365
+            )
+
+            return cert
+
+        # Legacy path: Generate standard certificate without Birthmark extensions
+        # (For backward compatibility during migration)
         subject = x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
             x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Birthmark Standard Foundation"),
@@ -221,7 +265,6 @@ class CertificateAuthority:
             x509.NameAttribute(NameOID.SERIAL_NUMBER, device_serial),
         ])
 
-        # Create certificate builder
         cert = (
             x509.CertificateBuilder()
             .subject_name(subject)
