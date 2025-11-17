@@ -3,6 +3,7 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
 import re
+import base64
 
 
 class AuthenticationBundle(BaseModel):
@@ -45,6 +46,59 @@ class AuthenticationBundle(BaseModel):
         return v
 
 
+class CertificateBundle(BaseModel):
+    """
+    Certificate-based submission bundle (NEW format).
+
+    Replaces AuthenticationBundle with self-contained certificate documents.
+    Camera certificate includes encrypted NUC, key table/index, and MA endpoint.
+    Software certificate includes version info and SA endpoint (Phase 2).
+    """
+
+    image_hash: str = Field(..., min_length=64, max_length=64, description="SHA-256 hash (64 hex chars)")
+    camera_cert: str = Field(..., description="Base64-encoded DER camera certificate")
+    software_cert: Optional[str] = Field(None, description="Base64-encoded DER software cert (Phase 2)")
+    timestamp: int = Field(..., gt=0, description="Unix timestamp")
+    gps_hash: Optional[str] = Field(None, min_length=64, max_length=64, description="Optional GPS hash")
+    bundle_signature: str = Field(..., description="Base64-encoded ECDSA signature over bundle")
+
+    @field_validator("image_hash", "gps_hash")
+    @classmethod
+    def validate_hash(cls, v: Optional[str]) -> Optional[str]:
+        """Validate SHA-256 hash format."""
+        if v is None:
+            return v
+        if not re.match(r'^[a-f0-9]{64}$', v, re.IGNORECASE):
+            raise ValueError("Hash must be 64 hexadecimal characters")
+        return v.lower()
+
+    @field_validator("camera_cert", "software_cert", "bundle_signature")
+    @classmethod
+    def validate_base64(cls, v: Optional[str]) -> Optional[str]:
+        """Validate base64 encoding."""
+        if v is None:
+            return v
+        try:
+            base64.b64decode(v)
+            return v
+        except Exception as e:
+            raise ValueError(f"Invalid base64 encoding: {e}")
+
+    def get_camera_cert_bytes(self) -> bytes:
+        """Decode and return camera certificate bytes."""
+        return base64.b64decode(self.camera_cert)
+
+    def get_software_cert_bytes(self) -> Optional[bytes]:
+        """Decode and return software certificate bytes."""
+        if self.software_cert:
+            return base64.b64decode(self.software_cert)
+        return None
+
+    def get_signature_bytes(self) -> bytes:
+        """Decode and return signature bytes."""
+        return base64.b64decode(self.bundle_signature)
+
+
 class SubmissionResponse(BaseModel):
     """Response after camera submission."""
 
@@ -54,11 +108,40 @@ class SubmissionResponse(BaseModel):
 
 
 class SMAValidationRequest(BaseModel):
-    """Request to SMA for token validation."""
+    """Request to SMA for token validation (DEPRECATED - use CertificateValidationRequest)."""
 
     encrypted_token: bytes
     table_references: List[int]
     key_indices: List[int]
+
+
+class CertificateValidationRequest(BaseModel):
+    """Request to MA/SA for certificate-based validation (NEW format)."""
+
+    camera_cert: str = Field(..., description="Base64-encoded DER camera certificate")
+    image_hash: str = Field(..., min_length=64, max_length=64, description="SHA-256 image hash")
+
+    @field_validator("image_hash")
+    @classmethod
+    def validate_hash(cls, v: str) -> str:
+        """Validate SHA-256 hash format."""
+        if not re.match(r'^[a-f0-9]{64}$', v, re.IGNORECASE):
+            raise ValueError("Hash must be 64 hexadecimal characters")
+        return v.lower()
+
+    @field_validator("camera_cert")
+    @classmethod
+    def validate_base64(cls, v: str) -> str:
+        """Validate base64 encoding."""
+        try:
+            base64.b64decode(v)
+            return v
+        except Exception as e:
+            raise ValueError(f"Invalid base64 encoding: {e}")
+
+    def get_cert_bytes(self) -> bytes:
+        """Decode and return certificate bytes."""
+        return base64.b64decode(self.camera_cert)
 
 
 class SMAValidationResponse(BaseModel):
