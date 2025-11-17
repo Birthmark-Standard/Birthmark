@@ -32,7 +32,7 @@ class BirthmarkCamera:
     def __init__(
         self,
         provisioning_path: Optional[Path] = None,
-        aggregation_url: str = "https://api.birthmarkstandard.org",
+        aggregation_url: str = "http://localhost:8545",
         output_dir: Optional[Path] = None,
         use_mock_camera: bool = False
     ):
@@ -41,7 +41,7 @@ class BirthmarkCamera:
 
         Args:
             provisioning_path: Path to provisioning data file
-            aggregation_url: Aggregation server URL
+            aggregation_url: Birthmark blockchain node URL
             output_dir: Output directory for images
             use_mock_camera: Use mock camera for testing
         """
@@ -119,6 +119,7 @@ class BirthmarkCamera:
             image_hash=capture_result.image_hash,
             camera_token=camera_token.to_dict(),
             timestamp=capture_result.timestamp,
+            table_assignments=self.provisioning_data.table_assignments,
             gps_hash=None,  # TODO: GPS integration
             device_signature=None  # Sign below
         )
@@ -202,17 +203,17 @@ class BirthmarkCamera:
 
     def test_connection(self) -> bool:
         """
-        Test connection to aggregation server.
+        Test connection to blockchain node.
 
         Returns:
             True if server is reachable
         """
-        print("Testing aggregation server connection...")
+        print("Testing blockchain node connection...")
         if self.aggregation_client.test_connection():
-            print("✓ Server is reachable")
+            print("✓ Blockchain node is reachable")
             return True
         else:
-            print("✗ Server not reachable")
+            print("✗ Blockchain node not reachable")
             return False
 
     def show_info(self) -> None:
@@ -282,8 +283,8 @@ Examples:
 
     parser.add_argument(
         '--aggregator',
-        default='https://api.birthmarkstandard.org',
-        help='Aggregation server URL'
+        default='http://localhost:8545',
+        help='Birthmark blockchain node URL (default: http://localhost:8545)'
     )
 
     parser.add_argument(

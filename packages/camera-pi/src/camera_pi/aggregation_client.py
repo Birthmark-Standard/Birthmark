@@ -16,25 +16,70 @@ import requests
 @dataclass
 class AuthenticationBundle:
     """
-    Complete authentication bundle sent to aggregation server.
+    Complete authentication bundle sent to blockchain aggregator.
 
-    This format MUST match what aggregation server expects.
+    This format MUST match what blockchain aggregator expects.
+    Updated for merged blockchain+aggregator architecture (Nov 2025).
     """
     image_hash: str  # SHA-256 of raw Bayer data (64 hex chars)
-    camera_token: dict  # CameraToken.to_dict()
+    camera_token: dict  # CameraToken.to_dict() - will be converted to blockchain format
     timestamp: int  # Unix timestamp (seconds since epoch)
+    table_assignments: list[int]  # All 3 assigned tables (for privacy)
     gps_hash: Optional[str] = None  # SHA-256 of GPS coords (optional)
     device_signature: Optional[str] = None  # ECDSA signature (hex)
 
     def to_json(self) -> dict:
-        """Convert to JSON for API submission."""
-        return {
+        """
+        Convert to JSON for blockchain API submission.
+
+        Blockchain expects:
+        - encrypted_nuc_token: bytes (base64-encoded ciphertext + nonce + auth_tag)
+        - table_references: List[int] - all 3 assigned tables
+        - key_indices: List[int] - 3 key indices (actual + 2 random for privacy)
+        - device_signature: bytes (base64-encoded)
+        """
+        import secrets
+        import base64
+
+        # Pack encrypted token: ciphertext (32 bytes) + nonce (12 bytes) + auth_tag (16 bytes)
+        ciphertext_bytes = bytes.fromhex(self.camera_token['ciphertext'])
+        nonce_bytes = bytes.fromhex(self.camera_token['nonce'])
+        auth_tag_bytes = bytes.fromhex(self.camera_token['auth_tag'])
+        packed_token = ciphertext_bytes + nonce_bytes + auth_tag_bytes
+
+        # Generate 3 key indices: actual one + 2 random (for privacy)
+        actual_table_id = self.camera_token['table_id']
+        actual_key_index = self.camera_token['key_index']
+
+        # Map actual table position to generate indices in same order
+        table_position = self.table_assignments.index(actual_table_id)
+        key_indices = []
+        for i in range(3):
+            if i == table_position:
+                key_indices.append(actual_key_index)
+            else:
+                # Random indices for unused tables (privacy)
+                key_indices.append(secrets.randbelow(1000))
+
+        # Prepare payload for blockchain
+        payload = {
             "image_hash": self.image_hash,
-            "camera_token": self.camera_token,
+            "encrypted_nuc_token": base64.b64encode(packed_token).decode('utf-8'),
+            "table_references": self.table_assignments,  # All 3 assigned tables
+            "key_indices": key_indices,  # Actual + 2 random
             "timestamp": self.timestamp,
-            "gps_hash": self.gps_hash,
-            "device_signature": self.device_signature
         }
+
+        # Add optional fields
+        if self.gps_hash:
+            payload["gps_hash"] = self.gps_hash
+
+        if self.device_signature:
+            payload["device_signature"] = base64.b64encode(
+                bytes.fromhex(self.device_signature)
+            ).decode('utf-8')
+
+        return payload
 
     @classmethod
     def from_dict(cls, data: dict) -> 'AuthenticationBundle':
