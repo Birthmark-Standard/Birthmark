@@ -26,6 +26,10 @@ from .provisioning.provisioner import (
 from .key_tables.table_manager import KeyTableManager
 from .identity.device_registry import DeviceRegistry, DeviceRegistration
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "shared"))
+from certificates.parser import CertificateParser
+
 
 # Pydantic models for API
 class ProvisionDeviceRequest(BaseModel):
@@ -425,6 +429,89 @@ async def validate_token(request: ValidationRequest):
         return ValidationResponse(
             valid=False,
             message="Validation failed"
+        )
+
+
+class CertificateValidationRequest(BaseModel):
+    """Request model for certificate-based validation (NEW format)."""
+    camera_cert: str = Field(..., description="Base64-encoded DER camera certificate")
+    image_hash: str = Field(..., min_length=64, max_length=64, description="SHA-256 image hash")
+
+
+@app.post("/validate-cert", response_model=ValidationResponse, tags=["Validation"])
+async def validate_certificate(request: CertificateValidationRequest):
+    """
+    Validate camera certificate (NEW format).
+
+    This endpoint receives the camera certificate and extracts the encrypted NUC,
+    key table ID, and key index from the certificate extensions.
+
+    Phase 1: Certificate parsing + format validation
+    Phase 2: Full cryptographic validation (decrypt NUC + compare to registry)
+
+    Args:
+        request: Certificate validation request
+
+    Returns:
+        Validation response (PASS/FAIL)
+
+    Note: The MA never uses the image_hash in validation logic - it's only for
+    logging/audit purposes. The MA validates camera authenticity, not image content.
+    """
+    if not table_manager or not device_registry:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="SMA not initialized"
+        )
+
+    try:
+        # Parse certificate
+        import base64
+        cert_bytes = base64.b64decode(request.camera_cert)
+
+        parser = CertificateParser()
+        cert, extensions = parser.parse_camera_cert_bytes(cert_bytes)
+
+        print(f"Certificate validation request:")
+        print(f"  Manufacturer: {extensions.manufacturer_id}")
+        print(f"  Device Family: {extensions.device_family}")
+        print(f"  Key Table ID: {extensions.key_table_id}")
+        print(f"  Key Index: {extensions.key_index}")
+        print(f"  Image Hash: {request.image_hash[:16]}... (not used in validation)")
+
+        # Validate table exists
+        if extensions.key_table_id not in table_manager.key_tables:
+            return ValidationResponse(
+                valid=False,
+                message=f"Invalid table ID: {extensions.key_table_id}"
+            )
+
+        # Validate key index range
+        if not (0 <= extensions.key_index < 1000):
+            return ValidationResponse(
+                valid=False,
+                message=f"Invalid key index: {extensions.key_index}"
+            )
+
+        # Validate encrypted NUC length
+        if len(extensions.encrypted_nuc) != 60:
+            return ValidationResponse(
+                valid=False,
+                message=f"Invalid encrypted NUC length: {len(extensions.encrypted_nuc)}"
+            )
+
+        # Phase 1: Format validation passed
+        # Phase 2 TODO: Decrypt NUC using table key and validate against registry
+        return ValidationResponse(
+            valid=True,
+            message="Phase 1 certificate validation: format valid"
+        )
+
+    except Exception as e:
+        print(f"Certificate validation error: {str(e)}")
+        return ValidationResponse(
+            valid=False,
+            message=f"Certificate validation failed: {str(e)}"
         )
 
 
