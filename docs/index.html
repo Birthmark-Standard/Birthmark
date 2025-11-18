@@ -20,6 +20,7 @@
                     <a href="#how-it-works">How It Works</a>
                     <a href="technical-architecture.html">Technical</a>
                     <a href="governance.html">Governance</a>
+                    <a href="contact.html">Contact</a>
                     <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
                 </nav>
             </div>
@@ -100,7 +101,7 @@
                 
                 <div class="technical-diagram">
                     <div>
-                        <img src="./Take_a_picture.png" alt="Diagram showing the complete flow from camera capture through hashing, aggregation, manufacturer validation, and blockchain recording" onclick="window.open('./Take_a_picture.png', '_blank')">
+                        <img src="./Take_a_picture.png" alt="Diagram showing parallel hashing workflow: camera captures image, creates raw and processed hashes simultaneously, sends to Birthmark Media Registry for validation and blockchain recording" onclick="window.open('./Take_a_picture.png', '_blank')">
                         <p class="diagram-caption">Click to view full size</p>
                     </div>
                 </div>
@@ -114,8 +115,8 @@
             <div class="technical-content">
                 <div class="technical-diagram">
                     <div>
-                        <img src="./Validate_the_camera.png" alt="Diagram showing privacy-preserving camera validation process using encrypted NUC maps and key table system between camera, aggregator, and manufacturer" onclick="window.open('./Validate_the_camera.png', '_blank')">
-                        <p class="diagram-caption">Click to view full size - Note: "Calibration file" refers to the camera's unique sensor identifier</p>
+                        <img src="./Validate_the_camera.png" alt="Diagram showing privacy-preserving camera validation: camera encrypts calibration file with key table, submission server forwards certificate to manufacturer, manufacturer validates and returns PASS/FAIL without seeing image hashes" onclick="window.open('./Validate_the_camera.png', '_blank')">
+                        <p class="diagram-caption">Click to view full size - Shows separation of concerns: manufacturer validates camera, never sees image content</p>
                     </div>
                 </div>
 
@@ -152,8 +153,8 @@
 
                 <div class="technical-diagram">
                     <div>
-                        <img src="./Validate_a_picture.png" alt="Diagram showing user verification flow: hash image on local computer, query blockchain for matching hash, receive validation result with metadata" onclick="window.open('./Validate_a_picture.png', '_blank')">
-                        <p class="diagram-caption">Click to view full size</p>
+                        <img src="./Validate_a_picture.png" alt="Diagram showing user verification workflow: select image, hash it locally in web browser, send hash to Birthmark Blockchain, receive match result with timestamp and metadata" onclick="window.open('./Validate_a_picture.png', '_blank')">
+                        <p class="diagram-caption">Click to view full size - User verification happens client-side</p>
                     </div>
                 </div>
             </div>
@@ -239,12 +240,12 @@
                     <h3>Resources</h3>
                     <a href="technical-architecture.html">Technical Architecture</a>
                     <a href="governance.html">Governance Charter</a>
+                    <a href="contact.html">Contact</a>
                     <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
-                    <a href="https://github.com/Birthmark-Standard/Birthmark/blob/main/CLAUDE.md">Development Context</a>
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
-                    <a href="mailto:samryan.pdx@gmail.com">samryan.pdx@gmail.com</a>
+                    <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
                     <a href="https://www.linkedin.com/in/samuelcryan">LinkedIn</a>
                     <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
                     <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.8;">Complementary to C2PA: Provides backup authentication when metadata gets stripped through social media sharing.</p>

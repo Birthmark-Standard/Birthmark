@@ -200,10 +200,13 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 
 ## Contact
 
-**Samuel C. Ryan**  
-Founder & Executive Director  
-The Birthmark Standard Foundation  
-Portland, Oregon
+**The Birthmark Standard Foundation**
+Website: [birthmarkstandard.org](https://birthmarkstandard.org)
+Email: [contact@birthmarkstandard.org](mailto:contact@birthmarkstandard.org)
+
+**Samuel C. Ryan**
+Founder & Executive Director
+LinkedIn: [linkedin.com/in/samuelcryan](https://www.linkedin.com/in/samuelcryan)
 
 ---
 
