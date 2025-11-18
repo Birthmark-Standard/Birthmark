@@ -100,8 +100,9 @@
                 </div>
                 
                 <div class="technical-diagram">
-                    <div class="diagram-box" style="background: white; width: 100%;">
-                        <p style="text-align: center; color: var(--gray-text); font-style: italic;">Diagram: Camera capture → Hash creation → Aggregation server → Blockchain recording</p>
+                    <div>
+                        <img src="./Take_a_picture.png" alt="Diagram showing parallel hashing workflow: camera captures image, creates raw and processed hashes simultaneously, sends to Birthmark Media Registry for validation and blockchain recording" onclick="window.open('./Take_a_picture.png', '_blank')">
+                        <p class="diagram-caption">Click to view full size</p>
                     </div>
                 </div>
             </div>
@@ -113,9 +114,9 @@
             <h2>2. Validating Camera Authenticity</h2>
             <div class="technical-content">
                 <div class="technical-diagram">
-                    <div class="diagram-box" style="background: white; width: 100%;">
-                        <p style="text-align: center; color: var(--gray-text); font-style: italic;">Diagram: Privacy-preserving validation using encrypted camera identifiers and key tables</p>
-                        <p style="text-align: center; color: var(--gray-text); font-size: 0.85rem; margin-top: 0.5rem;">Note: Manufacturer validates device authenticity without seeing image content</p>
+                    <div>
+                        <img src="./Validate_the_camera.png" alt="Diagram showing privacy-preserving camera validation: camera encrypts calibration file with key table, submission server forwards certificate to manufacturer, manufacturer validates and returns PASS/FAIL without seeing image hashes" onclick="window.open('./Validate_the_camera.png', '_blank')">
+                        <p class="diagram-caption">Click to view full size - Shows separation of concerns: manufacturer validates camera, never sees image content</p>
                     </div>
                 </div>
 
@@ -151,8 +152,9 @@
                 </div>
 
                 <div class="technical-diagram">
-                    <div class="diagram-box" style="background: white; width: 100%;">
-                        <p style="text-align: center; color: var(--gray-text); font-style: italic;">Diagram: User hashes image locally → Queries blockchain → Receives verification result</p>
+                    <div>
+                        <img src="./Validate_a_picture.png" alt="Diagram showing user verification workflow: select image, hash it locally in web browser, send hash to Birthmark Blockchain, receive match result with timestamp and metadata" onclick="window.open('./Validate_a_picture.png', '_blank')">
+                        <p class="diagram-caption">Click to view full size - User verification happens client-side</p>
                     </div>
                 </div>
             </div>
