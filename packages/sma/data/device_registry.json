@@ -2,31 +2,129 @@
   "devices": [
     {
       "device_serial": "TEST-CAMERA-001",
-      "nuc_hash": "53923bd9be2f046be19715e5df8e5e6b108c254e01dadff3fd2cb79ca96cfe67",
       "table_assignments": [
         4,
         5,
         7
       ],
+      "device_family": "Raspberry Pi",
+      "provisioned_at": "2025-11-15T20:24:41.201985",
+      "device_secret": "53923bd9be2f046be19715e5df8e5e6b108c254e01dadff3fd2cb79ca96cfe67",
+      "key_table_indices": [],
       "device_certificate": "-----BEGIN CERTIFICATE-----\nMIIChDCCAiqgAwIBAgIUVTQK33jV9ELVXLbnX9SiShid/VIwCgYIKoZIzj0EAwIw\neDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExJjAkBgNVBAoMHUJp\ncnRobWFyayBTdGFuZGFyZCBGb3VuZGF0aW9uMSwwKgYDVQQDDCNCaXJ0aG1hcmsg\nU2ltdWxhdGVkIEludGVybWVkaWF0ZSBDQTAeFw0yNTExMTUyMDI0NDFaFw0yNzEx\nMTUyMDI0NDFaMIGRMQswCQYDVQQGEwJVUzEmMCQGA1UECgwdQmlydGhtYXJrIFN0\nYW5kYXJkIEZvdW5kYXRpb24xFTATBgNVBAsMDFJhc3BiZXJyeSBQaTEpMCcGA1UE\nAwwgQmlydGhtYXJrIERldmljZSBURVNULUNBTUVSQS0wMDExGDAWBgNVBAUTD1RF\nU1QtQ0FNRVJBLTAwMTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABK+iDzBXKESt\n9STW+DGM1Nx2bYAa1aHVF8AatAsHzgqRgTO8iDbwwy+0x8oy4Ew8fdckWIsUMZRy\noJzUmUPD8mGjeDB2MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMBYGA1Ud\nJQEB/wQMMAoGCCsGAQUFBwMCMB0GA1UdDgQWBBTJwS7nFPB+e2r5mcjdIIegubxY\n1TAfBgNVHSMEGDAWgBSpNKX+pDUS1SmXIC+A3Pepc/o8GDAKBggqhkjOPQQDAgNI\nADBFAiBJ9pIwxs2p+d/py3wFv6wCQVatCvKEuw56Kovva4QpNwIhAOh6IyHzzS8E\npcLyeu7yqzLfEuWVINpzS4Cefm4y0ZoP\n-----END CERTIFICATE-----\n",
       "device_public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEr6IPMFcoRK31JNb4MYzU3HZtgBrV\nodUXwBq0CwfOCpGBM7yINvDDL7THyjLgTDx91yRYixQxlHKgnNSZQ8PyYQ==\n-----END PUBLIC KEY-----\n",
-      "device_family": "Raspberry Pi",
-      "provisioned_at": "2025-11-15T20:24:41.201985"
+      "is_blacklisted": false,
+      "blacklisted_at": null,
+      "blacklist_reason": null,
+      "nuc_hash": "53923bd9be2f046be19715e5df8e5e6b108c254e01dadff3fd2cb79ca96cfe67"
     },
     {
       "device_serial": "TEST-CAMERA-002",
-      "nuc_hash": "6a893d6051b5782323c06707ed0a205b7357f1efe6ec840ebd4267848879aacc",
       "table_assignments": [
         3,
         5,
         6
       ],
+      "device_family": "Raspberry Pi",
+      "provisioned_at": "2025-11-15T20:30:59.556817",
+      "device_secret": "6a893d6051b5782323c06707ed0a205b7357f1efe6ec840ebd4267848879aacc",
+      "key_table_indices": [],
       "device_certificate": "-----BEGIN CERTIFICATE-----\nMIIChTCCAiqgAwIBAgIUFfo+jDcR3T3V+7rkVGadY3ClAicwCgYIKoZIzj0EAwIw\neDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExJjAkBgNVBAoMHUJp\ncnRobWFyayBTdGFuZGFyZCBGb3VuZGF0aW9uMSwwKgYDVQQDDCNCaXJ0aG1hcmsg\nU2ltdWxhdGVkIEludGVybWVkaWF0ZSBDQTAeFw0yNTExMTUyMDMwNTlaFw0yNzEx\nMTUyMDMwNTlaMIGRMQswCQYDVQQGEwJVUzEmMCQGA1UECgwdQmlydGhtYXJrIFN0\nYW5kYXJkIEZvdW5kYXRpb24xFTATBgNVBAsMDFJhc3BiZXJyeSBQaTEpMCcGA1UE\nAwwgQmlydGhtYXJrIERldmljZSBURVNULUNBTUVSQS0wMDIxGDAWBgNVBAUTD1RF\nU1QtQ0FNRVJBLTAwMjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABIrQnphviIe/\nyVN2ir0+TbKra4vMZ+9Rl3o2Aoa60PGOZ5u5q0q0o0xDyi6x2pvhFmPqsXfSy+fZ\njmJ+lVLJ33+jeDB2MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMBYGA1Ud\nJQEB/wQMMAoGCCsGAQUFBwMCMB0GA1UdDgQWBBRu1/6CLlKzSnmJ3yWuu8ylH+r7\npzAfBgNVHSMEGDAWgBSpNKX+pDUS1SmXIC+A3Pepc/o8GDAKBggqhkjOPQQDAgNJ\nADBGAiEAg5tb7sRm5MiquQ9HqyQ7k4l5qL94zdTkD6XgFJp6RGYCIQDu58giccQG\nRCWhJ3Ie/fF9UHcxLQvcyT7ym9qatuQwlQ==\n-----END CERTIFICATE-----\n",
       "device_public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEitCemG+Ih7/JU3aKvT5Nsqtri8xn\n71GXejYChrrQ8Y5nm7mrSrSjTEPKLrHam+EWY+qxd9LL59mOYn6VUsnffw==\n-----END PUBLIC KEY-----\n",
-      "device_family": "Raspberry Pi",
-      "provisioned_at": "2025-11-15T20:30:59.556817"
+      "is_blacklisted": false,
+      "blacklisted_at": null,
+      "blacklist_reason": null,
+      "nuc_hash": "6a893d6051b5782323c06707ed0a205b7357f1efe6ec840ebd4267848879aacc"
+    },
+    {
+      "device_serial": "TEST-iOS-1763664889",
+      "table_assignments": [
+        471,
+        1094,
+        2186
+      ],
+      "device_family": "iOS",
+      "provisioned_at": "2025-11-20T18:54:49.228100",
+      "device_secret": "520b2d052fb2c4a5867038488a5bd3b1c482405bbd3f09383cfdd7833806812f",
+      "key_table_indices": [
+        471,
+        1094,
+        2186
+      ],
+      "device_certificate": "-----BEGIN CERTIFICATE-----\nMIICgzCCAimgAwIBAgIUZBJEVxJer5lndBAnvmE20tJysqowCgYIKoZIzj0EAwIw\ngaMxCzAJBgNVBAYTAlVTMQ8wDQYDVQQIDAZPcmVnb24xDzANBgNVBAcMBkV1Z2Vu\nZTEmMCQGA1UECgwdQmlydGhtYXJrIFN0YW5kYXJkIEZvdW5kYXRpb24xKjAoBgNV\nBAsMIVNpbXVsYXRlZCBNYW51ZmFjdHVyaW5nIEF1dGhvcml0eTEeMBwGA1UEAwwV\nQmlydGhtYXJrIFNNQSBSb290IENBMB4XDTI1MTEyMDE4NTQ0OVoXDTI2MTEyMDE4\nNTQ0OVowUDEcMBoGA1UEAwwTVEVTVC1pT1MtMTc2MzY2NDg4OTEbMBkGA1UECgwS\nQmlydGhtYXJrIFN0YW5kYXJkMRMwEQYDVQQLDAppT1MgRGV2aWNlMFkwEwYHKoZI\nzj0CAQYIKoZIzj0DAQcDQgAE2V5XvXHujFYfn4HYeIoIsingzNeGB7fH7w26HnK1\ngn2NR/RY9JEdwU4eN+lRGVHw2qkMqFMR0jWONzakRT4R1KOBjDCBiTBNBgkrBgEE\nAYaNHwEEQDUyMGIyZDA1MmZiMmM0YTU4NjcwMzg0ODhhNWJkM2IxYzQ4MjQwNWJi\nZDNmMDkzODNjZmRkNzgzMzgwNjgxMmYwGgYJKwYBBAGGjR8CBA00NzEsMTA5NCwy\nMTg2MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMAoGCCqGSM49BAMCA0gA\nMEUCIHg84wf2OEsODosFjfJCc0lC9xDgxJJh1b7PRfwH2vymAiEAokDrY8j7CvKM\ndzzNoi4PSAMYWOUTeZn6luuyoamHQDY=\n-----END CERTIFICATE-----\n",
+      "device_public_key": "",
+      "is_blacklisted": false,
+      "blacklisted_at": null,
+      "blacklist_reason": null,
+      "nuc_hash": null
+    },
+    {
+      "device_serial": "TEST-iOS-1763664910",
+      "table_assignments": [
+        465,
+        960,
+        2144
+      ],
+      "device_family": "iOS",
+      "provisioned_at": "2025-11-20T18:55:10.345365",
+      "device_secret": "531f54c2ba8796e5c61bec1d2b1b289ff961f9eaf0fb003b1dcefcbc075ca425",
+      "key_table_indices": [
+        465,
+        960,
+        2144
+      ],
+      "device_certificate": "-----BEGIN CERTIFICATE-----\nMIICgjCCAiigAwIBAgIUGRk6fm9pa0yFfOAZTG3tpfgy+VAwCgYIKoZIzj0EAwIw\ngaMxCzAJBgNVBAYTAlVTMQ8wDQYDVQQIDAZPcmVnb24xDzANBgNVBAcMBkV1Z2Vu\nZTEmMCQGA1UECgwdQmlydGhtYXJrIFN0YW5kYXJkIEZvdW5kYXRpb24xKjAoBgNV\nBAsMIVNpbXVsYXRlZCBNYW51ZmFjdHVyaW5nIEF1dGhvcml0eTEeMBwGA1UEAwwV\nQmlydGhtYXJrIFNNQSBSb290IENBMB4XDTI1MTEyMDE4NTUxMFoXDTI2MTEyMDE4\nNTUxMFowUDEcMBoGA1UEAwwTVEVTVC1pT1MtMTc2MzY2NDkxMDEbMBkGA1UECgwS\nQmlydGhtYXJrIFN0YW5kYXJkMRMwEQYDVQQLDAppT1MgRGV2aWNlMFkwEwYHKoZI\nzj0CAQYIKoZIzj0DAQcDQgAEzpyy9dFb2kgyRGrAkqkpeUZnF800IxHjDqQXZzq4\nmFDUEStrfcNY6RxcLxGxWcxV0+3LvdI3Cip7f8Kb9OycKaOBizCBiDBNBgkrBgEE\nAYaNHwEEQDUzMWY1NGMyYmE4Nzk2ZTVjNjFiZWMxZDJiMWIyODlmZjk2MWY5ZWFm\nMGZiMDAzYjFkY2VmY2JjMDc1Y2E0MjUwGQYJKwYBBAGGjR8CBAw0NjUsOTYwLDIx\nNDQwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCB4AwCgYIKoZIzj0EAwIDSAAw\nRQIgUMv1EcBJu5vXjY60OaaGk5xAKY0UqQM174Q0U9fS3/QCIQC7xmLJLN0ZKpsk\nNnD/8SLNQtamZuD8l3+WgulOl8tnyQ==\n-----END CERTIFICATE-----\n",
+      "device_public_key": "",
+      "is_blacklisted": false,
+      "blacklisted_at": null,
+      "blacklist_reason": null,
+      "nuc_hash": null
+    },
+    {
+      "device_serial": "TEST-iOS-1763664963",
+      "table_assignments": [
+        456,
+        1816,
+        2433
+      ],
+      "device_family": "iOS",
+      "provisioned_at": "2025-11-20T18:56:03.562005",
+      "device_secret": "1842a05f1ce50d1093514781a57193752fc29db3bbeb0be1eecc621a9e7b8afb",
+      "key_table_indices": [
+        456,
+        1816,
+        2433
+      ],
+      "device_certificate": "-----BEGIN CERTIFICATE-----\nMIICgjCCAimgAwIBAgIUONOYv79Vc25uJC/LsSOwuqPn8X0wCgYIKoZIzj0EAwIw\ngaMxCzAJBgNVBAYTAlVTMQ8wDQYDVQQIDAZPcmVnb24xDzANBgNVBAcMBkV1Z2Vu\nZTEmMCQGA1UECgwdQmlydGhtYXJrIFN0YW5kYXJkIEZvdW5kYXRpb24xKjAoBgNV\nBAsMIVNpbXVsYXRlZCBNYW51ZmFjdHVyaW5nIEF1dGhvcml0eTEeMBwGA1UEAwwV\nQmlydGhtYXJrIFNNQSBSb290IENBMB4XDTI1MTEyMDE4NTYwM1oXDTI2MTEyMDE4\nNTYwM1owUDEcMBoGA1UEAwwTVEVTVC1pT1MtMTc2MzY2NDk2MzEbMBkGA1UECgwS\nQmlydGhtYXJrIFN0YW5kYXJkMRMwEQYDVQQLDAppT1MgRGV2aWNlMFkwEwYHKoZI\nzj0CAQYIKoZIzj0DAQcDQgAEqdO4/eG4N1bdMhf6ZiwHztu2YHwD6W9vlKKcjMFH\nrJ3cHsr8TzW6KFSPPxcQzViSrJ/21ydJWFjVy/xGPxFE2aOBjDCBiTBNBgkrBgEE\nAYaNHwEEQDE4NDJhMDVmMWNlNTBkMTA5MzUxNDc4MWE1NzE5Mzc1MmZjMjlkYjNi\nYmViMGJlMWVlY2M2MjFhOWU3YjhhZmIwGgYJKwYBBAGGjR8CBA00NTYsMTgxNiwy\nNDMzMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMAoGCCqGSM49BAMCA0cA\nMEQCIHZXGX+RzrG9EKUOx5f7uq3X/iQ0HW8d21uSCeZxpKMKAiAuy2y/7pHLs7Gy\nz5zIGwOf7ufEpsNTPM8z2bCqLKoXsw==\n-----END CERTIFICATE-----\n",
+      "device_public_key": "",
+      "is_blacklisted": false,
+      "blacklisted_at": null,
+      "blacklist_reason": null,
+      "nuc_hash": null
+    },
+    {
+      "device_serial": "TEST-iOS-1763665008",
+      "table_assignments": [
+        647,
+        1208,
+        2076
+      ],
+      "device_family": "iOS",
+      "provisioned_at": "2025-11-20T18:56:48.300456",
+      "device_secret": "4ebc49fdbf17a0e715355d036c6c76d8d77833a45146eb58c7ca839d45a554fd",
+      "key_table_indices": [
+        647,
+        1208,
+        2076
+      ],
+      "device_certificate": "-----BEGIN CERTIFICATE-----\nMIICgjCCAimgAwIBAgIUBFGcR7Jjeq2HU0rjxiy9zjEsdXIwCgYIKoZIzj0EAwIw\ngaMxCzAJBgNVBAYTAlVTMQ8wDQYDVQQIDAZPcmVnb24xDzANBgNVBAcMBkV1Z2Vu\nZTEmMCQGA1UECgwdQmlydGhtYXJrIFN0YW5kYXJkIEZvdW5kYXRpb24xKjAoBgNV\nBAsMIVNpbXVsYXRlZCBNYW51ZmFjdHVyaW5nIEF1dGhvcml0eTEeMBwGA1UEAwwV\nQmlydGhtYXJrIFNNQSBSb290IENBMB4XDTI1MTEyMDE4NTY0OFoXDTI2MTEyMDE4\nNTY0OFowUDEcMBoGA1UEAwwTVEVTVC1pT1MtMTc2MzY2NTAwODEbMBkGA1UECgwS\nQmlydGhtYXJrIFN0YW5kYXJkMRMwEQYDVQQLDAppT1MgRGV2aWNlMFkwEwYHKoZI\nzj0CAQYIKoZIzj0DAQcDQgAENfubAKHj0rYYPDTAbxA223i3pX3ONkPZg0Ntslkq\ndImIve2SDmT28kSMo2gdvvgBD7oOpsoU6kOZpVQM04btK6OBjDCBiTBNBgkrBgEE\nAYaNHwEEQDRlYmM0OWZkYmYxN2EwZTcxNTM1NWQwMzZjNmM3NmQ4ZDc3ODMzYTQ1\nMTQ2ZWI1OGM3Y2E4MzlkNDVhNTU0ZmQwGgYJKwYBBAGGjR8CBA02NDcsMTIwOCwy\nMDc2MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMAoGCCqGSM49BAMCA0cA\nMEQCIFxzidDJ2WZHUHIxZQ/04nEm0f1F9GYyy3sZ1fxyVlCzAiBpaQwjYo/hy9qW\n0/Ab7g86GPvDFucfwz4wSkyx7Z3x5g==\n-----END CERTIFICATE-----\n",
+      "device_public_key": "",
+      "is_blacklisted": false,
+      "blacklisted_at": null,
+      "blacklist_reason": null,
+      "nuc_hash": null
     }
   ],
-  "total_devices": 2,
-  "last_updated": "2025-11-15T20:30:59.556912"
+  "total_devices": 6,
+  "last_updated": "2025-11-20T18:56:48.300625"
 }
