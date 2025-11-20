@@ -16,7 +16,7 @@ from .key_derivation import (
 from .table_manager import (
     KeyTable,
     KeyTableManager,
-    Phase2DatabaseTableManager
+    Phase2KeyTableManager
 )
 
 __all__ = [
@@ -28,5 +28,5 @@ __all__ = [
     "HKDF_CONTEXT",
     "KeyTable",
     "KeyTableManager",
-    "Phase2DatabaseTableManager",
+    "Phase2KeyTableManager",
 ]
