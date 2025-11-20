@@ -18,6 +18,7 @@ from pathlib import Path
 from datetime import datetime
 
 from .provisioning.certificate import CertificateAuthority
+from .provisioning.certificate_generator import CertificateGenerator
 from .provisioning.provisioner import (
     DeviceProvisioner,
     ProvisioningRequest,
@@ -35,14 +36,22 @@ from certificates.parser import CertificateParser
 
 # Pydantic models for API
 class ProvisionDeviceRequest(BaseModel):
-    """API request model for device provisioning."""
+    """API request model for device provisioning (Phase 1 & 2)."""
     device_serial: str = Field(..., description="Unique device serial number")
     device_family: str = Field(default="Raspberry Pi", description="Device type")
-    nuc_hash: Optional[str] = Field(None, description="Hex-encoded NUC hash (optional)")
+    nuc_hash: Optional[str] = Field(None, description="Hex-encoded NUC hash (Phase 1)")
+    device_secret: Optional[str] = Field(None, description="Hex-encoded device secret (Phase 2)")
+
+
+class ProvisionDeviceRequestPhase2(BaseModel):
+    """API request model for Phase 2 iOS provisioning."""
+    device_serial: str = Field(..., description="Unique device identifier (iOS UDID)")
+    device_family: str = Field(..., description="Device type (e.g., 'iOS')")
+    device_secret: str = Field(..., description="Hex-encoded SHA-256 device secret (64 chars)")
 
 
 class ProvisionDeviceResponse(BaseModel):
-    """API response model for device provisioning."""
+    """API response model for device provisioning (Phase 1)."""
     device_serial: str
     device_certificate: str
     certificate_chain: str
@@ -51,6 +60,16 @@ class ProvisionDeviceResponse(BaseModel):
     table_assignments: List[int]
     nuc_hash: str
     device_family: str
+
+
+class ProvisionDeviceResponsePhase2(BaseModel):
+    """API response model for Phase 2 iOS provisioning."""
+    device_certificate: str = Field(..., description="PEM-encoded X.509 certificate")
+    device_private_key: str = Field(..., description="PEM-encoded ECDSA P-256 private key")
+    certificate_chain: str = Field(..., description="PEM-encoded CA certificate chain")
+    key_tables: List[List[str]] = Field(..., description="3 arrays of 1000 hex-encoded keys")
+    key_table_indices: List[int] = Field(..., description="Global table indices (e.g., [42, 157, 891])")
+    device_secret: str = Field(..., description="Hex-encoded device secret (echo back for verification)")
 
 
 class HealthResponse(BaseModel):
@@ -89,6 +108,7 @@ app.add_middleware(
 
 # Global state (initialized on startup)
 ca: Optional[CertificateAuthority] = None
+cert_generator: Optional[CertificateGenerator] = None  # Phase 2
 table_manager: Optional[KeyTableManager] = None
 device_registry: Optional[DeviceRegistry] = None
 provisioner: Optional[DeviceProvisioner] = None
@@ -99,26 +119,47 @@ abuse_detector: Optional[AbuseDetector] = None
 @app.on_event("startup")
 async def startup_event():
     """Initialize SMA components on startup."""
-    global ca, table_manager, device_registry, provisioner, submission_logger, abuse_detector
+    global ca, cert_generator, table_manager, device_registry, provisioner, submission_logger, abuse_detector
 
     # Define storage paths
     base_path = Path(__file__).parent.parent / "data"
     base_path.mkdir(exist_ok=True)
+    certs_path = Path(__file__).parent.parent / "certs"
 
     ca_cert_path = base_path / "intermediate-ca.crt"
     ca_key_path = base_path / "intermediate-ca.key"
+
+    # Phase 2: New CA cert paths (from generate_ca_certificate.py)
+    phase2_ca_cert_path = certs_path / "ca_certificate.pem"
+    phase2_ca_key_path = certs_path / "ca_private_key.pem"
+
     key_tables_path = base_path / "key_tables.json"
     registry_path = base_path / "device_registry.json"
     submissions_path = base_path / "submissions.json"
 
-    # Initialize or load CA
+    # Initialize or load CA (Phase 1)
     if ca_cert_path.exists() and ca_key_path.exists():
         ca = CertificateAuthority(ca_cert_path, ca_key_path)
         print(f"✓ Loaded CA certificates from {ca_cert_path}")
     else:
-        print("⚠ CA certificates not found. Run setup script to generate CA.")
-        print(f"  Expected: {ca_cert_path} and {ca_key_path}")
-        ca = None  # Will fail on provisioning attempts
+        print("⚠ Phase 1 CA certificates not found at {ca_cert_path}")
+        ca = None
+
+    # Initialize CertificateGenerator (Phase 2)
+    if phase2_ca_cert_path.exists() and phase2_ca_key_path.exists():
+        try:
+            cert_generator = CertificateGenerator(
+                ca_private_key_path=str(phase2_ca_key_path),
+                ca_cert_path=str(phase2_ca_cert_path)
+            )
+            print(f"✓ Loaded Phase 2 CertificateGenerator from {phase2_ca_cert_path}")
+        except Exception as e:
+            print(f"⚠ Failed to initialize Phase 2 CertificateGenerator: {e}")
+            cert_generator = None
+    else:
+        print(f"⚠ Phase 2 CA not found. Run: python scripts/generate_ca_certificate.py")
+        print(f"  Expected: {phase2_ca_cert_path} and {phase2_ca_key_path}")
+        cert_generator = None
 
     # Initialize or load key tables (Phase 2 with full keys)
     # Check if Phase 2 key table file exists
@@ -234,29 +275,40 @@ async def get_statistics():
 
 @app.post(
     "/api/v1/devices/provision",
-    response_model=ProvisionDeviceResponse,
     status_code=status.HTTP_201_CREATED,
     tags=["Provisioning"]
 )
 async def provision_device(request: ProvisionDeviceRequest):
     """
-    Provision a new device.
+    Provision a new device (supports both Phase 1 and Phase 2).
 
-    Phase 1: Manual provisioning via script (this endpoint for testing)
-    Phase 2: Production endpoint for automated provisioning
+    Phase 1: Raspberry Pi with NUC hash
+    Phase 2: iOS with device secret
+
+    Auto-detects which phase based on request fields:
+    - If device_secret present → Phase 2 (iOS)
+    - If nuc_hash present → Phase 1 (Raspberry Pi)
 
     Args:
         request: Device provisioning request
 
     Returns:
-        Complete provisioning data including:
-        - Device certificate and private key
-        - Table assignments
-        - NUC hash (simulated in Phase 1)
+        Complete provisioning data (format depends on phase)
 
     Raises:
         HTTPException: If provisioning fails or device already exists
     """
+    # Detect Phase 2 request (has device_secret)
+    if request.device_secret is not None:
+        # Route to Phase 2 endpoint
+        phase2_request = ProvisionDeviceRequestPhase2(
+            device_serial=request.device_serial,
+            device_family=request.device_family,
+            device_secret=request.device_secret
+        )
+        return await provision_device_phase2(phase2_request)
+
+    # Phase 1 logic below
     if not provisioner:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -328,6 +380,131 @@ async def provision_device(request: ProvisionDeviceRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Provisioning failed: {str(e)}"
+        )
+
+
+@app.post(
+    "/api/v1/devices/provision-phase2",
+    response_model=ProvisionDeviceResponsePhase2,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Provisioning"]
+)
+async def provision_device_phase2(request: ProvisionDeviceRequestPhase2):
+    """
+    Provision a Phase 2 device (iOS) with certificate-based authentication.
+
+    This endpoint is used by iOS devices to provision with:
+    - Device secret (frozen identity)
+    - ECDSA P-256 certificate signed by SMA CA
+    - Key tables (3 tables × 1000 keys each)
+    - Key table indices (global mapping)
+
+    Args:
+        request: Phase 2 provisioning request with device_secret
+
+    Returns:
+        Complete provisioning data including certificate, keys, and key tables
+
+    Raises:
+        HTTPException: If provisioning fails or device already exists
+    """
+    # Check if Phase 2 components are initialized
+    if not cert_generator:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Phase 2 certificate generator not initialized (run generate_ca_certificate.py)"
+        )
+
+    if not isinstance(table_manager, Phase2KeyTableManager):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Phase 2 key table manager not initialized"
+        )
+
+    # Check if device already registered
+    if device_registry and device_registry.device_exists(request.device_serial):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Device {request.device_serial} already provisioned"
+        )
+
+    try:
+        # Validate device_secret format (64 hex characters)
+        if len(request.device_secret) != 64:
+            raise ValueError(f"device_secret must be 64 hex characters, got {len(request.device_secret)}")
+
+        # Validate hex format
+        try:
+            bytes.fromhex(request.device_secret)
+        except ValueError:
+            raise ValueError("device_secret must be valid hexadecimal")
+
+        # Step 1: Assign 3 random key tables (global indices 0-2499)
+        key_table_indices = table_manager.assign_random_tables(request.device_serial)
+        print(f"[Phase 2] Assigned key tables: {key_table_indices} to {request.device_serial}")
+
+        # Step 2: Generate device certificate with CertificateGenerator
+        device_cert_pem, device_key_pem, cert_chain_pem = cert_generator.generate_device_certificate(
+            device_serial=request.device_serial,
+            device_secret=request.device_secret,
+            key_table_indices=key_table_indices,
+            device_family=request.device_family
+        )
+        print(f"[Phase 2] Generated certificate for {request.device_serial}")
+
+        # Step 3: Get key tables (3 arrays of 1000 keys each)
+        key_arrays = table_manager.get_multiple_table_keys(key_table_indices)
+
+        # Convert keys to hex strings for JSON serialization
+        key_tables = [
+            [key.hex() for key in table_keys]
+            for table_keys in key_arrays
+        ]
+        print(f"[Phase 2] Retrieved {len(key_tables)} key tables with {len(key_tables[0])} keys each")
+
+        # Step 4: Register device
+        if device_registry:
+            registration = DeviceRegistration(
+                device_serial=request.device_serial,
+                device_secret=request.device_secret,
+                key_table_indices=key_table_indices,
+                table_assignments=key_table_indices,  # Backward compat
+                device_certificate=device_cert_pem,
+                device_public_key="",  # Not needed in Phase 2 (cert contains public key)
+                device_family=request.device_family,
+                provisioned_at=datetime.utcnow().isoformat(),
+                nuc_hash=None  # Phase 2 doesn't use NUC
+            )
+
+            device_registry.register_device(registration)
+            device_registry.save_to_file()
+            print(f"[Phase 2] Registered device {request.device_serial}")
+
+        # Step 5: Save key tables to disk
+        if hasattr(table_manager, 'save_to_file_with_keys'):
+            table_manager.save_to_file_with_keys()
+
+        # Step 6: Return response
+        return ProvisionDeviceResponsePhase2(
+            device_certificate=device_cert_pem,
+            device_private_key=device_key_pem,
+            certificate_chain=cert_chain_pem,
+            key_tables=key_tables,
+            key_table_indices=key_table_indices,
+            device_secret=request.device_secret  # Echo back for verification
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Phase 2 provisioning failed: {str(e)}"
         )
 
 
