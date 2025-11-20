@@ -126,35 +126,30 @@ class CertificateGenerator:
         # Store device_secret and key_table_indices as custom extensions
         extensions = []
 
-        # Extension 1: Device secret (critical=False, so can be ignored by standard validators)
+        # Extension 1: Device secret (custom OID - use UnrecognizedExtension for custom data)
         device_secret_bytes = device_secret.encode('utf-8')
-        extensions.append(x509.Extension(
-            self.OID_DEVICE_SECRET,
-            critical=False,
-            value=device_secret_bytes
-        ))
+        extensions.append({
+            'value': x509.UnrecognizedExtension(self.OID_DEVICE_SECRET, device_secret_bytes),
+            'critical': False
+        })
 
-        # Extension 2: Key table indices (encoded as comma-separated string)
+        # Extension 2: Key table indices (custom OID - comma-separated string)
         key_tables_str = ','.join(str(idx) for idx in key_table_indices)
         key_tables_bytes = key_tables_str.encode('utf-8')
-        extensions.append(x509.Extension(
-            self.OID_KEY_TABLES,
-            critical=False,
-            value=key_tables_bytes
-        ))
+        extensions.append({
+            'value': x509.UnrecognizedExtension(self.OID_KEY_TABLES, key_tables_bytes),
+            'critical': False
+        })
 
-        # Extension 3: Basic Constraints (not a CA)
-        extensions.append(x509.Extension(
-            x509.oid.ExtensionOID.BASIC_CONSTRAINTS,
-            critical=True,
-            value=x509.BasicConstraints(ca=False, path_length=None)
-        ))
+        # Extension 3: Basic Constraints (standard extension - not a CA)
+        extensions.append({
+            'value': x509.BasicConstraints(ca=False, path_length=None),
+            'critical': True
+        })
 
-        # Extension 4: Key Usage (digital signature only)
-        extensions.append(x509.Extension(
-            x509.oid.ExtensionOID.KEY_USAGE,
-            critical=True,
-            value=x509.KeyUsage(
+        # Extension 4: Key Usage (standard extension - digital signature only)
+        extensions.append({
+            'value': x509.KeyUsage(
                 digital_signature=True,
                 content_commitment=False,
                 key_encipherment=False,
@@ -164,8 +159,9 @@ class CertificateGenerator:
                 crl_sign=False,
                 encipher_only=False,
                 decipher_only=False
-            )
-        ))
+            ),
+            'critical': True
+        })
 
         # 5. Build certificate
         cert_builder = (
@@ -180,7 +176,8 @@ class CertificateGenerator:
 
         # Add all extensions
         for ext in extensions:
-            cert_builder = cert_builder.add_extension(ext.oid, ext.value, ext.critical)
+            # add_extension() takes (extension_value, critical), not (oid, value, critical)
+            cert_builder = cert_builder.add_extension(ext['value'], ext['critical'])
 
         # 6. Sign certificate with CA private key
         device_cert = cert_builder.sign(self.ca_private_key, hashes.SHA256())
