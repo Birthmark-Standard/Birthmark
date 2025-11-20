@@ -28,6 +28,7 @@ from .key_tables.table_manager import KeyTableManager, Phase2KeyTableManager
 from .identity.device_registry import DeviceRegistry, DeviceRegistration
 from .identity.submission_logger import SubmissionLogger
 from .identity.abuse_detection import AbuseDetector, run_daily_abuse_check
+from .validation.certificate_validator import CertificateValidator
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "shared"))
@@ -109,6 +110,7 @@ app.add_middleware(
 # Global state (initialized on startup)
 ca: Optional[CertificateAuthority] = None
 cert_generator: Optional[CertificateGenerator] = None  # Phase 2
+cert_validator: Optional[CertificateValidator] = None  # Phase 2
 table_manager: Optional[KeyTableManager] = None
 device_registry: Optional[DeviceRegistry] = None
 provisioner: Optional[DeviceProvisioner] = None
@@ -119,7 +121,7 @@ abuse_detector: Optional[AbuseDetector] = None
 @app.on_event("startup")
 async def startup_event():
     """Initialize SMA components on startup."""
-    global ca, cert_generator, table_manager, device_registry, provisioner, submission_logger, abuse_detector
+    global ca, cert_generator, cert_validator, table_manager, device_registry, provisioner, submission_logger, abuse_detector
 
     # Define storage paths
     base_path = Path(__file__).parent.parent / "data"
@@ -160,6 +162,19 @@ async def startup_event():
         print(f"⚠ Phase 2 CA not found. Run: python scripts/generate_ca_certificate.py")
         print(f"  Expected: {phase2_ca_cert_path} and {phase2_ca_key_path}")
         cert_generator = None
+
+    # Initialize CertificateValidator (Phase 2)
+    if phase2_ca_cert_path.exists():
+        try:
+            cert_validator = CertificateValidator(
+                ca_cert_path=str(phase2_ca_cert_path)
+            )
+            print(f"✓ Loaded Phase 2 CertificateValidator")
+        except Exception as e:
+            print(f"⚠ Failed to initialize Phase 2 CertificateValidator: {e}")
+            cert_validator = None
+    else:
+        cert_validator = None
 
     # Initialize or load key tables (Phase 2 with full keys)
     # Check if Phase 2 key table file exists
@@ -655,169 +670,94 @@ async def validate_token(request: ValidationRequest):
 
 
 class CertificateValidationRequest(BaseModel):
-    """Request model for certificate-based validation (NEW format)."""
-    camera_cert: str = Field(..., description="Base64-encoded DER camera certificate")
+    """Request model for certificate-based validation (Phase 2)."""
+    camera_cert: str = Field(..., description="Base64-encoded PEM camera certificate")
     image_hash: str = Field(..., min_length=64, max_length=64, description="SHA-256 image hash")
+    timestamp: int = Field(..., description="Unix timestamp when photo was taken")
+    gps_hash: Optional[str] = Field(None, min_length=64, max_length=64, description="SHA-256 GPS hash (optional)")
+    bundle_signature: str = Field(..., description="Base64-encoded ECDSA signature over bundle")
 
 
 @app.post("/validate-cert", response_model=ValidationResponse, tags=["Validation"])
 async def validate_certificate(request: CertificateValidationRequest):
     """
-    Validate camera certificate (Phase 2 - full validation).
+    Validate camera certificate bundle (Phase 2).
 
-    This endpoint receives the camera certificate and extracts the encrypted device secret,
-    key table ID, and key index from the certificate extensions.
-
-    Phase 2: Full cryptographic validation (decrypt device secret + validate + check blacklist)
+    This endpoint validates certificate bundles from iOS devices using ECDSA signatures.
+    It verifies:
+    1. Certificate chain (signed by CA)
+    2. Certificate expiration
+    3. Device not blacklisted
+    4. Bundle signature (ECDSA P-256 over canonical data)
 
     Args:
-        request: Certificate validation request
+        request: Certificate bundle validation request
 
     Returns:
         Validation response (PASS/FAIL)
 
-    Note: The MA never uses the image_hash in validation logic - it's only for
-    logging/audit purposes. The MA validates camera authenticity, not image content.
+    Privacy: The SMA validates camera authenticity without seeing the image content.
+    The image_hash is only used for signature verification, not content inspection.
     """
-    if not table_manager or not device_registry:
+    if not cert_validator:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="SMA not initialized"
+            detail="Certificate validator not initialized (Phase 2 CA missing)"
+        )
+
+    if not device_registry:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Device registry not initialized"
         )
 
     try:
-        # Parse certificate
-        import base64
-        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        print(f"Certificate bundle validation request:")
+        print(f"  Image Hash: {request.image_hash[:16]}... (used for signature only)")
+        print(f"  Timestamp: {request.timestamp}")
+        print(f"  GPS Hash: {request.gps_hash[:16] if request.gps_hash else 'none'}...")
 
-        cert_bytes = base64.b64decode(request.camera_cert)
+        # Validate certificate bundle
+        is_valid, reason, device_secret = cert_validator.validate_certificate_bundle(
+            camera_cert_b64=request.camera_cert,
+            image_hash=request.image_hash,
+            timestamp=request.timestamp,
+            gps_hash=request.gps_hash,
+            bundle_signature_b64=request.bundle_signature,
+            device_registry=device_registry
+        )
 
-        parser = CertificateParser()
-        cert, extensions = parser.parse_camera_cert_bytes(cert_bytes)
+        # Log validation result
+        if submission_logger and device_secret:
+            # Look up device serial for logging
+            device = device_registry.get_device_by_secret(device_secret)
+            device_serial = device.device_serial if device else "unknown"
 
-        print(f"Certificate validation request:")
-        print(f"  Manufacturer: {extensions.manufacturer_id}")
-        print(f"  Device Family: {extensions.device_family}")
-        print(f"  Key Table ID (global): {extensions.key_table_id}")
-        print(f"  Key Index: {extensions.key_index}")
-        print(f"  Image Hash: {request.image_hash[:16]}... (not used in validation)")
-
-        # Validate table exists
-        if extensions.key_table_id not in table_manager.key_tables:
-            return ValidationResponse(
-                valid=False,
-                message=f"Invalid table ID: {extensions.key_table_id}"
+            submission_logger.log_submission(
+                device_serial=device_serial,
+                validation_result="pass" if is_valid else "fail"
             )
 
-        # Validate key index range
-        if not (0 <= extensions.key_index < 1000):
-            return ValidationResponse(
-                valid=False,
-                message=f"Invalid key index: {extensions.key_index}"
+            # Periodically save submission logs
+            if submission_logger.count_submissions_all(hours=1) % 100 == 0:
+                submission_logger.save_to_file()
+        elif submission_logger:
+            # Failed early (no device_secret extracted)
+            submission_logger.log_submission(
+                device_serial="unknown",
+                validation_result="fail"
             )
 
-        # Validate encrypted NUC/device secret length
-        if len(extensions.encrypted_nuc) != 60:
-            return ValidationResponse(
-                valid=False,
-                message=f"Invalid encrypted token length: {len(extensions.encrypted_nuc)}"
-            )
+        # Print result
+        if is_valid:
+            print(f"  ✓ Certificate bundle validated: {reason}")
+        else:
+            print(f"  ✗ Certificate bundle validation failed: {reason}")
 
-        # Phase 2: Decrypt device secret and validate
-        try:
-            # Get encryption key from global table
-            if hasattr(table_manager, 'get_specific_key'):
-                # Phase 2: Use derived key
-                encryption_key = table_manager.get_specific_key(
-                    extensions.key_table_id,
-                    extensions.key_index
-                )
-            else:
-                # Phase 1 fallback: Use master key with HKDF
-                from .key_tables.key_derivation import derive_encryption_key
-                master_key = table_manager.get_master_key(extensions.key_table_id)
-                encryption_key = derive_encryption_key(master_key, extensions.key_index)
-
-            # Extract ciphertext and nonce
-            # Format: ciphertext (48 bytes: 32 data + 16 tag) + nonce (12 bytes) = 60 bytes
-            ciphertext_with_tag = extensions.encrypted_nuc[:48]
-            nonce = extensions.encrypted_nuc[48:60]
-
-            # Decrypt using AES-GCM
-            aesgcm = AESGCM(encryption_key)
-            device_secret_bytes = aesgcm.decrypt(nonce, ciphertext_with_tag, None)
-            device_secret_hex = device_secret_bytes.hex()
-
-            print(f"  Decrypted device secret: {device_secret_hex[:16]}...")
-
-            # Look up device by device secret
-            device = device_registry.get_device_by_secret(device_secret_hex)
-
-            if not device:
-                # Try backward compat with nuc_hash
-                device = device_registry.get_device_by_nuc_hash(device_secret_hex)
-
-            if not device:
-                # Log failed validation
-                if submission_logger:
-                    submission_logger.log_submission(
-                        device_serial="unknown",
-                        validation_result="fail"
-                    )
-                return ValidationResponse(
-                    valid=False,
-                    message="Unknown device"
-                )
-
-            # Check if device is blacklisted
-            if device.is_blacklisted:
-                print(f"  ⚠ Device {device.device_serial} is BLACKLISTED")
-                print(f"    Reason: {device.blacklist_reason}")
-
-                # Log blocked attempt
-                if submission_logger:
-                    submission_logger.log_submission(
-                        device_serial=device.device_serial,
-                        validation_result="fail"
-                    )
-
-                return ValidationResponse(
-                    valid=False,
-                    message="blacklisted"
-                )
-
-            # Log successful validation
-            if submission_logger:
-                submission_logger.log_submission(
-                    device_serial=device.device_serial,
-                    validation_result="pass"
-                )
-
-                # Periodically save submission logs
-                if submission_logger.count_submissions_all(hours=1) % 100 == 0:
-                    submission_logger.save_to_file()
-
-            print(f"  ✓ Device {device.device_serial} validated successfully")
-
-            return ValidationResponse(
-                valid=True,
-                message="Device validated"
-            )
-
-        except Exception as decrypt_error:
-            print(f"  Decryption error: {decrypt_error}")
-
-            # Log failed validation
-            if submission_logger:
-                submission_logger.log_submission(
-                    device_serial="unknown",
-                    validation_result="fail"
-                )
-
-            return ValidationResponse(
-                valid=False,
-                message="Decryption failed"
-            )
+        return ValidationResponse(
+            valid=is_valid,
+            message=reason
+        )
 
     except Exception as e:
         print(f"Certificate validation error: {str(e)}")

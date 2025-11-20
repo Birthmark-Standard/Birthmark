@@ -36,7 +36,7 @@ class SMAClient:
         key_indices: list[int],
     ) -> SMAValidationResponse:
         """
-        Validate camera token with SMA.
+        Validate camera token with SMA (Phase 1).
 
         IMPORTANT: SMA never sees the image hash. Only the encrypted NUC token
         is sent for validation.
@@ -92,6 +92,81 @@ class SMAClient:
 
         except Exception as e:
             logger.error(f"SMA validation unexpected error: {e}")
+            return SMAValidationResponse(
+                valid=False,
+                message=f"Unexpected error: {str(e)}",
+            )
+
+    async def validate_certificate_bundle(
+        self,
+        camera_cert: str,
+        image_hash: str,
+        timestamp: int,
+        gps_hash: Optional[str],
+        bundle_signature: str,
+    ) -> SMAValidationResponse:
+        """
+        Validate certificate bundle with SMA (Phase 2).
+
+        This validates the complete certificate bundle including ECDSA signature.
+        The SMA verifies:
+        1. Certificate chain (signed by CA)
+        2. Certificate expiration
+        3. Device not blacklisted
+        4. Bundle signature (ECDSA P-256)
+
+        PRIVACY: SMA uses image_hash only for signature verification, not content inspection.
+
+        Args:
+            camera_cert: Base64-encoded PEM certificate
+            image_hash: SHA-256 image hash
+            timestamp: Unix timestamp when photo was taken
+            gps_hash: Optional SHA-256 GPS hash
+            bundle_signature: Base64-encoded ECDSA signature
+
+        Returns:
+            Validation response with PASS/FAIL
+        """
+        # Build SMA certificate validation endpoint
+        # If endpoint is http://localhost:8001/validate, use http://localhost:8001/validate-cert
+        cert_endpoint = self.endpoint.replace("/validate", "/validate-cert")
+
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(
+                    cert_endpoint,
+                    json={
+                        "camera_cert": camera_cert,
+                        "image_hash": image_hash,
+                        "timestamp": timestamp,
+                        "gps_hash": gps_hash,
+                        "bundle_signature": bundle_signature,
+                    },
+                )
+                response.raise_for_status()
+
+                data = response.json()
+                return SMAValidationResponse(
+                    valid=data.get("valid", False),
+                    message=data.get("message"),
+                )
+
+        except httpx.TimeoutException:
+            logger.error(f"SMA certificate validation timeout after {self.timeout}s")
+            return SMAValidationResponse(
+                valid=False,
+                message="SMA certificate validation timeout",
+            )
+
+        except httpx.HTTPError as e:
+            logger.error(f"SMA certificate validation HTTP error: {e}")
+            return SMAValidationResponse(
+                valid=False,
+                message=f"SMA HTTP error: {str(e)}",
+            )
+
+        except Exception as e:
+            logger.error(f"SMA certificate validation unexpected error: {e}")
             return SMAValidationResponse(
                 valid=False,
                 message=f"Unexpected error: {str(e)}",
