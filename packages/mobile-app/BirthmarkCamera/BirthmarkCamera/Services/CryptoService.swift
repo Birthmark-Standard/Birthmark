@@ -138,10 +138,143 @@ class CryptoService {
     func generateRandomKeyIndex() -> Int {
         return Int.random(in: 0..<1000)
     }
+
+    // MARK: - ECDSA Signing (Phase 2)
+
+    /// Sign certificate bundle with device private key (ECDSA P-256)
+    ///
+    /// Creates a canonical representation of the bundle and signs it with the
+    /// device private key received during provisioning.
+    ///
+    /// Canonical bundle format (signed data):
+    /// - image_hash (64 hex chars, lowercase)
+    /// - camera_cert (base64 string)
+    /// - timestamp (string representation)
+    /// - gps_hash (64 hex chars or empty string)
+    ///
+    /// - Parameters:
+    ///   - imageHash: SHA-256 image hash (64 hex chars)
+    ///   - cameraCert: Base64-encoded camera certificate
+    ///   - timestamp: Unix timestamp
+    ///   - gpsHash: Optional GPS hash
+    /// - Returns: Base64-encoded ECDSA signature
+    /// - Throws: CryptoError if signing fails
+    func signCertificateBundle(
+        imageHash: String,
+        cameraCert: String,
+        timestamp: Int,
+        gpsHash: String?
+    ) throws -> String {
+        // 1. Get device private key from Keychain
+        guard let privateKeyPEM = KeychainService.shared.getDevicePrivateKey() else {
+            throw CryptoError.missingPrivateKey
+        }
+
+        // 2. Parse PEM private key to P256.Signing.PrivateKey
+        let privateKey = try parsePrivateKey(pem: privateKeyPEM)
+
+        // 3. Create canonical bundle data
+        let bundleData = createCanonicalBundleData(
+            imageHash: imageHash,
+            cameraCert: cameraCert,
+            timestamp: timestamp,
+            gpsHash: gpsHash
+        )
+
+        // 4. Sign with ECDSA P-256
+        let signature = try privateKey.signature(for: bundleData)
+
+        // 5. Return base64-encoded signature
+        return signature.rawRepresentation.base64EncodedString()
+    }
+
+    /// Create canonical bundle data for signing
+    ///
+    /// Format: Concatenate fields in order with newlines
+    /// This ensures consistent signing across all implementations
+    private func createCanonicalBundleData(
+        imageHash: String,
+        cameraCert: String,
+        timestamp: Int,
+        gpsHash: String?
+    ) -> Data {
+        var canonical = ""
+        canonical += imageHash.lowercased() + "\n"
+        canonical += cameraCert + "\n"
+        canonical += String(timestamp) + "\n"
+        canonical += (gpsHash?.lowercased() ?? "") + "\n"
+
+        return canonical.data(using: .utf8)!
+    }
+
+    /// Parse PEM-encoded private key to P256.Signing.PrivateKey
+    ///
+    /// Handles PEM format from SMA provisioning response
+    private func parsePrivateKey(pem: String) throws -> P256.Signing.PrivateKey {
+        // Try parsing as PEM
+        do {
+            return try P256.Signing.PrivateKey(pemRepresentation: pem)
+        } catch {
+            // If PEM fails, try parsing as raw DER (base64-decoded)
+            // Some implementations may send base64-encoded DER instead of PEM
+            if let derData = Data(base64Encoded: pem) {
+                do {
+                    return try P256.Signing.PrivateKey(derRepresentation: derData)
+                } catch {
+                    throw CryptoError.invalidPrivateKey
+                }
+            }
+            throw CryptoError.invalidPrivateKey
+        }
+    }
+
+    /// Verify bundle signature (for testing)
+    ///
+    /// - Parameters:
+    ///   - signature: Base64-encoded signature
+    ///   - imageHash: Image hash that was signed
+    ///   - cameraCert: Certificate that was signed
+    ///   - timestamp: Timestamp that was signed
+    ///   - gpsHash: GPS hash that was signed
+    ///   - publicKeyPEM: PEM-encoded public key
+    /// - Returns: true if signature is valid
+    func verifyCertificateBundleSignature(
+        signature: String,
+        imageHash: String,
+        cameraCert: String,
+        timestamp: Int,
+        gpsHash: String?,
+        publicKeyPEM: String
+    ) throws -> Bool {
+        // Parse public key
+        let publicKey = try P256.Signing.PublicKey(pemRepresentation: publicKeyPEM)
+
+        // Recreate canonical bundle data
+        let bundleData = createCanonicalBundleData(
+            imageHash: imageHash,
+            cameraCert: cameraCert,
+            timestamp: timestamp,
+            gpsHash: gpsHash
+        )
+
+        // Decode signature
+        guard let signatureData = Data(base64Encoded: signature) else {
+            throw CryptoError.invalidSignature
+        }
+
+        let ecdsaSignature = try P256.Signing.ECDSASignature(rawRepresentation: signatureData)
+
+        // Verify
+        return publicKey.isValidSignature(ecdsaSignature, for: bundleData)
+    }
 }
 
 enum CryptoError: Error {
     case invalidInput
     case encryptionFailed
     case keyDerivationFailed
+    case missingPrivateKey
+    case invalidPrivateKey
+    case invalidSignature
+    case signingFailed
 }
