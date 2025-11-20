@@ -14,9 +14,44 @@ class CryptoService {
 
     private init() {}
 
-    // MARK: - Device Fingerprint Generation
+    // MARK: - Device Secret Generation (Phase 2)
 
-    /// Generate unique device fingerprint on first launch
+    /// Generate device secret (frozen at provisioning time)
+    ///
+    /// Phase 2 Architecture:
+    /// 1. Generate random seed (32 bytes)
+    /// 2. Get device name
+    /// 3. Hash: device_secret = SHA256(random_seed + device_name)
+    /// 4. Store ONLY device_secret in Keychain
+    /// 5. DISCARD random_seed and device_name (never stored)
+    ///
+    /// Critical: device_secret remains unchanged even if device name changes later
+    func generateDeviceSecret() -> Data {
+        // Step 1: Generate random seed (32 bytes)
+        var randomBytes = [UInt8](repeating: 0, count: 32)
+        let status = SecRandomCopyBytes(kSecRandomDefault, 32, &randomBytes)
+        guard status == errSecSuccess else {
+            fatalError("Failed to generate random bytes")
+        }
+        let randomSeed = Data(randomBytes)
+
+        // Step 2: Get device name
+        let deviceName = UIDevice.current.name
+
+        // Step 3: Create device secret (PERMANENT)
+        var combined = Data()
+        combined.append(randomSeed)
+        combined.append(deviceName.data(using: .utf8)!)
+
+        let deviceSecret = SHA256.hash(data: combined)
+
+        // Step 4: random_seed and device_name are now discarded (function scope ends)
+        // Only device_secret (return value) will be stored in Keychain
+
+        return Data(deviceSecret)
+    }
+
+    /// Generate unique device fingerprint on first launch (Phase 1 backward compatibility)
     func generateDeviceFingerprint() -> String {
         // Use device ID + random seed + standard prefix
         let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
