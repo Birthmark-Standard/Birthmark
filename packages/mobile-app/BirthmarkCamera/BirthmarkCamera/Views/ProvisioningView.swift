@@ -102,29 +102,57 @@ struct ProvisioningView: View {
     }
 
     private func performProvisioning() async throws {
-        // 1. Generate device fingerprint
-        let fingerprint = CryptoService.shared.generateDeviceFingerprint()
-        print("Generated fingerprint: \(fingerprint.prefix(16))...")
+        print("[Phase 2] Starting provisioning...")
 
-        // 2. For demo purposes, assign random tables locally
+        // 1. Generate device secret (Phase 2)
+        let deviceSecret = CryptoService.shared.generateDeviceSecret()
+        print("[Phase 2] Generated device secret: \(deviceSecret.hexString.prefix(16))...")
+
+        // 2. Assign random global table indices (Phase 2)
         // In production, this would come from SMA
-        let tableAssignments = generateRandomTableAssignments()
-        print("Assigned tables: \(tableAssignments)")
+        let keyTableIndices = generateRandomTableAssignments()
+        print("[Phase 2] Assigned global table indices: \(keyTableIndices)")
 
-        // 3. Generate mock master keys for each table
+        // 3. Generate mock key tables (Phase 2)
         // In production, these would come from SMA
-        for tableId in tableAssignments {
-            let masterKey = generateMockMasterKey()
-            KeychainService.shared.saveMasterKey(masterKey, forTable: tableId)
-        }
+        let keyTables = generateMockKeyTables()
+        print("[Phase 2] Generated 3 key tables with 1000 keys each")
 
-        // 4. Save fingerprint and assignments
+        // 4. Save Phase 2 data to Keychain
+        KeychainService.shared.saveDeviceSecret(deviceSecret)
+        KeychainService.shared.saveKeyTableIndices(keyTableIndices)
+        KeychainService.shared.saveKeyTables(keyTables)
+
+        // Backward compatibility: Save old format too
+        let fingerprintString = deviceSecret.hexString
+        KeychainService.shared.saveDeviceFingerprint(fingerprintString)
+        KeychainService.shared.saveTableAssignments(keyTableIndices)
+
+        print("[Phase 2] Provisioning complete")
+
+        // 5. Mark app as provisioned
         DispatchQueue.main.async {
             appState.completeProvisioning(
-                fingerprint: fingerprint,
-                assignments: tableAssignments
+                fingerprint: fingerprintString,
+                assignments: keyTableIndices
             )
         }
+    }
+
+    private func generateMockKeyTables() -> [[String]] {
+        // Generate 3 tables with 1000 keys each
+        var tables: [[String]] = []
+
+        for _ in 0..<3 {
+            var table: [String] = []
+            for _ in 0..<1000 {
+                let key = generateMockMasterKey()
+                table.append(key.hexString)
+            }
+            tables.append(table)
+        }
+
+        return tables
     }
 
     private func generateRandomTableAssignments() -> [Int] {

@@ -46,9 +46,15 @@ class ProvisioningResponse:
     """
     Complete provisioning data returned to device.
 
+    Phase 2 updates:
+    - device_secret: Replaces nuc_hash (iOS uses device secret, not NUC)
+    - key_tables: Actual key data (3 arrays of 1000 keys each)
+    - key_table_indices: Global table IDs (e.g., [42, 157, 891])
+
     Device stores:
     - device_certificate and certificate_chain for authentication
-    - table_assignments for NUC token encryption
+    - device_secret and key_tables for encryption
+    - key_table_indices to map local (0-2) to global indices
     - device_private_key (securely in TPM/Secure Element)
     """
     device_serial: str
@@ -56,22 +62,37 @@ class ProvisioningResponse:
     certificate_chain: str  # PEM-encoded intermediate CA cert
     device_private_key: str  # PEM-encoded private key (ECDSA P-256)
     device_public_key: str  # PEM-encoded public key
-    table_assignments: List[int]  # 3 random table IDs
-    nuc_hash: str  # Hex-encoded SHA-256 (for verification only)
+    table_assignments: List[int]  # 3 local references (backward compat)
+    device_secret: str  # Hex-encoded SHA-256 device secret (Phase 2)
     device_family: str
+    # Phase 2 additions
+    key_tables: Optional[List[List[str]]] = None  # 3 arrays of 1000 hex keys
+    key_table_indices: Optional[List[int]] = None  # Global indices [42, 157, 891]
+    # Backward compatibility
+    nuc_hash: Optional[str] = None  # Phase 1 compatibility
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
-        return {
+        result = {
             "device_serial": self.device_serial,
             "device_certificate": self.device_certificate,
             "certificate_chain": self.certificate_chain,
             "device_private_key": self.device_private_key,
             "device_public_key": self.device_public_key,
             "table_assignments": self.table_assignments,
-            "nuc_hash": self.nuc_hash,
+            "device_secret": self.device_secret,
             "device_family": self.device_family
         }
+
+        # Include Phase 2 fields if present
+        if self.key_tables is not None:
+            result["key_tables"] = self.key_tables
+        if self.key_table_indices is not None:
+            result["key_table_indices"] = self.key_table_indices
+        if self.nuc_hash is not None:
+            result["nuc_hash"] = self.nuc_hash
+
+        return result
 
 
 class DeviceProvisioner:
@@ -238,6 +259,24 @@ class DeviceProvisioner:
         )
 
         # Step 6: Build provisioning response
+        # Check if Phase 2 key table manager (has get_multiple_table_keys method)
+        key_tables_data = None
+        key_table_indices = None
+
+        if hasattr(self.table_manager, 'get_multiple_table_keys'):
+            # Phase 2: Return actual key data
+            try:
+                key_arrays = self.table_manager.get_multiple_table_keys(table_assignments)
+                # Convert to hex strings for JSON serialization
+                key_tables_data = [
+                    [key.hex() for key in table_keys]
+                    for table_keys in key_arrays
+                ]
+                key_table_indices = table_assignments  # Global indices
+            except Exception as e:
+                print(f"Warning: Could not retrieve key tables: {e}")
+                # Fall back to Phase 1 behavior
+
         response = ProvisioningResponse(
             device_serial=request.device_serial,
             device_certificate=certificate_to_pem_string(device_cert),
@@ -245,8 +284,11 @@ class DeviceProvisioner:
             device_private_key=self._private_key_to_pem(private_key),
             device_public_key=public_key_to_pem_string(public_key),
             table_assignments=table_assignments,
-            nuc_hash=nuc_hash.hex(),
-            device_family=request.device_family
+            device_secret=nuc_hash.hex(),  # Use device_secret (Phase 2)
+            device_family=request.device_family,
+            key_tables=key_tables_data,  # Phase 2: Actual key data
+            key_table_indices=key_table_indices,  # Phase 2: Global indices
+            nuc_hash=nuc_hash.hex()  # Backward compatibility
         )
 
         return response

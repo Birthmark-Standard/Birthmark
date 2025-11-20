@@ -23,8 +23,10 @@ from .provisioning.provisioner import (
     ProvisioningRequest,
     ProvisioningResponse
 )
-from .key_tables.table_manager import KeyTableManager
+from .key_tables.table_manager import KeyTableManager, Phase2KeyTableManager
 from .identity.device_registry import DeviceRegistry, DeviceRegistration
+from .identity.submission_logger import SubmissionLogger
+from .identity.abuse_detection import AbuseDetector, run_daily_abuse_check
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "shared"))
@@ -90,12 +92,14 @@ ca: Optional[CertificateAuthority] = None
 table_manager: Optional[KeyTableManager] = None
 device_registry: Optional[DeviceRegistry] = None
 provisioner: Optional[DeviceProvisioner] = None
+submission_logger: Optional[SubmissionLogger] = None
+abuse_detector: Optional[AbuseDetector] = None
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize SMA components on startup."""
-    global ca, table_manager, device_registry, provisioner
+    global ca, table_manager, device_registry, provisioner, submission_logger, abuse_detector
 
     # Define storage paths
     base_path = Path(__file__).parent.parent / "data"
@@ -105,6 +109,7 @@ async def startup_event():
     ca_key_path = base_path / "intermediate-ca.key"
     key_tables_path = base_path / "key_tables.json"
     registry_path = base_path / "device_registry.json"
+    submissions_path = base_path / "submissions.json"
 
     # Initialize or load CA
     if ca_cert_path.exists() and ca_key_path.exists():
@@ -115,17 +120,36 @@ async def startup_event():
         print(f"  Expected: {ca_cert_path} and {ca_key_path}")
         ca = None  # Will fail on provisioning attempts
 
-    # Initialize or load key tables
-    table_manager = KeyTableManager(
-        total_tables=10,  # Phase 1: 10 tables
-        tables_per_device=3,
-        storage_path=key_tables_path
-    )
-
+    # Initialize or load key tables (Phase 2 with full keys)
+    # Check if Phase 2 key table file exists
     if key_tables_path.exists():
-        table_manager.load_from_file()
-        print(f"✓ Loaded {len(table_manager.key_tables)} key tables from {key_tables_path}")
+        # Try to detect if it's Phase 2 format
+        with open(key_tables_path, 'r') as f:
+            import json
+            data = json.load(f)
+            is_phase2 = 'derived_keys' in data or data.get('total_tables', 0) > 100
+
+        if is_phase2:
+            table_manager = Phase2KeyTableManager(storage_path=key_tables_path)
+            table_manager.load_from_file_with_keys()
+            print(f"✓ Loaded Phase 2 key tables: {len(table_manager.key_tables)} master keys")
+            print(f"  {len(table_manager.derived_keys)} tables with derived keys")
+        else:
+            # Phase 1 format
+            table_manager = KeyTableManager(
+                total_tables=10,
+                tables_per_device=3,
+                storage_path=key_tables_path
+            )
+            table_manager.load_from_file()
+            print(f"✓ Loaded Phase 1 key tables: {len(table_manager.key_tables)} tables")
     else:
+        # Default to Phase 1 if no file exists
+        table_manager = KeyTableManager(
+            total_tables=10,
+            tables_per_device=3,
+            storage_path=key_tables_path
+        )
         print(f"⚠ Key tables not found at {key_tables_path}")
         print("  Run setup script to generate key tables.")
 
@@ -136,6 +160,20 @@ async def startup_event():
         print(f"✓ Loaded {len(device_registry._registrations)} device registrations")
     else:
         print("✓ Initialized empty device registry")
+
+    # Initialize submission logger (Phase 2)
+    submission_logger = SubmissionLogger(storage_path=submissions_path)
+    if submissions_path.exists():
+        submission_logger.load_from_file()
+        stats = submission_logger.get_statistics()
+        print(f"✓ Loaded submission logs: {stats['total_submissions']} submissions")
+    else:
+        print("✓ Initialized empty submission logger")
+
+    # Initialize abuse detector (Phase 2)
+    if device_registry and submission_logger:
+        abuse_detector = AbuseDetector(submission_logger, device_registry)
+        print("✓ Abuse detector ready")
 
     # Initialize provisioner
     if ca:
@@ -256,12 +294,14 @@ async def provision_device(request: ProvisionDeviceRequest):
         # Register device in registry
         registration = DeviceRegistration(
             device_serial=response.device_serial,
-            nuc_hash=response.nuc_hash,
-            table_assignments=response.table_assignments,
+            device_secret=response.device_secret,  # Phase 2
+            key_table_indices=response.key_table_indices or response.table_assignments,  # Phase 2 global indices
+            table_assignments=response.table_assignments,  # Backward compat
             device_certificate=response.device_certificate,
             device_public_key=response.device_public_key,
             device_family=response.device_family,
-            provisioned_at=datetime.utcnow().isoformat()
+            provisioned_at=datetime.utcnow().isoformat(),
+            nuc_hash=response.nuc_hash  # Backward compat
         )
 
         device_registry.register_device(registration)
@@ -270,7 +310,12 @@ async def provision_device(request: ProvisionDeviceRequest):
         device_registry.save_to_file()
 
         # Save key table assignments to disk
-        table_manager.save_to_file()
+        if hasattr(table_manager, 'save_to_file_with_keys'):
+            # Phase 2: Save with derived keys
+            table_manager.save_to_file_with_keys()
+        else:
+            # Phase 1: Save master keys only
+            table_manager.save_to_file()
 
         return ProvisionDeviceResponse(**response.to_dict())
 
@@ -441,13 +486,12 @@ class CertificateValidationRequest(BaseModel):
 @app.post("/validate-cert", response_model=ValidationResponse, tags=["Validation"])
 async def validate_certificate(request: CertificateValidationRequest):
     """
-    Validate camera certificate (NEW format).
+    Validate camera certificate (Phase 2 - full validation).
 
-    This endpoint receives the camera certificate and extracts the encrypted NUC,
+    This endpoint receives the camera certificate and extracts the encrypted device secret,
     key table ID, and key index from the certificate extensions.
 
-    Phase 1: Certificate parsing + format validation
-    Phase 2: Full cryptographic validation (decrypt NUC + compare to registry)
+    Phase 2: Full cryptographic validation (decrypt device secret + validate + check blacklist)
 
     Args:
         request: Certificate validation request
@@ -467,6 +511,8 @@ async def validate_certificate(request: CertificateValidationRequest):
     try:
         # Parse certificate
         import base64
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
         cert_bytes = base64.b64decode(request.camera_cert)
 
         parser = CertificateParser()
@@ -475,7 +521,7 @@ async def validate_certificate(request: CertificateValidationRequest):
         print(f"Certificate validation request:")
         print(f"  Manufacturer: {extensions.manufacturer_id}")
         print(f"  Device Family: {extensions.device_family}")
-        print(f"  Key Table ID: {extensions.key_table_id}")
+        print(f"  Key Table ID (global): {extensions.key_table_id}")
         print(f"  Key Index: {extensions.key_index}")
         print(f"  Image Hash: {request.image_hash[:16]}... (not used in validation)")
 
@@ -493,26 +539,314 @@ async def validate_certificate(request: CertificateValidationRequest):
                 message=f"Invalid key index: {extensions.key_index}"
             )
 
-        # Validate encrypted NUC length
+        # Validate encrypted NUC/device secret length
         if len(extensions.encrypted_nuc) != 60:
             return ValidationResponse(
                 valid=False,
-                message=f"Invalid encrypted NUC length: {len(extensions.encrypted_nuc)}"
+                message=f"Invalid encrypted token length: {len(extensions.encrypted_nuc)}"
             )
 
-        # Phase 1: Format validation passed
-        # Phase 2 TODO: Decrypt NUC using table key and validate against registry
-        return ValidationResponse(
-            valid=True,
-            message="Phase 1 certificate validation: format valid"
-        )
+        # Phase 2: Decrypt device secret and validate
+        try:
+            # Get encryption key from global table
+            if hasattr(table_manager, 'get_specific_key'):
+                # Phase 2: Use derived key
+                encryption_key = table_manager.get_specific_key(
+                    extensions.key_table_id,
+                    extensions.key_index
+                )
+            else:
+                # Phase 1 fallback: Use master key with HKDF
+                from .key_tables.key_derivation import derive_encryption_key
+                master_key = table_manager.get_master_key(extensions.key_table_id)
+                encryption_key = derive_encryption_key(master_key, extensions.key_index)
+
+            # Extract ciphertext and nonce
+            # Format: ciphertext (48 bytes: 32 data + 16 tag) + nonce (12 bytes) = 60 bytes
+            ciphertext_with_tag = extensions.encrypted_nuc[:48]
+            nonce = extensions.encrypted_nuc[48:60]
+
+            # Decrypt using AES-GCM
+            aesgcm = AESGCM(encryption_key)
+            device_secret_bytes = aesgcm.decrypt(nonce, ciphertext_with_tag, None)
+            device_secret_hex = device_secret_bytes.hex()
+
+            print(f"  Decrypted device secret: {device_secret_hex[:16]}...")
+
+            # Look up device by device secret
+            device = device_registry.get_device_by_secret(device_secret_hex)
+
+            if not device:
+                # Try backward compat with nuc_hash
+                device = device_registry.get_device_by_nuc_hash(device_secret_hex)
+
+            if not device:
+                # Log failed validation
+                if submission_logger:
+                    submission_logger.log_submission(
+                        device_serial="unknown",
+                        validation_result="fail"
+                    )
+                return ValidationResponse(
+                    valid=False,
+                    message="Unknown device"
+                )
+
+            # Check if device is blacklisted
+            if device.is_blacklisted:
+                print(f"  ⚠ Device {device.device_serial} is BLACKLISTED")
+                print(f"    Reason: {device.blacklist_reason}")
+
+                # Log blocked attempt
+                if submission_logger:
+                    submission_logger.log_submission(
+                        device_serial=device.device_serial,
+                        validation_result="fail"
+                    )
+
+                return ValidationResponse(
+                    valid=False,
+                    message="blacklisted"
+                )
+
+            # Log successful validation
+            if submission_logger:
+                submission_logger.log_submission(
+                    device_serial=device.device_serial,
+                    validation_result="pass"
+                )
+
+                # Periodically save submission logs
+                if submission_logger.count_submissions_all(hours=1) % 100 == 0:
+                    submission_logger.save_to_file()
+
+            print(f"  ✓ Device {device.device_serial} validated successfully")
+
+            return ValidationResponse(
+                valid=True,
+                message="Device validated"
+            )
+
+        except Exception as decrypt_error:
+            print(f"  Decryption error: {decrypt_error}")
+
+            # Log failed validation
+            if submission_logger:
+                submission_logger.log_submission(
+                    device_serial="unknown",
+                    validation_result="fail"
+                )
+
+            return ValidationResponse(
+                valid=False,
+                message="Decryption failed"
+            )
 
     except Exception as e:
         print(f"Certificate validation error: {str(e)}")
+
+        # Log failed validation
+        if submission_logger:
+            submission_logger.log_submission(
+                device_serial="unknown",
+                validation_result="fail"
+            )
+
         return ValidationResponse(
             valid=False,
             message=f"Certificate validation failed: {str(e)}"
         )
+
+
+# Phase 2: Abuse Detection and Admin Endpoints
+
+
+@app.get("/api/admin/abuse/check", tags=["Admin"])
+async def run_abuse_check():
+    """
+    Run abuse detection check on all devices (manual trigger for daily cron).
+
+    Returns results for devices with warnings or blacklists.
+    """
+    if not abuse_detector or not submission_logger or not device_registry:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Abuse detection not initialized"
+        )
+
+    results = run_daily_abuse_check(
+        submission_logger,
+        device_registry,
+        save_registries=True
+    )
+
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "results": [
+            {
+                "device_serial": r.device_serial,
+                "count_24h": r.submission_count_24h,
+                "blacklisted": r.blacklisted,
+                "warning": r.warning,
+                "reason": r.reason
+            }
+            for r in results
+        ],
+        "total_checked": len(submission_logger.get_all_device_serials()),
+        "actions_taken": len(results)
+    }
+
+
+@app.get("/api/admin/abuse/report", tags=["Admin"])
+async def get_abuse_report():
+    """
+    Get comprehensive abuse detection report.
+    """
+    if not abuse_detector:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Abuse detection not initialized"
+        )
+
+    return abuse_detector.get_abuse_report()
+
+
+@app.get("/api/devices/{device_serial}/status", tags=["Devices"])
+async def get_device_status(device_serial: str):
+    """
+    Get device status including blacklist and submission count.
+
+    Args:
+        device_serial: Device serial number
+
+    Returns:
+        Device status information
+    """
+    if not device_registry or not submission_logger:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not initialized"
+        )
+
+    device = device_registry.get_device(device_serial)
+    if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device {device_serial} not found"
+        )
+
+    # Count submissions
+    count_24h = submission_logger.count_submissions(device_serial, hours=24)
+    count_total = submission_logger.count_submissions(device_serial)
+
+    return {
+        "device_serial": device.device_serial,
+        "device_family": device.device_family,
+        "provisioned_at": device.provisioned_at,
+        "is_blacklisted": device.is_blacklisted,
+        "blacklisted_at": device.blacklisted_at,
+        "blacklist_reason": device.blacklist_reason,
+        "submissions_24h": count_24h,
+        "submissions_total": count_total,
+        "key_table_indices": device.key_table_indices
+    }
+
+
+@app.post("/api/admin/blacklist/{device_serial}", tags=["Admin"])
+async def blacklist_device_manual(
+    device_serial: str,
+    reason: str = "Manual blacklist via API"
+):
+    """
+    Manually blacklist a device.
+
+    Args:
+        device_serial: Device serial number
+        reason: Reason for blacklisting
+    """
+    if not device_registry:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not initialized"
+        )
+
+    success = device_registry.blacklist_device(device_serial, reason)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device {device_serial} not found"
+        )
+
+    # Save registry
+    device_registry.save_to_file()
+
+    return {
+        "device_serial": device_serial,
+        "blacklisted": True,
+        "reason": reason,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.delete("/api/admin/blacklist/{device_serial}", tags=["Admin"])
+async def unblacklist_device_manual(device_serial: str):
+    """
+    Remove device from blacklist.
+
+    Args:
+        device_serial: Device serial number
+    """
+    if not device_registry:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not initialized"
+        )
+
+    success = device_registry.unblacklist_device(device_serial)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device {device_serial} not found"
+        )
+
+    # Save registry
+    device_registry.save_to_file()
+
+    return {
+        "device_serial": device_serial,
+        "blacklisted": False,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/api/admin/blacklist", tags=["Admin"])
+async def list_blacklisted_devices():
+    """
+    List all blacklisted devices.
+    """
+    if not device_registry:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service not initialized"
+        )
+
+    all_devices = device_registry.list_devices()
+    blacklisted = [d for d in all_devices if d.is_blacklisted]
+
+    return {
+        "total_blacklisted": len(blacklisted),
+        "devices": [
+            {
+                "device_serial": d.device_serial,
+                "device_family": d.device_family,
+                "blacklisted_at": d.blacklisted_at,
+                "blacklist_reason": d.blacklist_reason
+            }
+            for d in blacklisted
+        ]
+    }
 
 
 if __name__ == "__main__":
