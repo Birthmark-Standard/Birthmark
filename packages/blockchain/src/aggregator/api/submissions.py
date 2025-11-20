@@ -119,13 +119,13 @@ async def submit_certificate_bundle(
     db: AsyncSession = Depends(get_db),
 ) -> SubmissionResponse:
     """
-    Submit certificate-based authentication bundle (NEW format).
+    Submit certificate-based authentication bundle (Phase 2).
 
-    This endpoint accepts self-contained certificate documents that include
-    all authentication data (encrypted NUC, key table/index, MA endpoint).
+    This endpoint accepts X.509 certificate bundles from iOS devices with ECDSA signatures.
+    The bundle is validated with SMA and queued for batching to blockchain.
 
     Args:
-        bundle: Certificate bundle with image hash and camera certificate
+        bundle: Certificate bundle with image hash, certificate, timestamp, and signature
         db: Database session
 
     Returns:
@@ -138,38 +138,15 @@ async def submit_certificate_bundle(
         f"timestamp={bundle.timestamp}"
     )
 
-    # Validate and parse certificate
-    try:
-        validation_result = await certificate_validator.validate_camera_certificate(bundle)
-
-        if not validation_result.valid:
-            logger.warning(f"Certificate validation FAILED for {receipt_id}: {validation_result.error}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Certificate validation failed: {validation_result.error}"
-            )
-
-        logger.info(f"Certificate validated for {receipt_id}")
-
-    except Exception as e:
-        logger.error(f"Certificate validation error for {receipt_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Certificate validation error: {str(e)}"
-        )
-
-    # Extract data from validated certificate
-    cert_data = validation_result.cert_data
-
     # Create pending submission record
     submission = PendingSubmission(
         image_hash=bundle.image_hash,
-        encrypted_token=cert_data.encrypted_nuc,
-        table_references=[cert_data.key_table_id],  # Single table from cert
-        key_indices=[cert_data.key_index],          # Single key from cert
+        encrypted_token=b"",  # Not used in Phase 2 (certificate-based)
+        table_references=[],  # Not used in Phase 2
+        key_indices=[],       # Not used in Phase 2
         timestamp=bundle.timestamp,
         gps_hash=bundle.gps_hash,
-        device_signature=bundle.get_signature_bytes(),
+        device_signature=bundle.bundle_signature.encode() if isinstance(bundle.bundle_signature, str) else bundle.bundle_signature,
         sma_validated=False,
         batched=False,
     )
@@ -179,13 +156,15 @@ async def submit_certificate_bundle(
 
     logger.info(f"Certificate submission {receipt_id} queued for validation")
 
-    # Trigger background validation
+    # Validate with SMA inline
     try:
         await validate_certificate_submission_inline(
             submission,
-            cert_data.ma_endpoint,
             bundle.camera_cert,
             bundle.image_hash,
+            bundle.timestamp,
+            bundle.gps_hash,
+            bundle.bundle_signature,
             db
         )
     except Exception as e:
@@ -200,28 +179,34 @@ async def submit_certificate_bundle(
 
 async def validate_certificate_submission_inline(
     submission: PendingSubmission,
-    ma_endpoint: str,
     camera_cert: str,
     image_hash: str,
+    timestamp: int,
+    gps_hash: Optional[str],
+    bundle_signature: str,
     db: AsyncSession,
 ) -> None:
     """
-    Validate certificate submission with MA.
+    Validate certificate bundle submission with SMA (Phase 2).
 
     Args:
         submission: Pending submission record
-        ma_endpoint: MA validation endpoint URL from certificate
-        camera_cert: Base64-encoded camera certificate
+        camera_cert: Base64-encoded PEM camera certificate
         image_hash: SHA-256 image hash
+        timestamp: Unix timestamp when photo was taken
+        gps_hash: Optional SHA-256 GPS hash
+        bundle_signature: Base64-encoded ECDSA signature
         db: Database session
     """
-    logger.info(f"Validating certificate submission ID={submission.id} with MA at {ma_endpoint}")
+    logger.info(f"Validating certificate bundle submission ID={submission.id} with SMA")
 
-    # Call MA for validation using certificate
-    validation_result = await certificate_validator.validate_with_ma(
-        ma_endpoint=ma_endpoint,
+    # Call SMA for certificate bundle validation
+    validation_result = await sma_client.validate_certificate_bundle(
         camera_cert=camera_cert,
         image_hash=image_hash,
+        timestamp=timestamp,
+        gps_hash=gps_hash,
+        bundle_signature=bundle_signature,
     )
 
     # Update submission record
@@ -231,11 +216,11 @@ async def validate_certificate_submission_inline(
 
     if not validation_result.valid:
         logger.warning(
-            f"MA validation FAILED for submission {submission.id}: "
+            f"SMA validation FAILED for submission {submission.id}: "
             f"{validation_result.message}"
         )
     else:
-        logger.info(f"MA validation PASSED for submission {submission.id}")
+        logger.info(f"SMA validation PASSED for submission {submission.id}")
 
     await db.commit()
 
