@@ -102,73 +102,82 @@ struct ProvisioningView: View {
     }
 
     private func performProvisioning() async throws {
-        print("[Phase 2] Starting provisioning...")
+        print("[Phase 2] Starting provisioning with SMA...")
 
         // 1. Generate device secret (Phase 2)
+        // This is a permanent, frozen identity: SHA256(random_seed + device_name)
         let deviceSecret = CryptoService.shared.generateDeviceSecret()
         print("[Phase 2] Generated device secret: \(deviceSecret.hexString.prefix(16))...")
 
-        // 2. Assign random global table indices (Phase 2)
-        // In production, this would come from SMA
-        let keyTableIndices = generateRandomTableAssignments()
-        print("[Phase 2] Assigned global table indices: \(keyTableIndices)")
+        // 2. Call SMA API for provisioning
+        // This replaces all mock data generation with real server call
+        print("[Phase 2] Calling SMA /api/v1/devices/provision...")
+        let response = try await NetworkService.shared.provisionDevice(deviceSecret: deviceSecret)
+        print("[Phase 2] Received provisioning response from SMA")
+        print("[Phase 2] - Global table indices: \(response.keyTableIndices)")
+        print("[Phase 2] - Key tables: 3 tables × 1000 keys")
+        print("[Phase 2] - Certificate received: \(response.deviceCertificate.prefix(50))...")
 
-        // 3. Generate mock key tables (Phase 2)
-        // In production, these would come from SMA
-        let keyTables = generateMockKeyTables()
-        print("[Phase 2] Generated 3 key tables with 1000 keys each")
+        // 3. Verify response matches our device secret
+        guard response.deviceSecret == deviceSecret.hexString else {
+            throw ProvisioningError.secretMismatch
+        }
+        print("[Phase 2] Device secret verified")
 
-        // 4. Save Phase 2 data to Keychain
+        // 4. Save ALL provisioning data to Keychain
+        print("[Phase 2] Saving credentials to Keychain...")
+
+        // Certificate credentials
+        KeychainService.shared.saveDeviceCertificate(response.deviceCertificate)
+        KeychainService.shared.saveDevicePrivateKey(response.devicePrivateKey)
+        KeychainService.shared.saveCertificateChain(response.certificateChain)
+
+        // Device identity and keys
         KeychainService.shared.saveDeviceSecret(deviceSecret)
-        KeychainService.shared.saveKeyTableIndices(keyTableIndices)
-        KeychainService.shared.saveKeyTables(keyTables)
+        KeychainService.shared.saveKeyTableIndices(response.keyTableIndices)
+        KeychainService.shared.saveKeyTables(response.keyTables)
 
-        // Backward compatibility: Save old format too
+        // Backward compatibility: Save old format for Phase 1 fallback
         let fingerprintString = deviceSecret.hexString
         KeychainService.shared.saveDeviceFingerprint(fingerprintString)
-        KeychainService.shared.saveTableAssignments(keyTableIndices)
+        KeychainService.shared.saveTableAssignments(response.keyTableIndices)
 
-        print("[Phase 2] Provisioning complete")
+        print("[Phase 2] Provisioning complete - device fully provisioned")
 
-        // 5. Mark app as provisioned
+        // 5. Verify all credentials are saved
+        guard KeychainService.shared.isFullyProvisioned() else {
+            throw ProvisioningError.incompleteSave
+        }
+
+        // 6. Mark app as provisioned
         DispatchQueue.main.async {
             appState.completeProvisioning(
                 fingerprint: fingerprintString,
-                assignments: keyTableIndices
+                assignments: response.keyTableIndices
             )
         }
     }
+}
 
-    private func generateMockKeyTables() -> [[String]] {
-        // Generate 3 tables with 1000 keys each
-        var tables: [[String]] = []
+// MARK: - Provisioning Errors
 
-        for _ in 0..<3 {
-            var table: [String] = []
-            for _ in 0..<1000 {
-                let key = generateMockMasterKey()
-                table.append(key.hexString)
-            }
-            tables.append(table)
+enum ProvisioningError: Error, LocalizedError {
+    case secretMismatch
+    case incompleteSave
+    case networkFailed
+    case smaUnavailable
+
+    var errorDescription: String? {
+        switch self {
+        case .secretMismatch:
+            return "Device secret mismatch from SMA"
+        case .incompleteSave:
+            return "Failed to save all credentials to Keychain"
+        case .networkFailed:
+            return "Network connection to SMA failed"
+        case .smaUnavailable:
+            return "SMA server is unavailable"
         }
-
-        return tables
-    }
-
-    private func generateRandomTableAssignments() -> [Int] {
-        // Select 3 random tables from 0-2499
-        var assignments: Set<Int> = []
-        while assignments.count < 3 {
-            assignments.insert(Int.random(in: 0..<2500))
-        }
-        return Array(assignments).sorted()
-    }
-
-    private func generateMockMasterKey() -> Data {
-        // Generate random 256-bit key
-        var bytes = [UInt8](repeating: 0, count: 32)
-        _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-        return Data(bytes)
     }
 }
 

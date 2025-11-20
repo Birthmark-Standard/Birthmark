@@ -13,78 +13,72 @@ class AuthenticationService {
 
     private init() {}
 
-    /// Complete authentication flow: hash, encrypt, create bundle, submit (Phase 2)
+    /// Complete authentication flow: hash, create certificate bundle, sign, submit (Phase 2)
     func authenticateImage(_ imageData: Data) async throws -> SubmissionResponse {
         let startTime = Date()
 
         // 1. Compute SHA-256 hash (~10ms)
         let imageHash = CryptoService.shared.sha256(imageData)
-        print("Image hash computed: \(imageHash.prefix(16))...")
+        print("[Phase 2] Image hash computed: \(imageHash.prefix(16))...")
 
-        // 2. Get device secret from Keychain (Phase 2)
-        guard let deviceSecret = KeychainService.shared.getDeviceSecret() else {
-            // Fallback to Phase 1 fingerprint
+        // 2. Check if device is fully provisioned with certificate
+        guard KeychainService.shared.isFullyProvisioned() else {
+            print("[Phase 2] Device not fully provisioned, checking Phase 1 fallback...")
+            // Fallback to Phase 1 token-based authentication
             guard let fingerprint = KeychainService.shared.getDeviceFingerprint() else {
                 throw AuthError.notProvisioned
             }
             return try await authenticateImagePhase1(imageData, fingerprint: fingerprint)
         }
 
-        // 3. Get key table indices (global indices)
-        guard let keyTableIndices = KeychainService.shared.getKeyTableIndices() else {
-            throw AuthError.notProvisioned
+        // 3. Get device certificate from Keychain
+        guard let deviceCertificate = KeychainService.shared.getDeviceCertificate() else {
+            throw AuthError.missingCertificate
         }
+        print("[Phase 2] Retrieved device certificate")
 
-        // 4. Select random table (local index 0-2)
-        let localTableIndex = Int.random(in: 0..<3)
-        let globalTableIndex = keyTableIndices[localTableIndex]  // Map to global index
+        // 4. Create timestamp
+        let timestamp = Int(Date().timeIntervalSince1970)
 
-        // 5. Select random key index (0-999)
-        let keyIndex = CryptoService.shared.generateRandomKeyIndex()
+        // 5. Get optional GPS hash (if location services enabled)
+        let gpsHash: String? = nil // TODO: Implement GPS hashing if location available
 
-        // 6. Get encryption key directly from key tables (Phase 2)
-        guard let encryptionKey = KeychainService.shared.getKey(
-            localTableIndex: localTableIndex,
-            keyIndex: keyIndex
-        ) else {
-            throw AuthError.missingKey
-        }
-
-        // 7. Encrypt device secret (~1ms)
-        let deviceSecretString = deviceSecret.hexString
-        let cameraToken = try CryptoService.shared.encryptFingerprint(
-            deviceSecretString,
-            key: SymmetricKey(data: encryptionKey)
-        )
-
-        // 8. Create authentication bundle with global table index
-        let bundle = AuthenticationBundle(
+        // 6. Sign bundle with device private key (ECDSA P-256)
+        print("[Phase 2] Signing certificate bundle...")
+        let bundleSignature = try CryptoService.shared.signCertificateBundle(
             imageHash: imageHash,
-            cameraToken: cameraToken,
-            tableId: globalTableIndex,  // Use GLOBAL index (e.g., 157)
-            keyIndex: keyIndex,
-            timestamp: Int(Date().timeIntervalSince1970),
-            gpsHash: nil // TODO: Add GPS hashing if desired
+            cameraCert: deviceCertificate,
+            timestamp: timestamp,
+            gpsHash: gpsHash
         )
+        print("[Phase 2] Bundle signed with ECDSA P-256")
+
+        // 7. Create certificate bundle (Phase 2 format)
+        let bundle = CertificateBundle(
+            imageHash: imageHash,
+            cameraCert: deviceCertificate,
+            timestamp: timestamp,
+            gpsHash: gpsHash,
+            bundleSignature: bundleSignature,
+            softwareCert: nil // Phase 2: No software cert yet
+        )
+
+        // 8. Validate bundle format before submission
+        try bundle.validate()
 
         let elapsed = Date().timeIntervalSince(startTime) * 1000
-        print("Authentication bundle created in \(String(format: "%.1f", elapsed))ms")
+        print("[Phase 2] Certificate bundle created in \(String(format: "%.1f", elapsed))ms")
 
-        // 9. Submit to aggregation server (or queue if offline)
+        // 9. Submit to aggregation server /api/v1/submit-cert endpoint
         do {
-            let response = try await NetworkService.shared.submitBundle(bundle)
-            print("Submission successful: \(response.receiptId)")
+            let response = try await NetworkService.shared.submitCertificateBundle(bundle)
+            print("[Phase 2] Submission successful: \(response.receiptId)")
             return response
         } catch {
-            print("Network error, queueing for later: \(error)")
-            NetworkService.shared.queueBundle(bundle)
-
-            // Return synthetic response
-            return SubmissionResponse(
-                receiptId: UUID().uuidString,
-                status: "queued",
-                message: "Queued for submission when online"
-            )
+            print("[Phase 2] Network error, queueing for later: \(error)")
+            // TODO: Implement certificate bundle queue (currently only supports AuthenticationBundle)
+            // For now, return error to user
+            throw AuthError.submissionFailed
         }
     }
 
@@ -163,6 +157,8 @@ class AuthenticationService {
 enum AuthError: Error {
     case notProvisioned
     case missingKey
+    case missingCertificate
     case encryptionFailed
     case submissionFailed
+    case signingFailed
 }
