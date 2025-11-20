@@ -12,12 +12,15 @@ class KeychainService {
     static let shared = KeychainService()
 
     private let deviceFingerprintKey = "com.birthmark.device_fingerprint"
+    private let deviceSecretKey = "com.birthmark.device_secret"  // Phase 2
     private let tableAssignmentsKey = "com.birthmark.table_assignments"
+    private let keyTableIndicesKey = "com.birthmark.key_table_indices"  // Phase 2
+    private let keyTablesKey = "com.birthmark.key_tables"  // Phase 2
     private let masterKeysPrefix = "com.birthmark.master_key_"
 
     private init() {}
 
-    // MARK: - Device Fingerprint
+    // MARK: - Device Fingerprint (Phase 1)
 
     func saveDeviceFingerprint(_ fingerprint: String) {
         save(fingerprint, forKey: deviceFingerprintKey)
@@ -27,7 +30,19 @@ class KeychainService {
         return getString(forKey: deviceFingerprintKey)
     }
 
-    // MARK: - Table Assignments
+    // MARK: - Device Secret (Phase 2)
+
+    /// Save device secret (32-byte hash)
+    func saveDeviceSecret(_ secret: Data) {
+        save(secret, forKey: deviceSecretKey)
+    }
+
+    /// Get device secret
+    func getDeviceSecret() -> Data? {
+        return getData(forKey: deviceSecretKey)
+    }
+
+    // MARK: - Table Assignments (Phase 1)
 
     func saveTableAssignments(_ assignments: [Int]) {
         let data = try? JSONEncoder().encode(assignments)
@@ -39,7 +54,52 @@ class KeychainService {
         return try? JSONDecoder().decode([Int].self, from: data)
     }
 
-    // MARK: - Master Keys
+    // MARK: - Key Table Indices (Phase 2)
+
+    /// Save global key table indices (e.g., [42, 157, 891])
+    func saveKeyTableIndices(_ indices: [Int]) {
+        let data = try? JSONEncoder().encode(indices)
+        save(data, forKey: keyTableIndicesKey)
+    }
+
+    /// Get global key table indices
+    func getKeyTableIndices() -> [Int]? {
+        guard let data = getData(forKey: keyTableIndicesKey) else { return nil }
+        return try? JSONDecoder().decode([Int].self, from: data)
+    }
+
+    // MARK: - Key Tables (Phase 2)
+
+    /// Save all key tables (3 tables × 1000 keys each)
+    /// Each key is 32 bytes, stored as hex string for JSON encoding
+    func saveKeyTables(_ tables: [[String]]) {
+        let data = try? JSONEncoder().encode(tables)
+        save(data, forKey: keyTablesKey)
+    }
+
+    /// Get all key tables
+    func getKeyTables() -> [[String]]? {
+        guard let data = getData(forKey: keyTablesKey) else { return nil }
+        return try? JSONDecoder().decode([[String]].self, from: data)
+    }
+
+    /// Get specific key from loaded tables
+    /// - Parameters:
+    ///   - localTableIndex: Local table index (0-2)
+    ///   - keyIndex: Key index within table (0-999)
+    /// - Returns: Key data (32 bytes)
+    func getKey(localTableIndex: Int, keyIndex: Int) -> Data? {
+        guard let tables = getKeyTables(),
+              localTableIndex < tables.count,
+              keyIndex < tables[localTableIndex].count else {
+            return nil
+        }
+
+        let hexKey = tables[localTableIndex][keyIndex]
+        return Data(hex: hexKey)
+    }
+
+    // MARK: - Master Keys (Phase 1)
 
     func saveMasterKey(_ key: Data, forTable tableId: Int) {
         save(key, forKey: masterKeysPrefix + "\(tableId)")
@@ -104,5 +164,32 @@ class KeychainService {
             kSecClass as String: kSecClassGenericPassword
         ]
         SecItemDelete(query as CFDictionary)
+    }
+}
+
+// MARK: - Data Hex Extension
+
+extension Data {
+    /// Initialize Data from hex string
+    init?(hex: String) {
+        let len = hex.count / 2
+        var data = Data(capacity: len)
+        var i = hex.startIndex
+        for _ in 0..<len {
+            let j = hex.index(i, offsetBy: 2)
+            let bytes = hex[i..<j]
+            if var num = UInt8(bytes, radix: 16) {
+                data.append(&num, count: 1)
+            } else {
+                return nil
+            }
+            i = j
+        }
+        self = data
+    }
+
+    /// Convert Data to hex string
+    var hexString: String {
+        return map { String(format: "%02hhx", $0) }.joined()
     }
 }

@@ -279,43 +279,213 @@ class KeyTableManager:
         }
 
 
-class Phase2DatabaseTableManager(KeyTableManager):
+class Phase2KeyTableManager(KeyTableManager):
     """
-    Key table manager for Phase 2 with PostgreSQL storage.
+    Key table manager for Phase 2 with full key storage.
 
-    NOTE: This is a placeholder for Phase 2 implementation.
-    Actual implementation will use SQLAlchemy ORM.
+    Manages 2,500 global key tables with 1,000 keys each.
+    Each device receives actual key data (not just master keys) during provisioning.
     """
 
-    def __init__(self, database_url: str):
+    def __init__(
+        self,
+        total_tables: int = 2500,
+        keys_per_table: int = 1000,
+        storage_path: Optional[Path] = None
+    ):
         """
-        Initialize with database connection.
+        Initialize Phase 2 key table manager.
 
         Args:
-            database_url: PostgreSQL connection string
+            total_tables: Total number of key tables (default: 2,500)
+            keys_per_table: Keys per table (default: 1,000)
+            storage_path: Path to JSON file for key storage
         """
-        super().__init__(total_tables=2500, tables_per_device=3)
-        self.database_url = database_url
-        # TODO: Initialize SQLAlchemy session
+        super().__init__(total_tables=total_tables, tables_per_device=3, storage_path=storage_path)
+        self.keys_per_table = keys_per_table
+        # Storage: {table_id: {key_index: derived_key}}
+        self.derived_keys: dict[int, dict[int, bytes]] = {}
 
-    def generate_all_tables(self) -> None:
-        """Generate and insert 2,500 key tables into database."""
-        # TODO: Phase 2 implementation
-        raise NotImplementedError("Phase 2: Database-backed table generation")
+    def generate_all_tables_with_keys(self) -> None:
+        """
+        Generate 2,500 key tables with 1,000 derived keys each.
 
-    def assign_random_tables(
-        self,
-        device_serial: str,
-        exclude_tables: Optional[Set[int]] = None
-    ) -> List[int]:
-        """Assign tables and store in database."""
-        # TODO: Phase 2 implementation
-        raise NotImplementedError("Phase 2: Database-backed table assignment")
+        Uses HKDF to derive all keys from master keys.
+        Total: 2.5 million keys.
+        """
+        from .key_derivation import derive_encryption_key
 
-    def save_to_file(self, path: Optional[Path] = None) -> None:
-        """Not used in Phase 2 (database storage)."""
-        raise NotImplementedError("Phase 2 uses database storage, not files")
+        # First generate master keys
+        self.generate_all_tables()
 
-    def load_from_file(self, path: Optional[Path] = None) -> None:
-        """Not used in Phase 2 (database storage)."""
-        raise NotImplementedError("Phase 2 uses database storage, not files")
+        print(f"Deriving {self.keys_per_table} keys for each of {self.total_tables} tables...")
+
+        # Derive all keys for each table
+        for table_id in range(self.total_tables):
+            if table_id % 100 == 0:
+                print(f"  Deriving keys for table {table_id}/{self.total_tables}")
+
+            master_key = self.key_tables[table_id]
+            self.derived_keys[table_id] = {}
+
+            for key_index in range(self.keys_per_table):
+                derived_key = derive_encryption_key(master_key, key_index)
+                self.derived_keys[table_id][key_index] = derived_key
+
+        print(f"✓ Generated {len(self.derived_keys)} tables with {self.keys_per_table} keys each")
+
+    def get_table_keys(self, table_id: int) -> List[bytes]:
+        """
+        Get all derived keys for a specific table.
+
+        Args:
+            table_id: Global table identifier
+
+        Returns:
+            List of 1,000 derived keys (32 bytes each)
+
+        Raises:
+            KeyError: If table_id not found
+        """
+        if table_id not in self.derived_keys:
+            raise KeyError(f"Key table {table_id} not found")
+
+        # Return keys in order (0-999)
+        return [
+            self.derived_keys[table_id][i]
+            for i in range(self.keys_per_table)
+        ]
+
+    def get_specific_key(self, table_id: int, key_index: int) -> bytes:
+        """
+        Get a specific derived key.
+
+        Args:
+            table_id: Global table identifier
+            key_index: Key index (0-999)
+
+        Returns:
+            Derived encryption key (32 bytes)
+
+        Raises:
+            KeyError: If table or key not found
+        """
+        if table_id not in self.derived_keys:
+            raise KeyError(f"Key table {table_id} not found")
+        if key_index not in self.derived_keys[table_id]:
+            raise KeyError(f"Key index {key_index} not found in table {table_id}")
+
+        return self.derived_keys[table_id][key_index]
+
+    def get_multiple_table_keys(self, table_ids: List[int]) -> List[List[bytes]]:
+        """
+        Get all keys for multiple tables (for provisioning).
+
+        Args:
+            table_ids: List of global table identifiers
+
+        Returns:
+            List of key arrays, one per table
+
+        Raises:
+            KeyError: If any table_id not found
+        """
+        return [self.get_table_keys(tid) for tid in table_ids]
+
+    def save_to_file_with_keys(self, path: Optional[Path] = None) -> None:
+        """
+        Save key tables with all derived keys to JSON file.
+
+        WARNING: This creates a large file (~80MB for 2,500 tables × 1,000 keys).
+        Only use for Phase 2 development/testing.
+        """
+        if path is None:
+            path = self.storage_path
+
+        if path is None:
+            raise ValueError("No storage path specified")
+
+        # Convert to serializable format
+        derived_keys_serializable = {
+            str(table_id): {
+                str(key_idx): key.hex()
+                for key_idx, key in keys.items()
+            }
+            for table_id, keys in self.derived_keys.items()
+        }
+
+        data = {
+            "total_tables": self.total_tables,
+            "keys_per_table": self.keys_per_table,
+            "tables_per_device": self.tables_per_device,
+            "key_tables": [
+                {
+                    "table_id": tid,
+                    "master_key": key.hex()
+                }
+                for tid, key in sorted(self.key_tables.items())
+            ],
+            "derived_keys": derived_keys_serializable,
+            "assigned_tables": self._assigned_tables
+        }
+
+        # Ensure directory exists
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        print(f"Saving {len(self.derived_keys)} tables with derived keys to {path}")
+        print(f"  (This may take a moment...)")
+
+        # Write to file
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+
+        # Set restrictive permissions
+        path.chmod(0o600)
+
+        file_size_mb = path.stat().st_size / (1024 * 1024)
+        print(f"✓ Saved key tables ({file_size_mb:.1f} MB)")
+
+    def load_from_file_with_keys(self, path: Optional[Path] = None) -> None:
+        """
+        Load key tables with all derived keys from JSON file.
+        """
+        if path is None:
+            path = self.storage_path
+
+        if path is None:
+            raise ValueError("No storage path specified")
+
+        if not path.exists():
+            raise FileNotFoundError(f"Key table file not found: {path}")
+
+        print(f"Loading key tables from {path}")
+        print(f"  (This may take a moment...)")
+
+        with open(path, "r") as f:
+            data = json.load(f)
+
+        self.total_tables = data["total_tables"]
+        self.keys_per_table = data.get("keys_per_table", 1000)
+        self.tables_per_device = data["tables_per_device"]
+
+        # Load master keys
+        self.key_tables = {
+            item["table_id"]: bytes.fromhex(item["master_key"])
+            for item in data["key_tables"]
+        }
+
+        # Load derived keys
+        derived_keys_data = data.get("derived_keys", {})
+        self.derived_keys = {
+            int(table_id): {
+                int(key_idx): bytes.fromhex(key_hex)
+                for key_idx, key_hex in keys.items()
+            }
+            for table_id, keys in derived_keys_data.items()
+        }
+
+        # Load assignments
+        self._assigned_tables = data.get("assigned_tables", {})
+
+        print(f"✓ Loaded {len(self.key_tables)} master keys")
+        print(f"✓ Loaded {len(self.derived_keys)} tables with derived keys")
