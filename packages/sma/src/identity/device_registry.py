@@ -43,18 +43,29 @@ class DeviceRegistration:
     Phase 1 compatibility: nuc_hash field supported for backward compatibility
     """
     device_serial: str
-    device_secret: str  # Hex-encoded SHA-256 (32 bytes = 64 hex chars)
-    key_table_indices: List[int]  # 3 global table IDs (e.g., [42, 157, 891])
     table_assignments: List[int]  # 3 local table references (for backward compat)
-    device_certificate: str  # PEM-encoded X.509 certificate
-    device_public_key: str  # PEM-encoded public key
     device_family: str  # "Raspberry Pi", "iOS", etc.
     provisioned_at: str  # ISO 8601 timestamp
+    # Phase 2 fields (optional for backward compatibility)
+    device_secret: str = ""  # Hex-encoded SHA-256 (32 bytes = 64 hex chars)
+    key_table_indices: List[int] = None  # 3 global table IDs (e.g., [42, 157, 891])
+    device_certificate: str = ""  # PEM-encoded X.509 certificate
+    device_public_key: str = ""  # PEM-encoded public key
     is_blacklisted: bool = False  # True if device is blacklisted
     blacklisted_at: Optional[str] = None  # When blacklisted (ISO 8601)
     blacklist_reason: Optional[str] = None  # Why blacklisted
     # Backward compatibility
     nuc_hash: Optional[str] = None  # Phase 1 compatibility
+
+    def __post_init__(self):
+        """Handle backward compatibility after initialization."""
+        # Set key_table_indices to empty list if None
+        if self.key_table_indices is None:
+            self.key_table_indices = []
+
+        # For Phase 1 devices, use nuc_hash as device_secret if device_secret is empty
+        if not self.device_secret and self.nuc_hash:
+            self.device_secret = self.nuc_hash
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
@@ -72,34 +83,36 @@ class DeviceRegistration:
         Returns:
             True if valid, raises ValueError if invalid
         """
-        # Validate device secret
-        if len(self.device_secret) != 64:
-            raise ValueError(f"Device secret must be 64 hex chars, got {len(self.device_secret)}")
+        # Validate device serial
+        if not self.device_serial or len(self.device_serial) == 0:
+            raise ValueError("Device serial cannot be empty")
 
-        try:
-            bytes.fromhex(self.device_secret)
-        except ValueError:
-            raise ValueError("Device secret must be valid hex string")
+        # Validate device secret (Phase 2 only)
+        if self.device_secret:  # Only validate if present
+            if len(self.device_secret) != 64:
+                raise ValueError(f"Device secret must be 64 hex chars, got {len(self.device_secret)}")
 
-        # Validate key_table_indices (global indices)
-        if len(self.key_table_indices) != 3:
-            raise ValueError(f"Must have 3 key table indices, got {len(self.key_table_indices)}")
+            try:
+                bytes.fromhex(self.device_secret)
+            except ValueError:
+                raise ValueError("Device secret must be valid hex string")
 
-        for tid in self.key_table_indices:
-            if not isinstance(tid, int) or tid < 0:
-                raise ValueError(f"Invalid key table index: {tid}")
+        # Validate key_table_indices (Phase 2 only)
+        if self.key_table_indices:  # Only validate if present
+            if len(self.key_table_indices) != 3:
+                raise ValueError(f"Must have 3 key table indices, got {len(self.key_table_indices)}")
 
-        # Validate table assignments (local, backward compat)
+            for tid in self.key_table_indices:
+                if not isinstance(tid, int) or tid < 0:
+                    raise ValueError(f"Invalid key table index: {tid}")
+
+        # Validate table assignments (required for both phases)
         if len(self.table_assignments) != 3:
             raise ValueError(f"Must have 3 table assignments, got {len(self.table_assignments)}")
 
         for tid in self.table_assignments:
             if not isinstance(tid, int) or tid < 0:
                 raise ValueError(f"Invalid table ID: {tid}")
-
-        # Validate device serial
-        if not self.device_serial or len(self.device_serial) == 0:
-            raise ValueError("Device serial cannot be empty")
 
         # Validate blacklist fields consistency
         if self.is_blacklisted and not self.blacklisted_at:
