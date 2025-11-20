@@ -17,6 +17,9 @@ class KeychainService {
     private let keyTableIndicesKey = "com.birthmark.key_table_indices"  // Phase 2
     private let keyTablesKey = "com.birthmark.key_tables"  // Phase 2
     private let masterKeysPrefix = "com.birthmark.master_key_"
+    private let deviceCertificateKey = "com.birthmark.device_certificate"  // Phase 2
+    private let devicePrivateKeyKey = "com.birthmark.device_private_key"  // Phase 2
+    private let certificateChainKey = "com.birthmark.certificate_chain"  // Phase 2
 
     private init() {}
 
@@ -107,6 +110,80 @@ class KeychainService {
 
     func getMasterKey(forTable tableId: Int) -> Data? {
         return getData(forKey: masterKeysPrefix + "\(tableId)")
+    }
+
+    // MARK: - Device Certificate (Phase 2)
+
+    /// Save device certificate (PEM or DER format as base64 string)
+    ///
+    /// The certificate is received from SMA during provisioning and contains:
+    /// - Encrypted device secret
+    /// - Key table assignments
+    /// - Device identity
+    func saveDeviceCertificate(_ certificate: String) {
+        save(certificate, forKey: deviceCertificateKey)
+    }
+
+    /// Get device certificate
+    ///
+    /// - Returns: Certificate string (PEM or base64-encoded DER) or nil if not found
+    func getDeviceCertificate() -> String? {
+        return getString(forKey: deviceCertificateKey)
+    }
+
+    /// Save device private key (for ECDSA signing of bundles)
+    ///
+    /// The private key is generated during provisioning and used to sign
+    /// certificate bundles before submission to the aggregator.
+    ///
+    /// SECURITY: This is the most sensitive credential. It's stored in the
+    /// Keychain with kSecAttrAccessibleAfterFirstUnlock protection.
+    ///
+    /// - Parameter privateKey: PEM-encoded ECDSA P-256 private key
+    func saveDevicePrivateKey(_ privateKey: String) {
+        save(privateKey, forKey: devicePrivateKeyKey)
+    }
+
+    /// Get device private key for bundle signing
+    ///
+    /// - Returns: PEM-encoded private key or nil if not found
+    func getDevicePrivateKey() -> String? {
+        return getString(forKey: devicePrivateKeyKey)
+    }
+
+    /// Save certificate chain (intermediate + root CA certs)
+    ///
+    /// The chain is used to verify the device certificate's authenticity.
+    /// Format: PEM-encoded certificates concatenated.
+    ///
+    /// - Parameter chain: PEM-encoded certificate chain
+    func saveCertificateChain(_ chain: String) {
+        save(chain, forKey: certificateChainKey)
+    }
+
+    /// Get certificate chain
+    ///
+    /// - Returns: PEM-encoded certificate chain or nil if not found
+    func getCertificateChain() -> String? {
+        return getString(forKey: certificateChainKey)
+    }
+
+    /// Check if device is fully provisioned with certificate
+    ///
+    /// A device is fully provisioned when it has:
+    /// - Device certificate
+    /// - Private key
+    /// - Device secret
+    /// - Key table indices
+    /// - Key tables
+    ///
+    /// - Returns: true if all required Phase 2 credentials are present
+    func isFullyProvisioned() -> Bool {
+        return getDeviceCertificate() != nil &&
+               getDevicePrivateKey() != nil &&
+               getDeviceSecret() != nil &&
+               getKeyTableIndices() != nil &&
+               getKeyTables() != nil
     }
 
     // MARK: - Generic Keychain Operations
