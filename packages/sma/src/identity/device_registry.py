@@ -25,24 +25,36 @@ class DeviceRegistration:
     """
     Complete device registration record.
 
-    Matches database schema in CLAUDE.md:
+    Phase 2 schema:
     CREATE TABLE registered_devices (
         device_serial VARCHAR(255) PRIMARY KEY,
-        nuc_hash BYTEA NOT NULL,
+        device_secret BYTEA NOT NULL,
+        key_table_indices INTEGER[3] NOT NULL,
         table_assignments INTEGER[3] NOT NULL,
         device_certificate TEXT NOT NULL,
         device_public_key TEXT NOT NULL,
         device_family VARCHAR(50),
-        provisioned_at TIMESTAMP
+        provisioned_at TIMESTAMP,
+        is_blacklisted BOOLEAN DEFAULT FALSE,
+        blacklisted_at TIMESTAMP,
+        blacklist_reason TEXT
     );
+
+    Phase 1 compatibility: nuc_hash field supported for backward compatibility
     """
     device_serial: str
-    nuc_hash: str  # Hex-encoded SHA-256 (32 bytes = 64 hex chars)
-    table_assignments: List[int]  # 3 table IDs
+    device_secret: str  # Hex-encoded SHA-256 (32 bytes = 64 hex chars)
+    key_table_indices: List[int]  # 3 global table IDs (e.g., [42, 157, 891])
+    table_assignments: List[int]  # 3 local table references (for backward compat)
     device_certificate: str  # PEM-encoded X.509 certificate
     device_public_key: str  # PEM-encoded public key
     device_family: str  # "Raspberry Pi", "iOS", etc.
     provisioned_at: str  # ISO 8601 timestamp
+    is_blacklisted: bool = False  # True if device is blacklisted
+    blacklisted_at: Optional[str] = None  # When blacklisted (ISO 8601)
+    blacklist_reason: Optional[str] = None  # Why blacklisted
+    # Backward compatibility
+    nuc_hash: Optional[str] = None  # Phase 1 compatibility
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
@@ -60,16 +72,24 @@ class DeviceRegistration:
         Returns:
             True if valid, raises ValueError if invalid
         """
-        # Validate NUC hash
-        if len(self.nuc_hash) != 64:
-            raise ValueError(f"NUC hash must be 64 hex chars, got {len(self.nuc_hash)}")
+        # Validate device secret
+        if len(self.device_secret) != 64:
+            raise ValueError(f"Device secret must be 64 hex chars, got {len(self.device_secret)}")
 
         try:
-            bytes.fromhex(self.nuc_hash)
+            bytes.fromhex(self.device_secret)
         except ValueError:
-            raise ValueError("NUC hash must be valid hex string")
+            raise ValueError("Device secret must be valid hex string")
 
-        # Validate table assignments
+        # Validate key_table_indices (global indices)
+        if len(self.key_table_indices) != 3:
+            raise ValueError(f"Must have 3 key table indices, got {len(self.key_table_indices)}")
+
+        for tid in self.key_table_indices:
+            if not isinstance(tid, int) or tid < 0:
+                raise ValueError(f"Invalid key table index: {tid}")
+
+        # Validate table assignments (local, backward compat)
         if len(self.table_assignments) != 3:
             raise ValueError(f"Must have 3 table assignments, got {len(self.table_assignments)}")
 
@@ -80,6 +100,10 @@ class DeviceRegistration:
         # Validate device serial
         if not self.device_serial or len(self.device_serial) == 0:
             raise ValueError("Device serial cannot be empty")
+
+        # Validate blacklist fields consistency
+        if self.is_blacklisted and not self.blacklisted_at:
+            raise ValueError("Blacklisted devices must have blacklisted_at timestamp")
 
         return True
 
@@ -139,7 +163,7 @@ class DeviceRegistry:
 
     def get_device_by_nuc_hash(self, nuc_hash: str) -> Optional[DeviceRegistration]:
         """
-        Find device by NUC hash.
+        Find device by NUC hash (Phase 1 backward compatibility).
 
         Used during validation to identify which device made a request.
 
@@ -150,9 +174,90 @@ class DeviceRegistry:
             DeviceRegistration or None if not found
         """
         for registration in self._registrations.values():
-            if registration.nuc_hash == nuc_hash:
+            if registration.nuc_hash and registration.nuc_hash == nuc_hash:
                 return registration
         return None
+
+    def get_device_by_secret(self, device_secret: str) -> Optional[DeviceRegistration]:
+        """
+        Find device by device secret (Phase 2).
+
+        Used during validation to identify which device made a request.
+
+        Args:
+            device_secret: Hex-encoded device secret (64 chars)
+
+        Returns:
+            DeviceRegistration or None if not found
+        """
+        for registration in self._registrations.values():
+            if registration.device_secret == device_secret:
+                return registration
+        return None
+
+    def blacklist_device(
+        self,
+        device_serial: str,
+        reason: str
+    ) -> bool:
+        """
+        Blacklist a device (Phase 2 abuse detection).
+
+        Args:
+            device_serial: Device serial number
+            reason: Reason for blacklisting
+
+        Returns:
+            True if device was blacklisted, False if not found
+        """
+        device = self.get_device(device_serial)
+        if not device:
+            return False
+
+        device.is_blacklisted = True
+        device.blacklisted_at = datetime.utcnow().isoformat()
+        device.blacklist_reason = reason
+
+        # Update registration in dict
+        self._registrations[device_serial] = device
+
+        return True
+
+    def unblacklist_device(self, device_serial: str) -> bool:
+        """
+        Remove device from blacklist.
+
+        Args:
+            device_serial: Device serial number
+
+        Returns:
+            True if device was unblacklisted, False if not found
+        """
+        device = self.get_device(device_serial)
+        if not device:
+            return False
+
+        device.is_blacklisted = False
+        device.blacklisted_at = None
+        device.blacklist_reason = None
+
+        # Update registration in dict
+        self._registrations[device_serial] = device
+
+        return True
+
+    def is_device_blacklisted(self, device_serial: str) -> bool:
+        """
+        Check if device is blacklisted.
+
+        Args:
+            device_serial: Device serial number
+
+        Returns:
+            True if blacklisted, False otherwise
+        """
+        device = self.get_device(device_serial)
+        return device.is_blacklisted if device else False
 
     def list_devices(
         self,
