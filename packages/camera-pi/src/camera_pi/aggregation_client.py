@@ -27,6 +27,7 @@ class AuthenticationBundle:
     table_assignments: list[int]  # All 3 assigned tables (for privacy)
     gps_hash: Optional[str] = None  # SHA-256 of GPS coords (optional)
     device_signature: Optional[str] = None  # ECDSA signature (hex)
+    isp_validation: Optional[dict] = None  # ISP validation data (variance-from-expected)
 
     def to_json(self) -> dict:
         """
@@ -79,6 +80,9 @@ class AuthenticationBundle:
                 bytes.fromhex(self.device_signature)
             ).decode('utf-8')
 
+        if self.isp_validation:
+            payload["isp_validation"] = self.isp_validation
+
         return payload
 
     @classmethod
@@ -106,6 +110,7 @@ class CertificateBundle:
     timestamp: int  # Unix timestamp
     gps_hash: Optional[str] = None
     bundle_signature: Optional[str] = None  # ECDSA signature (hex)
+    isp_validation: Optional[dict] = None  # ISP validation data (variance-from-expected)
 
     def to_json(self, private_key) -> dict:
         """
@@ -149,6 +154,9 @@ class CertificateBundle:
 
         if self.gps_hash:
             payload["gps_hash"] = self.gps_hash
+
+        if self.isp_validation:
+            payload["isp_validation"] = self.isp_validation
 
         return payload
 

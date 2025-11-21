@@ -41,10 +41,13 @@ class RawCaptureConfig:
 class CaptureResult:
     """Result of raw capture operation."""
     raw_bayer: np.ndarray  # Raw Bayer array
+    processed_image: Optional[np.ndarray]  # ISP-processed RGB image
     image_hash: str        # SHA-256 hash of raw data
+    processed_hash: Optional[str]  # SHA-256 hash of processed image
     capture_time: float    # Time to capture (seconds)
     hash_time: float       # Time to hash (seconds)
     timestamp: int         # Unix timestamp
+    isp_variance: Optional[float] = None  # ISP validation variance metric
 
 
 class RawCaptureManager:
@@ -126,9 +129,19 @@ class RawCaptureManager:
 
         return raw_array
 
-    def capture_with_hash(self) -> CaptureResult:
+    def capture_with_hash(
+        self,
+        capture_processed: bool = True,
+        validate_isp: bool = True,
+        isp_parameters: Optional[dict] = None
+    ) -> CaptureResult:
         """
         Capture raw Bayer data and compute hash.
+
+        Args:
+            capture_processed: Also capture ISP-processed RGB image
+            validate_isp: Compute ISP validation variance metric
+            isp_parameters: ISP parameters used for processing (required if validate_isp=True)
 
         Returns:
             CaptureResult with raw data, hash, and timing info
@@ -147,13 +160,80 @@ class RawCaptureManager:
 
         print(f"✓ Hash computed: {image_hash[:16]}... in {hash_time:.3f}s")
 
+        # Capture processed image if requested
+        processed_image = None
+        processed_hash = None
+        isp_variance = None
+
+        if capture_processed:
+            # Capture processed RGB image from camera
+            processed_image = self._capture_processed()
+
+            # Compute hash of processed image
+            processed_hash = hashlib.sha256(processed_image.tobytes()).hexdigest()
+            print(f"✓ Processed hash: {processed_hash[:16]}...")
+
+            # Validate ISP if requested
+            if validate_isp:
+                if isp_parameters is None:
+                    # Use default ISP parameters
+                    isp_parameters = self._get_default_isp_parameters()
+
+                try:
+                    from .isp_validation import compute_variance_from_expected
+                    isp_variance = compute_variance_from_expected(
+                        raw_bayer,
+                        processed_image,
+                        isp_parameters,
+                        num_samples=100
+                    )
+                    print(f"✓ ISP variance: {isp_variance:.4f}")
+                except Exception as e:
+                    print(f"⚠ ISP validation failed: {e}")
+                    isp_variance = None
+
         return CaptureResult(
             raw_bayer=raw_bayer,
+            processed_image=processed_image,
             image_hash=image_hash,
+            processed_hash=processed_hash,
             capture_time=capture_time,
             hash_time=hash_time,
-            timestamp=timestamp
+            timestamp=timestamp,
+            isp_variance=isp_variance
         )
+
+    def _capture_processed(self) -> np.ndarray:
+        """
+        Capture ISP-processed RGB image.
+
+        Returns:
+            RGB image array (height x width x 3, uint8)
+        """
+        if not self._initialized:
+            raise RuntimeError("Camera not initialized")
+
+        # Capture processed RGB image
+        rgb_array = self._camera.capture_array("main")
+
+        print(f"✓ Processed capture: {rgb_array.shape}")
+
+        return rgb_array
+
+    def _get_default_isp_parameters(self) -> dict:
+        """
+        Get default ISP parameters for the camera.
+
+        Returns:
+            Dictionary of ISP parameters
+        """
+        # Default parameters for Raspberry Pi HQ Camera
+        return {
+            'white_balance': {'red_gain': 1.0, 'blue_gain': 1.0},
+            'exposure_adjustment': 0.0,
+            'sharpening': 0.5,
+            'noise_reduction': 0.3
+        }
 
     def start_camera(self) -> None:
         """Start camera for continuous capture."""
@@ -244,6 +324,29 @@ class MockCaptureManager(RawCaptureManager):
         """Close mock camera."""
         print("✓ Mock camera closed")
         self._initialized = False
+
+    def _capture_processed(self) -> np.ndarray:
+        """
+        Generate synthetic processed RGB image.
+
+        Returns:
+            RGB image array (height x width x 3, uint8)
+        """
+        if not self._initialized:
+            raise RuntimeError("Mock camera not initialized")
+
+        width, height = self.config.size
+
+        # Generate synthetic RGB image
+        rgb_array = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
+
+        # Add some structure (gradient)
+        gradient = np.linspace(0, 128, width, dtype=np.uint8)
+        rgb_array[:,:,0] = np.clip(rgb_array[:,:,0] + gradient, 0, 255)
+
+        print(f"✓ Mock processed capture: {rgb_array.shape}")
+
+        return rgb_array
 
 
 def hash_raw_bayer(bayer_array: np.ndarray) -> str:
