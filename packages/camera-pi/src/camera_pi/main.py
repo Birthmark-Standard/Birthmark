@@ -125,15 +125,43 @@ class BirthmarkCamera:
 
         start_time = time.time()
 
-        # Step 1: Capture raw data and hash
-        capture_result = self.capture_manager.capture_with_hash()
+        # Define ISP parameters for validation
+        isp_parameters = {
+            'white_balance': {'red_gain': 1.25, 'blue_gain': 1.15},
+            'exposure_adjustment': 0.0,
+            'sharpening': 0.5,
+            'noise_reduction': 0.3
+        }
+        print(f"ISP parameters: WB(R:{isp_parameters['white_balance']['red_gain']}, "
+              f"B:{isp_parameters['white_balance']['blue_gain']}), "
+              f"Exp:{isp_parameters['exposure_adjustment']:+.1f}, "
+              f"Sharp:{isp_parameters['sharpening']:.1f}, "
+              f"NR:{isp_parameters['noise_reduction']:.1f}")
+
+        # Step 1: Capture raw data, processed image, and compute ISP validation
+        capture_result = self.capture_manager.capture_with_hash(
+            capture_processed=True,
+            validate_isp=True,
+            isp_parameters=isp_parameters
+        )
+
+        # Create ISP validation data structure
+        isp_validation_data = None
+        if capture_result.isp_variance is not None:
+            isp_validation_data = {
+                "variance_metric": capture_result.isp_variance,
+                "isp_parameters": isp_parameters,
+                "sample_count": 100,
+                "shooting_mode": "standard",
+                "metric_version": "v2.0"
+            }
 
         if self.use_certificates:
             # Certificate mode: No token generation needed
             token_time = 0.0
             print(f"✓ Using embedded certificate (no token generation needed)")
 
-            # Step 3: Create certificate bundle
+            # Step 3: Create certificate bundle with ISP validation
             from .aggregation_client import CertificateBundle
 
             bundle = CertificateBundle(
@@ -141,14 +169,16 @@ class BirthmarkCamera:
                 camera_cert_pem=self.provisioning_data.device_certificate,
                 timestamp=capture_result.timestamp,
                 gps_hash=None,  # TODO: GPS integration
-                bundle_signature=None  # Sign in to_json()
+                bundle_signature=None,  # Sign in to_json()
+                isp_validation=isp_validation_data
             )
 
             # Step 4: Sign bundle (happens in to_json())
             sign_start = time.time()
             # Bundle is signed when to_json() is called with private key
             sign_time = time.time() - sign_start
-            print(f"✓ Certificate bundle created")
+            print(f"✓ Certificate bundle created (variance: {capture_result.isp_variance:.4f})"
+                  if capture_result.isp_variance else "✓ Certificate bundle created")
 
         else:
             # Legacy mode: Generate camera token
@@ -159,14 +189,15 @@ class BirthmarkCamera:
             print(f"✓ Camera token: table={camera_token.table_id}, "
                   f"key_index={camera_token.key_index} ({token_time:.3f}s)")
 
-            # Step 3: Create authentication bundle
+            # Step 3: Create authentication bundle with ISP validation
             bundle = AuthenticationBundle(
                 image_hash=capture_result.image_hash,
                 camera_token=camera_token.to_dict(),
                 timestamp=capture_result.timestamp,
                 table_assignments=self.provisioning_data.table_assignments,
                 gps_hash=None,  # TODO: GPS integration
-                device_signature=None  # Sign below
+                device_signature=None,  # Sign below
+                isp_validation=isp_validation_data
             )
 
             # Step 4: Sign bundle
@@ -174,7 +205,8 @@ class BirthmarkCamera:
             signature = sign_bundle(bundle.to_json(), self.tpm._private_key)
             bundle.device_signature = signature.hex()
             sign_time = time.time() - sign_start
-            print(f"✓ Bundle signed ({sign_time:.3f}s)")
+            print(f"✓ Bundle signed (variance: {capture_result.isp_variance:.4f}, {sign_time:.3f}s)"
+                  if capture_result.isp_variance else f"✓ Bundle signed ({sign_time:.3f}s)")
 
         # Step 5: Queue for submission (non-blocking)
         self.submission_queue.enqueue(bundle)
