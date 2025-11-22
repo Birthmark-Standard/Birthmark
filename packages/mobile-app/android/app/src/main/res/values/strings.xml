@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Birthmark Camera</string>
+    <string name="provisioning_title">Device Provisioning</string>
+    <string name="camera_title">Camera</string>
+    <string name="settings_title">Settings</string>
+</resources>
