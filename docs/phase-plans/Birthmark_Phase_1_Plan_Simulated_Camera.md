@@ -1417,7 +1417,7 @@ python3 birthmark_camera.py --timelapse 1 --count 60
 
 ## Phase 2 Transition
 
-**Ready for Phase 2 (iOS App) when:**
+**Ready for Phase 2 (Android App) when:**
 - [ ] All Phase 1 hardware working reliably
 - [ ] Photography club validates concept
 - [ ] Performance targets met
@@ -1426,9 +1426,9 @@ python3 birthmark_camera.py --timelapse 1 --count 60
 - [ ] Clear path to production identified
 
 **Phase 2 Changes:**
-- Port to iOS (iPhone secure enclave)
+- Port to Android (Android Keystore)
 - Use phone's existing camera ISP
-- Integrate with iOS Camera API
+- Integrate with Android Camera2/CameraX API
 - Add live preview
 - Improve user interface
 - Test with 100+ photographers
