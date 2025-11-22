@@ -1847,8 +1847,8 @@ crontab -e
 - Create quick start guide
 - Ship to beta testers
 
-**Option B: iOS App (If Phase 2 ready)**
-- Deploy to TestFlight
+**Option B: Android App (If Phase 2 ready)**
+- Deploy to Google Play Internal Testing
 - Send invitations to beta testers
 - Provide onboarding documentation
 

@@ -505,11 +505,11 @@ if __name__ == "__main__":
 | Component | Phase 1 | Phase 2 |
 |-----------|---------|---------|
 | Storage | JSON files | PostgreSQL database |
-| Devices | Single Pi | Unlimited (iOS apps, future devices) |
+| Devices | Single Pi | Unlimited (Android apps, future devices) |
 | Provisioning | Manual script | Automated API |
 | Key Tables | 10 tables × 100 keys | 2,500 tables × 1,000 keys |
 | Hosting | localhost | Cloud (Heroku/Railway/Fly.io) |
-| Deployment | Development only | TestFlight-accessible |
+| Deployment | Development only | Google Play Internal Testing accessible |
 
 ### Phase 2 Components
 
@@ -533,7 +533,7 @@ CREATE TABLE registered_devices (
     table_assignments INTEGER[3] NOT NULL,  -- Array of 3 table IDs
     device_certificate TEXT NOT NULL,
     device_public_key TEXT NOT NULL,
-    device_family VARCHAR(50),  -- 'Raspberry Pi', 'iOS', etc.
+    device_family VARCHAR(50),  -- 'Raspberry Pi', 'Android', etc.
     provisioned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CHECK (array_length(table_assignments, 1) = 3)
 );
@@ -699,7 +699,7 @@ def derive_key(master_key: bytes, key_index: int) -> bytes:
 class ProvisionRequest(BaseModel):
     device_public_key: str  # PEM format
     device_serial: str
-    device_family: str  # 'Raspberry Pi', 'iOS', etc.
+    device_family: str  # 'Raspberry Pi', 'Android', etc.
     app_version: Optional[str] = "unknown"
 
 class ProvisionResponse(BaseModel):
@@ -1187,7 +1187,7 @@ if __name__ == "__main__":
 - ✓ 100+ devices provisioned automatically
 - ✓ Database handles concurrent provisioning requests
 - ✓ Validation endpoint processes 100+ requests/minute
-- ✓ Cloud deployment accessible from iOS app (HTTPS)
+- ✓ Cloud deployment accessible from Android app (HTTPS)
 - ✓ Validation history logged for audit
 - ✓ API documentation complete and accurate
 
@@ -1238,30 +1238,41 @@ async def validate_with_sma(camera_token):
 3. **Encrypt NUC hash** using randomly selected key from assigned tables
 4. **Include camera token** in authentication bundle
 
-**Example iOS provisioning:**
+**Example Android provisioning:**
 
-```swift
-// In iOS app, on first launch
+```kotlin
+// In Android app, on first launch
 
-func provisionDevice() async throws {
+suspend fun provisionDevice(): Result<ProvisionResponse> {
     // Generate device keypair
-    let privateKey = try P256.Signing.PrivateKey()
-    let publicKeyPEM = try privateKey.publicKey.pemRepresentation
-    
-    // Request provisioning
-    let request = ProvisionRequest(
-        devicePublicKey: publicKeyPEM,
-        deviceSerial: UIDevice.current.identifierForVendor!.uuidString,
-        deviceFamily: "iOS",
-        appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+    val keyPairGenerator = KeyPairGenerator.getInstance(
+        KeyProperties.KEY_ALGORITHM_EC, "AndroidKeyStore"
     )
-    
-    let response = try await apiClient.post("/api/v1/devices/provision", body: request)
-    
-    // Store certificate and table assignments in Secure Enclave
-    try await secureStorage.store(certificate: response.deviceCertificate)
-    try await secureStorage.store(tableAssignments: response.tableAssignments)
-    try await secureStorage.store(simulatedNucHash: response.simulatedNucHash)
+    keyPairGenerator.initialize(
+        KeyGenParameterSpec.Builder("device_key",
+            KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY)
+            .setDigests(KeyProperties.DIGEST_SHA256)
+            .build()
+    )
+    val keyPair = keyPairGenerator.generateKeyPair()
+    val publicKeyPEM = exportPublicKeyToPEM(keyPair.public)
+
+    // Request provisioning
+    val request = ProvisionRequest(
+        devicePublicKey = publicKeyPEM,
+        deviceSerial = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID),
+        deviceFamily = "Android",
+        appVersion = BuildConfig.VERSION_NAME
+    )
+
+    val response = apiClient.post("/api/v1/devices/provision", request)
+
+    // Store certificate and table assignments in Android Keystore
+    secureStorage.storeCertificate(response.deviceCertificate)
+    secureStorage.storeTableAssignments(response.tableAssignments)
+    secureStorage.storeSimulatedNucHash(response.simulatedNucHash)
+
+    return Result.success(response)
 }
 ```
 
@@ -1495,7 +1506,7 @@ curl https://your-app.herokuapp.com/stats
 
 - [ ] Deploy to cloud (Heroku/Railway)
 - [ ] Populate 2,500 key tables
-- [ ] Integration testing with iOS app
+- [ ] Integration testing with Android app
 - [ ] Monitor and optimize
 
 ---
@@ -1511,7 +1522,7 @@ curl https://your-app.herokuapp.com/stats
 
 ### Phase 2 Metrics
 
-- ✓ 50+ iOS devices provisioned
+- ✓ 50+ Android devices provisioned
 - ✓ 1,000+ validation requests processed
 - ✓ Validation success rate >95%
 - ✓ API response time <200ms (p95)

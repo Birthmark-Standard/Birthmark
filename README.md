@@ -111,7 +111,7 @@ birthmark/
 │   ├── aggregator/       # Aggregation server
 │   ├── sma/              # Simulated Manufacturer Authority
 │   ├── blockchain/       # Custom Birthmark blockchain
-│   ├── mobile-app/       # iOS app (Phase 2)
+│   ├── mobile-app/       # Android app (Phase 2)
 │   └── verifier/         # Verification client
 ├── shared/
 │   ├── types/            # Common data structures
@@ -181,7 +181,7 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 
 **Phase 1** (Current) - Hardware prototype with Raspberry Pi, photography club validation, initial blockchain deployment
 
-**Phase 2** - iOS mobile app, broader user testing (50-100 photographers), performance benchmarking
+**Phase 2** - Android mobile app, broader user testing (50-100 photographers), performance benchmarking
 
 **Phase 3** - Manufacturer partnerships, production blockchain network with institutional nodes, public verification tools
 

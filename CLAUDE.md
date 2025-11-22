@@ -75,15 +75,23 @@ Camera Device          Aggregation Server              Birthmark Blockchain
 - Photography club validation (50-100 photographers)
 - 500+ test images verified on blockchain
 
-### Phase 2: iOS App
-**Timeline:** 3-4 months  
+### Phase 2: Android App
+**Timeline:** 3-4 months
 **Goal:** Validate architecture on consumer mobile devices
 
 **Key Differences from Phase 1:**
 - Hashes processed images (not raw sensor data)
 - Device fingerprint instead of NUC map
 - Same aggregation server infrastructure
-- TestFlight closed beta (60-100 testers)
+- Google Play Internal Testing closed beta (60-100 testers)
+
+**Why Android:**
+- Primary manufacturer target (Fairphone) uses Android platform
+- Better hardware access for authentication prototypes
+- Broader manufacturer ecosystem opportunities
+- Android Camera2 API enables camera integration testing
+
+**Note:** iOS development remains possible in Phase 3 if manufacturer partners require it. The authentication architecture is platform-agnostic.
 
 ### Phase 3: Manufacturer Integration
 **Timeline:** Negotiation phase  
@@ -120,8 +128,8 @@ birthmark/
 │   │   │   └── identity/          # NUC records (never sees image hash)
 │   │   └── tests/
 │   │
-│   ├── mobile-app/                # iOS App (Phase 2)
-│   │   └── (React Native or Swift structure)
+│   ├── mobile-app/                # Android App (Phase 2)
+│   │   └── (Kotlin/Jetpack Compose structure)
 │   │
 │   └── verifier/                  # Image Viewer / Validation Client
 │       ├── src/
@@ -306,7 +314,7 @@ CREATE TABLE registered_devices (
     table_assignments INTEGER[3] NOT NULL,
     device_certificate TEXT NOT NULL,
     device_public_key TEXT NOT NULL,
-    device_family VARCHAR(50)  -- 'Raspberry Pi', 'iOS', etc.
+    device_family VARCHAR(50)  -- 'Raspberry Pi', 'Android', etc.
 );
 ```
 
@@ -567,7 +575,7 @@ python src/main.py
 - Limited to Raspberry Pi hardware
 
 ### Phase 2 Additions
-- iOS app with device fingerprints (not NUC)
+- Android app with device fingerprints (not NUC)
 - Larger key tables (2,500 × 1,000)
 - Time-based batching (6-hour timeout)
 - Production database optimizations
@@ -588,7 +596,7 @@ When Claude Code needs specific implementation details:
 - **SMA key table logic:** `docs/phase-plans/Birthmark_Phase_1-2_Plan_SMA.md`
 - **Blockchain specs:** `packages/blockchain/README.md`
 - **Camera hardware setup:** `docs/phase-plans/Birthmark_Phase_1_Plan_Simulated_Camera.md`
-- **iOS architecture:** `docs/phase-plans/Birthmark_Phase_2_Plan_iOS_App.md`
+- **Android architecture:** `docs/phase-plans/Birthmark_Phase_2_Plan_Android_App.md`
 - **Security architecture:** `docs/specs/Birthmark_Camera_Security_Architecture.md`
 
 ---
