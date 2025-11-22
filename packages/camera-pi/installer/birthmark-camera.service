@@ -1,0 +1,42 @@
+[Unit]
+Description=Birthmark Camera Authentication Service
+Documentation=https://github.com/Birthmark-Standard/Birthmark
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/birthmark
+
+# Environment
+Environment="BIRTHMARK_HOME=/home/pi/birthmark"
+Environment="BIRTHMARK_DATA=/home/pi/birthmark/data"
+Environment="PATH=/home/pi/birthmark/venv/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Main process - timelapse mode with 60 second interval
+ExecStart=/home/pi/birthmark/venv/bin/python -m camera_pi.main timelapse --interval 60
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/pi/birthmark/data /home/pi/birthmark/logs /home/pi/birthmark/captures
+PrivateTmp=true
+
+# Camera access
+SupplementaryGroups=video
+
+# Logging
+StandardOutput=append:/home/pi/birthmark/logs/birthmark.log
+StandardError=append:/home/pi/birthmark/logs/birthmark-error.log
+
+[Install]
+WantedBy=multi-user.target
