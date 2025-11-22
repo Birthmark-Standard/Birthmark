@@ -1,4 +1,4 @@
-# iOS App Pipeline - Plain English Guide
+# Android App Pipeline - Plain English Guide
 
 **Last Updated:** November 2025
 **Phase:** Phase 2 (Certificate-Based Authentication)
@@ -8,7 +8,7 @@
 
 ## Overview
 
-The Birthmark iOS app authenticates photos taken on iPhones to prove they came from a real camera and weren't AI-generated. This document explains exactly how the app works, from installation to photo verification, in plain English without technical jargon.
+The Birthmark Android app authenticates photos taken on Android devices to prove they came from a real camera and weren't AI-generated. This document explains exactly how the app works, from installation to photo verification, in plain English without technical jargon.
 
 ---
 
@@ -27,8 +27,8 @@ Behind the scenes, the app begins provisioning (setting up your device):
 1. **Generate Device Identity**
    - The app creates a unique "device secret" that will never change
    - Think of this like a permanent fingerprint for your phone
-   - Formula: Random Number + Your Phone's Name = Device Secret
-   - This secret is "frozen" - even if you rename your phone later, the secret stays the same
+   - Formula: Random Number + Your Device ID = Device Secret
+   - This secret is "frozen" - even if you reset your phone later, the secret stays the same
 
 2. **Contact the Manufacturing Authority (SMA)**
    - The app sends your device secret to the SMA server
@@ -44,8 +44,8 @@ Behind the scenes, the app begins provisioning (setting up your device):
    - **Key Table Assignments**: Which 3 tables (out of 2,500 global tables) your device uses
 
 4. **Save Everything Securely**
-   - All credentials are stored in your iPhone's secure Keychain
-   - The Keychain is Apple's built-in secure storage - even the app can't extract keys
+   - All credentials are stored in your Android device's secure Keystore
+   - The Keystore is Android's built-in secure storage - it's hardware-backed on most devices
    - Your private key never leaves your device
 
 5. **You're Ready!**
@@ -62,7 +62,7 @@ Behind the scenes, the app begins provisioning (setting up your device):
 **Step 1: You Take a Photo**
 - You see the camera viewfinder, just like the normal Camera app
 - Tap the shutter button to take a photo
-- The photo is saved to your iPhone's photo library (like any camera app)
+- The photo is saved to your device's gallery (like any camera app)
 
 **Step 2: The App Computes the Photo Hash (Instant)**
 This happens in the background while you're looking at the photo:
@@ -77,7 +77,7 @@ This happens in the background while you're looking at the photo:
 **Important:** Only the hash is sent to the blockchain, never the actual photo. Your photos stay on your device.
 
 **Step 3: The App Retrieves Your Certificate (Instant)**
-- The app gets your device certificate from the Keychain
+- The app gets your device certificate from the Keystore
 - This is the "ID card" you received during provisioning
 - It contains your device identity (encrypted) and proves you're a real device
 
@@ -90,7 +90,7 @@ The bundle contains:
 - **Software Certificate (Future)**: Will include app version info in Phase 3
 
 **Step 5: The App Signs the Bundle (Instant)**
-- The app uses your private key (from Keychain) to "sign" the bundle
+- The app uses your private key (from Keystore) to "sign" the bundle
 - Signing is like putting your signature on a document - it proves you created it
 - The signature is created using ECDSA P-256 (an industry-standard algorithm)
 - This takes about 1-2 milliseconds
@@ -105,7 +105,7 @@ The signature process:
 - The complete certificate bundle is sent over the internet to the aggregator
 - The aggregator is like a postal service - it collects bundles and forwards them
 - Endpoint: `POST /api/v1/submit-cert`
-- If you're offline, the app will try again later (queuing feature coming soon)
+- If you're offline, the app uses WorkManager to retry when you're back online
 
 **Step 7: You See "Submitted Successfully!"**
 - The app shows a green checkmark
@@ -185,7 +185,7 @@ The signature process:
 **Step 4: Get the Result**
 Two possible outcomes:
 
-**✅ VERIFIED:**
+**Verified:**
 ```json
 {
   "verified": true,
@@ -200,7 +200,7 @@ Translation:
 - "It's recorded in block #123456 of the blockchain"
 - "The University of Oregon aggregator validated it"
 
-**❌ NOT VERIFIED:**
+**NOT VERIFIED:**
 ```json
 {
   "verified": false,
@@ -215,7 +215,7 @@ Translation:
 
 **Step 5: Interpretation**
 - **Verified = Real Camera:** High confidence the photo came from a legitimate device
-- **Not Verified ≠ Fake:** Could be a real photo that wasn't registered
+- **Not Verified != Fake:** Could be a real photo that wasn't registered
 - Verification proves authenticity; lack of verification doesn't prove fakeness
 
 ---
@@ -225,16 +225,16 @@ Translation:
 ### What Data Leaves Your Device?
 
 **Sent to the Blockchain:**
-- ✅ SHA-256 hash of your photo (64 characters)
-- ✅ Timestamp when photo was taken
-- ✅ GPS hash (optional, only if you enable location)
-- ✅ Your device certificate (encrypted device identity)
+- SHA-256 hash of your photo (64 characters)
+- Timestamp when photo was taken
+- GPS hash (optional, only if you enable location)
+- Your device certificate (encrypted device identity)
 
 **Never Sent:**
-- ❌ The actual photo or image data
-- ❌ Your personal information (name, email, phone number)
-- ❌ Your exact GPS coordinates (only a hash, if enabled)
-- ❌ Metadata (EXIF data stays in the photo file)
+- The actual photo or image data
+- Your personal information (name, email, phone number)
+- Your exact GPS coordinates (only a hash, if enabled)
+- Metadata (EXIF data stays in the photo file)
 
 ### How Your Identity is Protected
 
@@ -336,13 +336,13 @@ A: 64 characters (256 bits). Example: `a3f2d8c9b1e4f7a2c8d3e9f1b2c4d5e8f9a1b2c3d
 A: Unlimited, but more than 10,000 per day will trigger abuse detection. Normal users won't hit this.
 
 **Q: What happens if I'm offline?**
-A: Currently, submissions fail if you're offline. Future versions will queue photos and submit when you're back online.
+A: Submissions are queued using Android's WorkManager and will be sent when you're back online.
 
 **Q: Can the SMA see my photos?**
 A: No. The SMA only sees your encrypted device certificate. It never receives image hashes or photos.
 
 **Q: What stops someone from copying my certificate?**
-A: Your certificate is useless without your private key, which is locked in your iPhone's Keychain. Even you can't extract it. It can only be used for signing, not copied.
+A: Your certificate is useless without your private key, which is locked in your Android Keystore. Even you can't extract it. It can only be used for signing, not copied.
 
 **Q: How long does verification last?**
 A: Forever (in theory). Blockchains are permanent. As long as the Birthmark blockchain exists, your photo can be verified.
@@ -357,7 +357,7 @@ T+0.0s    You tap "Get Started"
 T+0.1s    Device secret generated
 T+0.2s    Contacting SMA server...
 T+1.5s    SMA provisions device, returns certificate + keys
-T+1.6s    Credentials saved to Keychain
+T+1.6s    Credentials saved to Keystore
 T+1.7s    Provisioning complete
 T+1.8s    Camera screen appears
 ```
@@ -365,10 +365,10 @@ T+1.8s    Camera screen appears
 ### Photo Capture and Authentication (Every Photo)
 ```
 T+0.0s    You tap shutter button
-T+0.0s    Photo captured, saved to photo library
+T+0.0s    Photo captured, saved to gallery
 T+0.01s   Computing SHA-256 hash of photo...
 T+0.02s   Hash computed: a3f2d8c9b1e4...
-T+0.02s   Retrieving device certificate from Keychain...
+T+0.02s   Retrieving device certificate from Keystore...
 T+0.03s   Creating certificate bundle...
 T+0.03s   Signing bundle with ECDSA P-256...
 T+0.04s   Bundle signed, ready to submit
@@ -395,7 +395,7 @@ T+0.0s    Verifier uploads photo to web app
 T+0.1s    Computing hash...
 T+0.2s    Querying blockchain for hash a3f2d8c9b1e4...
 T+0.3s    Blockchain found hash in block #123456
-T+0.3s    ✅ VERIFIED - Captured Nov 20, 2025 at 5:30 PM
+T+0.3s    VERIFIED - Captured Nov 20, 2025 at 5:30 PM
 ```
 
 ---
@@ -408,11 +408,6 @@ T+0.3s    ✅ VERIFIED - Captured Nov 20, 2025 at 5:30 PM
 - Apps like Photoshop will also get certificates
 - Edited photos will include a "modification record"
 - You'll see: "Original authentic, minor edits by Adobe Photoshop 2026"
-
-**Offline Queueing:**
-- Take photos without internet connection
-- Photos queue locally and submit when you're back online
-- No lost photos due to network issues
 
 **GPS Verification:**
 - Optionally prove where a photo was taken
@@ -428,22 +423,22 @@ T+0.3s    ✅ VERIFIED - Captured Nov 20, 2025 at 5:30 PM
 
 ## Summary
 
-The Birthmark iOS app provides a simple, privacy-preserving way to prove photos came from real cameras:
+The Birthmark Android app provides a simple, privacy-preserving way to prove photos came from real cameras:
 
 1. **One-Time Setup:** Provision your device with the SMA (2 seconds)
 2. **Every Photo:** App hashes photo, signs bundle, submits to blockchain (instant)
 3. **Later Verification:** Anyone can check if a photo is authentic (1 second)
 
 **Key Benefits:**
-- ✅ Photos stay on your device (only hashes leave)
-- ✅ Works after social media strips metadata
-- ✅ Free to use (no blockchain fees)
-- ✅ Permanent verification (blockchain is immutable)
-- ✅ Privacy-preserving (rotating encryption, no tracking)
+- Photos stay on your device (only hashes leave)
+- Works after social media strips metadata
+- Free to use (no blockchain fees)
+- Permanent verification (blockchain is immutable)
+- Privacy-preserving (rotating encryption, no tracking)
 
 **Key Limitation:**
-- ❌ Only verifies unedited photos (by design)
-- ❌ Requires blockchain lookup (not self-contained)
+- Only verifies unedited photos (by design)
+- Requires blockchain lookup (not self-contained)
 
 **Target Use Case:**
 Proving a photo came from a real camera during the 2028 Presidential Election and beyond, combating AI-generated misinformation while preserving privacy.

@@ -1,12 +1,21 @@
 # Mobile App Package
 
 **Phase:** Phase 2
-**Status:** ✅ Implemented (Ready for Testing)
-**Platform:** iOS (TestFlight Beta)
+**Status:** 🔄 Transitioning to Android
+**Platform:** Android (Google Play Internal Testing)
 
 ## Overview
 
-The mobile-app package will implement an iOS application for the Birthmark Standard. This app will validate the system architecture on consumer mobile devices before engaging camera manufacturers for Phase 3.
+The mobile-app package implements an Android application for the Birthmark Standard. This app validates the system architecture on consumer mobile devices before engaging camera manufacturers for Phase 3.
+
+**Note:** This package is transitioning from iOS to Android development. The existing Swift/iOS code is being replaced with Kotlin/Android implementation.
+
+## Why Android?
+
+- **Fairphone Partnership:** Primary manufacturer target uses Android platform
+- **Hardware Access:** Better access for authentication prototypes via Camera2 API
+- **Developer Experience:** More Android development expertise available
+- **Manufacturer Ecosystem:** Broader opportunities with Android OEMs
 
 ## Key Differences from Phase 1
 
@@ -17,14 +26,14 @@ The mobile-app package will implement an iOS application for the Birthmark Stand
 - Extracts NUC (Non-Uniformity Correction) maps
 - Direct hardware sensor access
 
-**Phase 2 (iOS):**
-- Uses processed camera output (JPEG/HEIF)
+**Phase 2 (Android):**
+- Uses processed camera output (JPEG)
 - Device fingerprint instead of sensor NUC
-- Works within iOS camera framework constraints
+- Works within Android camera framework constraints
 
 ### Architecture Validation
 
-The iOS app validates that:
+The Android app validates that:
 - Aggregation server scales to consumer devices
 - Authentication flow works on mobile networks
 - User experience is acceptable for general public
@@ -33,42 +42,42 @@ The iOS app validates that:
 ## Planned Features
 
 ### Camera Integration
-- Native iOS camera capture
+- Native Android camera capture via CameraX
 - Background image hashing
 - Zero user-perceivable latency
 - Batch submission on WiFi
 
 ### Device Authentication
-- iOS Secure Enclave for key storage
+- Android Keystore for secure key storage
 - Device fingerprint generation
 - Certificate-based device identity
 - Encrypted authentication bundles
 
 ### User Interface
 - Minimal UI (camera app + verification badge)
-- Photo library integration
+- Photo gallery integration
 - Verification status indicators
 - Settings for aggregator selection
 
 ## Technology Stack
 
-**Decision: Swift/SwiftUI (Native)**
+**Decision: Kotlin/Jetpack Compose (Native)**
 
-Implemented with:
-- Swift 5.9+ with SwiftUI
-- AVFoundation for camera capture
-- CryptoKit for SHA-256, HKDF, AES-GCM
-- iOS Keychain for secure storage
-- Photos framework for library integration
-- Minimum iOS 16.0 target
+To be implemented with:
+- Kotlin 1.9+ with Jetpack Compose
+- CameraX for camera capture
+- java.security for SHA-256, AES-GCM
+- Android Keystore for secure storage
+- MediaStore for gallery integration
+- Minimum Android API 26 (Android 8.0+)
 
 ## Testing Plan
 
-### TestFlight Beta
+### Google Play Internal Testing
 - 60-100 volunteer testers
 - Photography enthusiasts and journalists
 - 2-3 month beta period
-- Feedback collection via TestFlight
+- Feedback collection via Play Console
 
 ### Success Metrics
 - <10 second background processing
@@ -84,7 +93,7 @@ Implemented with:
 - Aggregator communication
 
 **Month 3:** Beta Testing
-- TestFlight deployment
+- Google Play Internal Testing deployment
 - User feedback collection
 - Bug fixes and optimization
 
@@ -102,7 +111,7 @@ Implemented with:
 
 ## Future Enhancements (Post-Phase 2)
 
-- Android version
+- iOS version (if manufacturer partners require)
 - Federated aggregator selection
 - Local verification cache
 - Photo gallery verification viewer
@@ -110,54 +119,64 @@ Implemented with:
 
 ## Development Setup
 
-The iOS app is implemented and ready for Xcode integration.
+The Android app is being developed using Android Studio.
 
 ### Quick Start
 
-1. Open Xcode 15+
-2. Create new iOS App project
-3. Copy files from `BirthmarkCamera/` directory
-4. Update aggregator URL in `NetworkService.swift`
-5. Build and run on device or simulator
+1. Open Android Studio (latest stable)
+2. Create new Android project with Kotlin/Jetpack Compose
+3. Set minimum SDK to API 26 (Android 8.0)
+4. Implement camera capture, hashing, and network services
+5. Update aggregator URL in configuration
+6. Build and run on device or emulator
 
-See `BirthmarkCamera/README.md` for detailed setup instructions.
+### Legacy iOS Code
+
+The `BirthmarkCamera/` directory contains the previous iOS implementation in Swift.
+This code serves as a reference for the Android implementation but is no longer
+the primary development target.
 
 ```bash
-cd packages/mobile-app/BirthmarkCamera
-open README.md  # Full documentation
+cd packages/mobile-app
+# Android implementation in progress
 ```
 
 ## Related Documentation
 
-- iOS app plan: `docs/phase-plans/Birthmark_Phase_2_Plan_iOS_App.md`
+- Android app plan: `docs/phase-plans/Birthmark_Phase_2_Plan_Android_App.md`
 - Architecture comparison: `docs/specs/Birthmark_Camera_Security_Architecture.md`
 
 ## Notes for Future Developers
 
-1. **Secure Enclave Integration:** Critical for device authentication
-2. **Background Processing:** iOS background task limitations
+1. **Android Keystore Integration:** Critical for device authentication
+2. **Background Processing:** Use WorkManager for reliable background uploads
 3. **Network Efficiency:** Batch submissions to conserve data/battery
 4. **User Education:** Clear messaging about what Birthmark does/doesn't guarantee
-5. **App Store Guidelines:** Compliance with privacy and camera usage policies
+5. **Play Store Guidelines:** Compliance with privacy and camera usage policies
 
 ---
 
 ## Implementation Status
 
-✅ **Complete iOS Implementation:**
-- Camera capture with AVFoundation
-- SHA-256 image hashing (<10ms)
-- Device fingerprint generation
-- HKDF key derivation + AES-GCM encryption
-- Network submission with offline queue
-- Photo Library integration
-- Provisioning flow
+🔄 **Transitioning to Android:**
+- Legacy iOS implementation available in `BirthmarkCamera/` for reference
+- Android implementation in progress
+
+📋 **Android Development Roadmap:**
+- Camera capture with CameraX
+- SHA-256 image hashing
+- Device fingerprint generation with Android Keystore
+- AES-GCM encryption for camera tokens
+- Network submission with WorkManager for offline queue
+- MediaStore integration for gallery
+- Provisioning flow with SMA
 - Settings and device management
 
 📋 **Remaining Work:**
-- Real SMA provisioning integration (currently uses mock data)
-- TestFlight deployment and beta testing
+- Complete Android app implementation
+- Real SMA provisioning integration
+- Google Play Internal Testing deployment
 - Performance benchmarking on real devices
 - User feedback collection
 
-*This iOS app is ready for Xcode project creation and TestFlight distribution.*
+*Android development is the primary focus for Phase 2.*
