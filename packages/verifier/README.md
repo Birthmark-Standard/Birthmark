@@ -21,7 +21,7 @@ Client-side image hashing:
 - Computes SHA-256 hash
 - Handles different image formats
 - **For Phase 1:** Raw Bayer data hashing (matching camera)
-- **For Phase 2:** Processed image hashing (matching iOS app)
+- **For Phase 2:** Processed image hashing (matching Android app)
 
 ### `src/query_blockchain.py`
 

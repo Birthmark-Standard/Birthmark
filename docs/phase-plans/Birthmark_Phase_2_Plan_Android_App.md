@@ -1,15 +1,15 @@
-# Birthmark Phase 2 Plan - iOS App
+# Birthmark Phase 2 Plan - Android App
 
-**Version:** 1.0  
-**Date:** November 2025  
-**Phase:** Phase 2 (iOS Mobile Validation)  
+**Version:** 2.0
+**Date:** November 2025
+**Phase:** Phase 2 (Android Mobile Validation)
 **Timeline:** 3-4 months
 
 ---
 
 ## Purpose
 
-Phase 2 develops an iOS camera application to validate the Birthmark Standard architecture on consumer mobile hardware. This phase proves that authentication works on consumer devices, measures mobile performance constraints, and validates user demand through closed beta testing.
+Phase 2 develops an Android camera application to validate the Birthmark Standard architecture on consumer mobile hardware. This phase proves that authentication works on consumer devices, measures mobile performance constraints, and validates user demand through closed beta testing.
 
 **This is a proof-of-concept, not a production app.** The goal is to generate evidence for Phase 3 manufacturer partnerships.
 
@@ -19,22 +19,38 @@ Phase 2 develops an iOS camera application to validate the Birthmark Standard ar
 
 ### What Phase 2 IS
 
-- Technical validation that architecture works on iOS
+- Technical validation that architecture works on Android
 - Performance benchmarking (battery, speed, reliability)
 - User research with 50-100 photographers/photojournalists
 - Evidence generation for manufacturer conversations
 
 ### What Phase 2 IS NOT
 
-- App Store submission or public release
+- Google Play Store public release
 - Long-term product maintenance
 - Consumer brand building
 - Production-grade security implementation
 
-### Why iOS Testing Matters
+### Why Android
+
+**Aligns with Fairphone Partnership Strategy:**
+- Primary manufacturer target (Fairphone) uses Android platform
+- Android provides better hardware access for authentication prototypes
+- Broader manufacturer ecosystem opportunities
+- Android Camera2 API enables camera integration testing
+
+**Platform Advantages:**
+- Direct hardware access via Camera2 API
+- More flexible app distribution (APK sideloading, Internal Testing)
+- Better debugging and testing capabilities
+- Kotlin is a modern, safe language for cryptographic operations
+
+**Note:** iOS development remains possible in Phase 3 if manufacturer partners require it. The authentication architecture is platform-agnostic.
+
+### Why Android Testing Matters
 
 **Validates architecture is hardware-agnostic:**
-- Same aggregation server handles both Raspberry Pi and iOS submissions
+- Same aggregation server handles both Raspberry Pi and Android submissions
 - Proves backend infrastructure scales to mobile
 - No changes needed to Phase 1 infrastructure
 
@@ -55,28 +71,28 @@ Phase 2 develops an iOS camera application to validate the Birthmark Standard ar
 ### Simplified Architecture
 
 **Processed Image Hash Only (Not RAW):**
-- Hash the JPEG/HEIC output from iOS camera
-- Works on all iPhones (not just Pro models)
+- Hash the JPEG output from Android camera
+- Works on all Android devices (not just flagship models)
 - Fast: <10ms hashing time
 - Minimal battery impact
 
 **Rationale:** RAW capture requires hardware access only manufacturers have. Phase 2 validates the concept; Phase 3 manufacturers provide proper sensor-level integration.
 
-### Device Identity (iOS Equivalent of NUC Maps)
+### Device Identity (Android Equivalent of NUC Maps)
 
-Since iOS doesn't expose camera sensor calibration data, we use device-specific fingerprinting:
+Since Android doesn't expose camera sensor calibration data, we use device-specific fingerprinting:
 
-```
-device_fingerprint = SHA256(
-    UIDevice.identifierForVendor +
-    cryptographic_random_seed +
-    "Birthmark-Standard-iOS-v1"
-)
+```kotlin
+val deviceFingerprint = MessageDigest.getInstance("SHA-256").digest(
+    (Settings.Secure.ANDROID_ID +
+     cryptographicRandomSeed +
+     "Birthmark-Standard-Android-v1").toByteArray()
+).toHexString()
 ```
 
 **Properties:**
 - Unique per device installation
-- Stored in Secure Enclave (tamper-resistant)
+- Stored in Android Keystore (tamper-resistant)
 - Good enough for proof-of-concept
 - Documents need for hardware integration in Phase 3
 
@@ -84,33 +100,33 @@ device_fingerprint = SHA256(
 
 ```
 1. User takes photo
-   ↓
-2. iOS captures processed image (JPEG/HEIC)
-   ↓
+   |
+2. Android captures processed image (JPEG)
+   |
 3. Calculate SHA-256 hash (~10ms)
-   ↓
-4. Retrieve device fingerprint from Secure Enclave
-   ↓
+   |
+4. Retrieve device fingerprint from Android Keystore
+   |
 5. Select random key from assigned tables
-   ↓
+   |
 6. Encrypt device fingerprint with selected key
-   ↓
+   |
 7. Create authentication bundle
-   ↓
+   |
 8. Queue for upload to aggregation server
-   ↓
-9. Photo saves to Camera Roll
+   |
+9. Photo saves to device gallery
 ```
 
 **Total overhead: <20ms (imperceptible to user)**
 
 ### Backend Integration
 
-**Critical validation point:** Uses same aggregation server and smart contract from Phase 1 without modification.
+**Critical validation point:** Uses same aggregation server and blockchain from Phase 1 without modification.
 
 **Data formats:**
 - Raspberry Pi sends: `{raw_hash, encrypted_NUC_hash, table, key}`
-- iPhone sends: `{processed_hash, encrypted_device_fingerprint, table, key}`
+- Android sends: `{processed_hash, encrypted_device_fingerprint, table, key}`
 - Server processes both identically
 
 This proves the architecture is hardware-agnostic.
@@ -122,14 +138,14 @@ This proves the architecture is hardware-agnostic.
 ### Month 1: Core Development
 
 **Weeks 1-2: Environment Setup + Learning**
-- Set up Xcode development environment
-- Learn Swift/SwiftUI basics
+- Set up Android Studio development environment
+- Learn Kotlin/Jetpack Compose basics
 - Build basic camera interface (no authentication)
 - Validate camera capture works
 
 **Weeks 3-4: Cryptographic Integration**
 - Device fingerprint generation
-- Secure Enclave key storage
+- Android Keystore key storage
 - Key derivation (HKDF from master keys)
 - Provisioning with Simulated Manufacturer Authority
 
@@ -150,8 +166,7 @@ This proves the architecture is hardware-agnostic.
 - Background upload support
 
 **Week 8: First External Beta**
-- TestFlight setup
-- Apple review (24-48 hours)
+- Google Play Internal Testing setup
 - Recruit Wave 1: Photography clubs (20-30 people)
 - Collect initial feedback
 
@@ -199,21 +214,20 @@ This proves the architecture is hardware-agnostic.
 
 ## Beta Testing Strategy
 
-### Distribution: TestFlight Closed Beta
+### Distribution: Google Play Internal Testing
 
-**What is TestFlight:**
-- Apple's official beta distribution platform
-- Included with $99/year Apple Developer account
-- Up to 10,000 external testers (using 50-100)
-- 90-day testing period per build
-- Free for testers
+**What is Google Play Internal Testing:**
+- Google's official internal beta distribution platform
+- Part of Google Play Console ($25 one-time fee)
+- Up to 100 internal testers
+- No review process required for internal testing
+- Instant updates to testers
 
 **How it works:**
-1. Upload build to App Store Connect
-2. Apple reviews (24-48 hours)
-3. Send invitation links to testers
-4. Testers install via TestFlight app
-5. Updates push automatically
+1. Upload APK/AAB to Play Console
+2. Add testers via email addresses
+3. Testers accept invitation and install via Play Store
+4. Updates push automatically
 
 ### Tester Recruitment
 
@@ -258,21 +272,22 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 ### Core Technologies
 
 **Frameworks:**
-- AVFoundation: Camera capture
-- CryptoKit: SHA-256, AES-GCM, HKDF
-- Security: Secure Enclave key storage
-- Foundation: Networking (URLSession)
-- SwiftUI: User interface
+- CameraX: Camera capture (recommended over Camera2 for simplicity)
+- java.security: SHA-256, AES-GCM
+- Android Keystore: Secure key storage
+- Retrofit/OkHttp: Networking
+- Jetpack Compose: User interface
 
 **Development:**
-- Xcode (latest stable)
-- Swift 5.9+
-- iOS 16.0+ target
+- Android Studio (latest stable)
+- Kotlin 1.9+
+- Android API 26+ target (Android 8.0+)
+- Minimum SDK 26 (covers 95%+ of devices)
 
 ### Key Components
 
 **1. Camera Manager**
-- Capture photos using AVFoundation
+- Capture photos using CameraX
 - Hash image data (SHA-256)
 - Trigger authentication pipeline
 
@@ -284,10 +299,10 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 **3. Network Manager**
 - Submit bundles to aggregation server
 - Queue failed uploads
-- Background upload support
+- WorkManager for background uploads
 
 **4. Secure Storage**
-- Store device fingerprint in Secure Enclave
+- Store device fingerprint in Android Keystore
 - Store table assignments
 - Retrieve credentials
 
@@ -298,7 +313,7 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 2. Connect to Simulated Manufacturer Authority
 3. SMA assigns 3 random tables (from 2,500 global pool)
 4. SMA generates 3 master keys (256-bit each)
-5. Store certificate + keys in Secure Enclave
+5. Store certificate + keys in Android Keystore
 6. Ready to authenticate
 
 **Subsequent Launches:**
@@ -335,7 +350,7 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 - Batch size: 10-50 bundles
 - Frequency: Every 5 minutes when online
 - Retry: Exponential backoff (1s, 2s, 4s, 8s, max 60s)
-- Background: iOS URLSession background tasks
+- Background: WorkManager for reliable background uploads
 
 **Failure Handling:**
 - Queue persists across launches
@@ -393,9 +408,9 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 
 ### Technical Outputs
 
-**1. Working iOS Application**
+**1. Working Android Application**
 - Functional camera app with authentication
-- TestFlight distribution to beta testers
+- Google Play Internal Testing distribution to beta testers
 - Integration with Phase 1 infrastructure
 - Open-source code repository (MIT/Apache 2.0)
 
@@ -434,7 +449,7 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 ### Phase 3 Evidence Package
 
 **1. Executive Summary**
-- "Photo Authentication on iOS: Feasibility Study"
+- "Photo Authentication on Android: Feasibility Study"
 - Key findings: performance, demand, validation
 - Recommendations for manufacturer integration
 
@@ -453,17 +468,17 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 
 ## Technical Considerations
 
-### iOS-Specific Constraints
+### Android-Specific Constraints
 
 **Camera API Limitations:**
-- No raw sensor data access (app-level)
+- No raw sensor data access (app-level, without Camera2 RAW support)
 - Hashing occurs post-ISP processing
 - Device fingerprint is software-based
 - Need manufacturer partnership for hardware integration
 
 **Background Limitations:**
-- iOS terminates background tasks aggressively
-- Limited background networking time (~30 seconds)
+- Android may kill background processes
+- WorkManager provides reliable background execution
 - Must queue reliably and retry on next launch
 
 **Battery Optimization:**
@@ -499,17 +514,17 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 
 ### Technical Risks
 
-**iOS API changes**
-- Mitigation: Target stable iOS 16.0+
-- Impact: Medium (can update quickly)
+**Android fragmentation**
+- Mitigation: Target API 26+ (95% coverage), test on multiple devices
+- Impact: Medium (wide device support needed)
 
 **Performance targets not met**
 - Mitigation: Benchmark early (Week 3-4)
-- Impact: Low (crypto is fast on modern iOS)
+- Impact: Low (crypto is fast on modern Android)
 
-**Secure Enclave limitations**
+**Android Keystore limitations**
 - Mitigation: Research thoroughly Week 3
-- Impact: Medium (fallback to Keychain)
+- Impact: Medium (fallback to encrypted SharedPreferences)
 
 **Network reliability**
 - Mitigation: Robust queue, offline testing
@@ -531,13 +546,13 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 
 ### Timeline Risks
 
-**iOS learning curve**
+**Kotlin learning curve**
 - Mitigation: Extra time Month 1, contractor option
 - Impact: Medium (can extend)
 
-**TestFlight review delays**
-- Mitigation: Submit early, buffer time
-- Impact: Low (typically 24-48 hours)
+**Play Console setup delays**
+- Mitigation: Set up account early
+- Impact: Low (typically quick)
 
 **Late bugs**
 - Mitigation: Progressive rollout, internal testing
@@ -552,7 +567,7 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 **Decision Point:** End of Month 4
 
 **Option 1: Sunset After Data Collection**
-- Close TestFlight access
+- Close Internal Testing access
 - Thank testers, explain transition
 - Archive code and documentation
 - Focus on Phase 3
@@ -576,7 +591,7 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 ### Open Source Release
 
 **What to Release:**
-- Complete iOS app source code
+- Complete Android app source code
 - Integration examples
 - Developer documentation
 - Reference implementation
@@ -595,7 +610,7 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 ### Manufacturer Conversations
 
 **Evidence Package:**
-- iOS performance data
+- Android performance data
 - User demand validation
 - Professional testimonials
 - Open-source reference code
@@ -612,23 +627,23 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 
 ## Budget
 
-### Apple Developer Account
-- **Cost:** $99/year
-- **Required for:** TestFlight, code signing
+### Google Play Console
+- **Cost:** $25 one-time registration fee
+- **Required for:** Internal Testing, app signing
 
 ### Infrastructure (No Change from Phase 1)
 - **Aggregation server:** $50-100/month
-- **Ethereum testnet:** Free (Sepolia/Goerli)
+- **Blockchain testnet:** Free
 - **Domain:** $20/year (existing)
 
 ### Testing Devices
-- **Development iPhone:** Existing device
+- **Development device:** Existing Android phone or emulator
 - **Testing variety:** Testers' own devices
 
 ### Total Incremental Cost
-- **Apple Developer:** $99
+- **Google Play Console:** $25
 - **Server hosting (4 months):** $200-400
-- **Total:** ~$300-500
+- **Total:** ~$225-425
 
 **Note:** Primary investment is time (3-4 months), not money.
 
@@ -637,21 +652,21 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 ## Next Steps
 
 ### Immediate (This Week)
-1. Purchase Apple Developer account
-2. Install Xcode, set up environment
-3. Create new iOS project
+1. Register Google Play Console account
+2. Install Android Studio, set up environment
+3. Create new Android project
 4. Build simple camera capture (no auth)
 
 ### Short Term (Weeks 1-4)
-1. Learn Swift/iOS fundamentals
-2. Device fingerprint + Secure Enclave
+1. Learn Kotlin/Android fundamentals
+2. Device fingerprint + Android Keystore
 3. Integrate with SMA for provisioning
 4. Internal testing
 
 ### Medium Term (Weeks 5-8)
 1. Network integration with aggregation server
 2. Queue management and offline support
-3. TestFlight setup and Apple review
+3. Google Play Internal Testing setup
 4. Wave 1 tester recruitment
 
 ### Long Term (Weeks 9-16)
@@ -666,7 +681,7 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 ## Key Decisions Needed
 
 ### Week 2-3
-- [ ] Secure Enclave vs Keychain approach
+- [ ] Android Keystore vs encrypted SharedPreferences approach
 - [ ] Table assignment protocol with SMA
 - [ ] Authentication bundle format
 
@@ -676,7 +691,7 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 - [ ] Error handling approach
 
 ### Week 6-7
-- [ ] TestFlight invitation method
+- [ ] Internal Testing invitation method
 - [ ] Tester communication plan
 - [ ] Feedback collection approach
 
@@ -689,10 +704,16 @@ We'll see device fingerprints and image hashes for authentication. We do not see
 
 ## Document Maintenance
 
-**Version:** 1.0  
-**Date:** November 2025  
-**Author:** Samuel C. Ryan, Birthmark Standard Foundation  
+**Version:** 2.0
+**Date:** November 2025
+**Author:** Samuel C. Ryan, Birthmark Standard Foundation
 **Status:** Planning Document
 
 **Revision History:**
+- v2.0 (Nov 2025): Updated to Android platform (from iOS)
+  - Changed platform from iOS to Android
+  - Updated TestFlight to Google Play Internal Testing
+  - Updated Swift/SwiftUI to Kotlin/Jetpack Compose
+  - Added Fairphone partnership strategy context
+  - Maintained core architecture (platform-agnostic)
 - v1.0 (Nov 2025): Initial Phase 2 iOS app plan

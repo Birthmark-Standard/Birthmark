@@ -16,7 +16,7 @@ This document captures critical architectural refinements for Phase 2 based on:
 - Abuse detection and monitoring requirements
 
 **Related Documents:**
-- Original Plan: [Birthmark_Phase_2_Plan_iOS_App.md](../phase-plans/Birthmark_Phase_2_Plan_iOS_App.md)
+- Original Plan: [Birthmark_Phase_2_Plan_Android_App.md](../phase-plans/Birthmark_Phase_2_Plan_Android_App.md)
 - Phase 1-2 SMA Plan: [Birthmark_Phase_1-2_Plan_SMA.md](../phase-plans/Birthmark_Phase_1-2_Plan_SMA.md)
 
 ---
@@ -28,9 +28,9 @@ This document captures critical architectural refinements for Phase 2 based on:
 **Correction:** SMA stands for "Simulated Manufacturing Authority," not "Substitute Manufacturing Authority"
 
 **Role in Phase 2:**
-- Acts as stand-in for Apple's Manufacturing Authority during iOS proof-of-concept
+- Acts as stand-in for manufacturer's Manufacturing Authority during Android proof-of-concept
 - Provides device provisioning, validation, and abuse monitoring
-- Will be replaced by actual manufacturer (Apple) Manufacturing Authority in Phase 3
+- Will be replaced by actual manufacturer (e.g., Fairphone) Manufacturing Authority in Phase 3
 
 **Why "Simulated":**
 - Demonstrates what a real manufacturer MA would do
@@ -46,14 +46,14 @@ This document captures critical architectural refinements for Phase 2 based on:
 **Old method:**
 ```
 device_fingerprint = SHA256(
-    UIDevice.identifierForVendor +
+    ANDROID_ID +
     cryptographic_random_seed +
-    "Birthmark-Standard-iOS-v1"
+    "Birthmark-Standard-Android-v1"
 )
 ```
 
 **Issues with old approach:**
-- Not clear what happens if device name changes
+- Not clear what happens if device is reset
 - Ambiguous about what gets stored vs. discarded
 - Unclear persistence model
 
@@ -61,23 +61,24 @@ device_fingerprint = SHA256(
 
 **Device Secret Creation (Permanent):**
 
-```swift
+```kotlin
 // Step 1: Generate random seed (32 bytes)
-var randomBytes = [UInt8](repeating: 0, count: 32)
-SecRandomCopyBytes(kSecRandomDefault, 32, &randomBytes)
-let randomSeed = Data(randomBytes)
+val randomBytes = ByteArray(32)
+SecureRandom().nextBytes(randomBytes)
+val randomSeed = randomBytes
 
-// Step 2: Get device name
-let deviceName = UIDevice.current.name
+// Step 2: Get device identifier
+val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
 // Step 3: Create device secret (PERMANENT)
-let combined = randomSeed + deviceName.data(using: .utf8)!
-let deviceSecret = SHA256.hash(data: combined)
+val combined = randomSeed + androidId.toByteArray(Charsets.UTF_8)
+val digest = MessageDigest.getInstance("SHA-256")
+val deviceSecret = digest.digest(combined)
 
-// Step 4: Store ONLY device_secret in Keychain
+// Step 4: Store ONLY device_secret in Android Keystore
 // device_secret: 32 bytes (permanent identifier)
 
-// Step 5: DISCARD randomSeed and deviceName (never stored)
+// Step 5: DISCARD randomSeed and androidId (never stored)
 // These are only used during provisioning, then thrown away
 ```
 
@@ -93,15 +94,15 @@ let deviceSecret = SHA256.hash(data: combined)
    - `device_name` is never stored (discarded immediately)
    - Only the final hash (`device_secret`) is retained
 
-3. **Keychain Storage**
+3. **Android Keystore Storage**
    - Store: `device_secret` (32 bytes)
    - Store: `key_tables` (3 tables of 1,000 keys each)
    - Store: `key_table_indices` (which global tables: e.g., [42, 157, 891])
-   - Do NOT store: `random_seed`, `device_name`
+   - Do NOT store: `random_seed`, `android_id`
 
 **Why This Matters:**
-- Device remains identifiable even after rename
-- Consistent authentication across app reinstalls (if Keychain persists)
+- Device remains identifiable even after settings change
+- Consistent authentication across app reinstalls (if Keystore persists)
 - Clear security boundary (only secret is stored)
 
 ---
@@ -124,7 +125,7 @@ POST /api/provision
 {
   "device_id": "uuid",
   "device_secret_hash": "sha256_of_device_secret",
-  "platform": "iOS"
+  "platform": "Android"
 }
 ```
 
@@ -160,33 +161,34 @@ POST /api/provision
 
 **For each photo submission:**
 
-```swift
-// Step 1: Retrieve device_secret from Keychain (same value every time)
-let deviceSecret = keychain.get("device_secret")
+```kotlin
+// Step 1: Retrieve device_secret from Android Keystore (same value every time)
+val deviceSecret = keystore.getSecretKey("device_secret")
 
 // Step 2: Randomly select one of 3 assigned tables
-let selectedTableIndex = Int.random(in: 0..<3)  // 0, 1, or 2
-let globalTableIndex = keyTableIndices[selectedTableIndex]  // e.g., 157
+val selectedTableIndex = SecureRandom().nextInt(3)  // 0, 1, or 2
+val globalTableIndex = keyTableIndices[selectedTableIndex]  // e.g., 157
 
 // Step 3: Randomly select a key from that table
-let selectedKeyIndex = Int.random(in: 0..<1000)
-let encryptionKey = keyTables[selectedTableIndex][selectedKeyIndex]
+val selectedKeyIndex = SecureRandom().nextInt(1000)
+val encryptionKey = keyTables[selectedTableIndex][selectedKeyIndex]
 
 // Step 4: Encrypt device_secret with selected key
-let cameraToken = AES_GCM.encrypt(
-    plaintext: deviceSecret,
-    key: encryptionKey,
-    nonce: generateRandomNonce()  // 12 bytes, unique per encryption
+val nonce = ByteArray(12).also { SecureRandom().nextBytes(it) }
+val cameraToken = encryptAesGcm(
+    plaintext = deviceSecret,
+    key = encryptionKey,
+    nonce = nonce  // 12 bytes, unique per encryption
 )
 
 // Step 5: Build certificate with GLOBAL table index
-let certificate = {
-    "camera_token": base64Encode(cameraToken),
-    "table_index": globalTableIndex,  // 157 (not local index 1)
-    "key_index": selectedKeyIndex,     // 0-999
-    "timestamp": currentTimestamp,
-    "metadata": {...}
-}
+val certificate = mapOf(
+    "camera_token" to Base64.encodeToString(cameraToken, Base64.NO_WRAP),
+    "table_index" to globalTableIndex,  // 157 (not local index 1)
+    "key_index" to selectedKeyIndex,     // 0-999
+    "timestamp" to System.currentTimeMillis() / 1000,
+    "metadata" to metadata
+)
 ```
 
 **Certificate Format:**
@@ -464,8 +466,8 @@ Response:
 
 **What CAN Be Attacked:**
 
-1. **Keychain Extraction**
-   - Jailbroken devices can access Keychain
+1. **Keystore Extraction**
+   - Rooted devices can access Keystore
    - Malware with sufficient privileges can extract keys
    - `device_secret` and `key_tables` can be stolen
 
@@ -475,14 +477,14 @@ Response:
    - Works across multiple devices (credential theft)
 
 3. **No Hardware Isolation**
-   - Keys stored in software (Keychain), not Secure Enclave
+   - Keys stored in software (Keystore), not hardware-backed TEE
    - No hardware root of trust
    - No tamper detection
 
 **What This PROVES:**
 
 1. **Software-only security has demonstrable limits**
-   - Keychain is better than nothing, but extractable
+   - Keystore is better than nothing, but extractable
    - Behavioral monitoring helps, but isn't sufficient
    - Hardware manufacturer cooperation is necessary
 
@@ -492,20 +494,20 @@ Response:
    - Doesn't stop sophisticated low-volume attacks
 
 3. **Hardware integration is not optional**
-   - Only Secure Enclave can prevent credential extraction
+   - Only hardware-backed security (TEE/StrongBox) can prevent credential extraction
    - Need manufacturer cooperation for production deployment
    - When security researchers break it → that's our evidence
 
 ### Security Roadmap
 
-**Phase 2 (Current): Keychain Storage**
+**Phase 2 (Current): Android Keystore Storage**
 - Validates workflow and architecture
 - Demonstrates performance is acceptable
 - Documents limitations clearly
 - Invites security community to attack
 
-**Phase 3 (With Apple): Secure Enclave Integration**
-- Hardware-backed credential storage
+**Phase 3 (With Fairphone/Manufacturers): Hardware-Backed Security**
+- Hardware-backed credential storage (StrongBox/TEE)
 - Hardware root of trust for cryptographic operations
 - Tamper detection and key isolation
 - Sensor-level integration (before ISP processing)
@@ -523,11 +525,11 @@ Add this section to main README:
 
 ### Known Limitations
 
-This Phase 2 iOS implementation uses iOS Keychain (not Secure Enclave).
+This Phase 2 Android implementation uses Android Keystore (not hardware-backed TEE/StrongBox).
 **This is intentional** - we're validating workflow before manufacturer partnerships.
 
 **What can be attacked:**
-- Device credentials can be extracted on jailbroken devices
+- Device credentials can be extracted on rooted devices
 - Stolen credentials work until abuse detection triggers (10,000 submissions/day)
 - No hardware root of trust
 
@@ -535,10 +537,10 @@ This Phase 2 iOS implementation uses iOS Keychain (not Secure Enclave).
 - Proof-of-concept to validate photographer adoption
 - Documents exactly what hardware integration solves
 - Behavioral monitoring demonstrates defense-in-depth approach
-- When broken by security researchers, proves need for Secure Enclave
+- When broken by security researchers, proves need for hardware-backed security
 
-**Phase 3 with Apple will provide:**
-- Hardware-backed credential storage (Secure Enclave)
+**Phase 3 with Fairphone/manufacturers will provide:**
+- Hardware-backed credential storage (StrongBox/TEE)
 - Hardware root of trust for cryptographic operations
 - Sensor-level integration (before ISP processing)
 - Tamper detection and key isolation
@@ -554,10 +556,10 @@ Add to testing documentation:
 We're inviting the security community to audit our Phase 2 implementation.
 
 **What we want you to test:**
-1. Extract device credentials from iOS Keychain
+1. Extract device credentials from Android Keystore
 2. Demonstrate credential reuse attacks
 3. Test if abuse detection (10k/day limit) can be evaded
-4. Document what Secure Enclave integration would prevent
+4. Document what hardware-backed security (StrongBox/TEE) would prevent
 
 **Code:** [GitHub Repository]
 **Docs:** [Technical Specifications]
@@ -575,7 +577,7 @@ We're inviting the security community to audit our Phase 2 implementation.
 
 ---
 
-## Apple Partnership Strategy Updates
+## Manufacturer Partnership Strategy Updates
 
 ### Evidence Package - Security Section
 
@@ -584,7 +586,7 @@ We're inviting the security community to audit our Phase 2 implementation.
 #### "Security Analysis and Lessons Learned"
 
 **1. Credential Extraction Documented**
-- Invite security researchers to extract Keychain credentials
+- Invite security researchers to extract Keystore credentials
 - Publish attack writeups as evidence
 - "Here's what happened without hardware security"
 
@@ -594,15 +596,15 @@ We're inviting the security community to audit our Phase 2 implementation.
 - "Demonstrates behavioral monitoring is necessary but not sufficient"
 
 **3. Clear Hardware Requirements**
-- "Only Secure Enclave can prevent credential extraction"
+- "Only hardware-backed security (TEE/StrongBox) can prevent credential extraction"
 - "Software-only security validated workflow but has clear limits"
 - "Need manufacturer partnership for production deployment"
 
-### Updated Pitch to Apple
+### Updated Pitch to Manufacturers (Fairphone, etc.)
 
 **Opening:**
 
-> "Our iOS proof-of-concept has 87 active photographers and works well enough to prove demand, but security researchers have documented that Keychain credentials are extractable. Our automated abuse detection limits damage, but only Secure Enclave integration can provide the security guarantees journalists need."
+> "Our Android proof-of-concept has active photographers and works well enough to prove demand, but security researchers have documented that Keystore credentials are extractable. Our automated abuse detection limits damage, but only hardware-backed security integration can provide the security guarantees journalists need."
 
 **What we bring:**
 - Validated workflow and user demand
@@ -610,8 +612,8 @@ We're inviting the security community to audit our Phase 2 implementation.
 - Clear documentation of what hardware solves
 - Nonprofit positioning (no commercial conflict)
 
-**What Apple provides:**
-- Secure Enclave integration (hardware root of trust)
+**What manufacturers provide:**
+- Hardware-backed security integration (TEE/StrongBox)
 - Camera pipeline integration (sign at capture time)
 - Brand association with content authenticity efforts
 
@@ -625,16 +627,16 @@ We're inviting the security community to audit our Phase 2 implementation.
 
 **Post to r/netsec, r/crypto, r/ReverseEngineering:**
 
-> **Title:** [Open Source Security Audit Request] Photo Authentication iOS App
+> **Title:** [Open Source Security Audit Request] Photo Authentication Android App
 >
 > We've built an open-source photo authentication app for photojournalists.
-> Phase 2 uses iOS Keychain - we know it's extractable, that's by design.
+> Phase 2 uses Android Keystore - we know it's extractable, that's by design.
 >
 > **We're inviting security researchers to:**
-> 1. Extract device credentials from Keychain
+> 1. Extract device credentials from Keystore
 > 2. Demonstrate credential reuse attacks
 > 3. Test if abuse detection (10k/day limit) can be evaded
-> 4. Document what Secure Enclave integration would prevent
+> 4. Document what hardware-backed security (TEE/StrongBox) would prevent
 >
 > **Code:** [GitHub]
 > **Docs:** [Technical specs]
@@ -643,20 +645,20 @@ We're inviting the security community to audit our Phase 2 implementation.
 > **Goal:** Prove that hardware security is necessary, not optional.
 
 **Expected Results:**
-- Researchers extract credentials → proves Keychain limitation
+- Researchers extract credentials → proves Keystore limitation
 - High-volume attacks get blacklisted → proves monitoring works
 - Small-scale attacks succeed → proves monitoring isn't sufficient
-- All of this becomes evidence for Apple pitch
+- All of this becomes evidence for manufacturer pitch
 
 ---
 
 ## Implementation Checklist
 
-### iOS App Updates
+### Android App Updates
 
-- [ ] Generate `device_secret` from `random_seed` + `device_name`
-- [ ] Discard `random_seed` and `device_name` after hashing
-- [ ] Store only `device_secret` permanently in Keychain
+- [ ] Generate `device_secret` from `random_seed` + `android_id`
+- [ ] Discard `random_seed` and `android_id` after hashing
+- [ ] Store only `device_secret` permanently in Android Keystore
 - [ ] Use global table indices in certificates (not local 0-2)
 - [ ] Random key selection from assigned tables for each submission
 - [ ] Handle provisioning failure with reinstall recommendation
@@ -678,17 +680,17 @@ We're inviting the security community to audit our Phase 2 implementation.
 - [ ] Document intentional weaknesses explicitly
 - [ ] Add security audit invitation section
 - [ ] Prepare evidence package template for Phase 3
-- [ ] Update iOS app README with security warnings
+- [ ] Update Android app README with security warnings
 
 ### Testing Additions
 
-- [ ] Test that `device_secret` doesn't change after device rename
+- [ ] Test that `device_secret` doesn't change after device settings change
 - [ ] Test random key selection produces varying `camera_tokens`
 - [ ] Test SMA correctly decrypts with global table indices
 - [ ] Test abuse detection triggers at 10,001 submissions
 - [ ] Test blacklisted devices get validation failure
 - [ ] Test warning system at 8,000 submissions
-- [ ] Integration test: extract Keychain, attempt reuse
+- [ ] Integration test: extract Keystore, attempt reuse
 
 ---
 
@@ -700,7 +702,7 @@ We're inviting the security community to audit our Phase 2 implementation.
 - Created once during provisioning
 - Never regenerated or changed
 - Survives device name changes
-- Survives app reinstall (if Keychain persists)
+- Survives app reinstall (if Keystore persists)
 
 **Why:**
 - Consistent device identity across lifecycle
@@ -795,7 +797,7 @@ We're inviting the security community to audit our Phase 2 implementation.
 - Same integration with Phase 1 infrastructure
 
 **Testing Strategy:**
-- TestFlight beta testing
+- Google Play Internal Testing
 - 60-100 photographer testers
 - Performance benchmarking
 - User research approach
@@ -859,7 +861,7 @@ We're inviting the security community to audit our Phase 2 implementation.
 
 ## Related Documents
 
-- [Original Phase 2 iOS Plan](../phase-plans/Birthmark_Phase_2_Plan_iOS_App.md)
+- [Original Phase 2 Android Plan](../phase-plans/Birthmark_Phase_2_Plan_Android_App.md)
 - [Phase 1-2 SMA Plan](../phase-plans/Birthmark_Phase_1-2_Plan_SMA.md)
 - [Phase 1 Deployment Guide](../PHASE_1_DEPLOYMENT_GUIDE.md)
 - [Certificate Migration Guide](CERTIFICATE_MIGRATION_GUIDE.md)
