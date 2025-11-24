@@ -14,7 +14,7 @@ Current solutions like C2PA embed authentication in image metadata, but this met
 
 The Birthmark Standard authenticates images at the hardware level using each camera's unique sensor fingerprint. When a photo is taken, the camera's secure element cryptographically signs the image hash using rotating keys that only the manufacturer can validate. These hashes are stored on a custom Birthmark blockchain operated by like-minded institutions (universities, archives, journalism organizations).
 
-**The result:** Anyone can verify that an image originated from a legitimate camera at a specific time, even after the image has been copied, compressed, cropped, or had its metadata stripped. No accounts required. No gas fees. No centralized gatekeepers. Just cryptographic proof.
+**The result:** Anyone can verify that an image originated from a legitimate camera at a specific time. The blockchain stores authentication independently of image metadata, so verification works even if the image is converted to different formats or has metadata stripped. Editing operations that want to maintain authentication must declare their transformations and pass deviation validation. No accounts required. No gas fees. No centralized gatekeepers. Just cryptographic proof.
 
 ### Key Properties
 
