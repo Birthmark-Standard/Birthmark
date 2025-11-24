@@ -203,6 +203,7 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 **The Birthmark Standard Foundation**
 Website: [birthmarkstandard.org](https://birthmarkstandard.org)
 Email: [contact@birthmarkstandard.org](mailto:contact@birthmarkstandard.org)
+Discord: [Join our community](https://discord.gg/btUU6qZK)
 
 **Samuel C. Ryan**
 Founder & Executive Director
