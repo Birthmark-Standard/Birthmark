@@ -200,13 +200,13 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 
 ## Contact
 
-**The Birthmark Standard Foundation**
-Website: [birthmarkstandard.org](https://birthmarkstandard.org)
-Email: [contact@birthmarkstandard.org](mailto:contact@birthmarkstandard.org)
-Discord: [Join our community](https://discord.gg/btUU6qZK)
+**The Birthmark Standard Foundation** | 
+Website: [birthmarkstandard.org](https://birthmarkstandard.org) | 
+Email: [contact@birthmarkstandard.org](mailto:contact@birthmarkstandard.org) | 
+Discord: [Join our community](https://discord.gg/FU6z9BMgEX)
 
-**Samuel C. Ryan**
-Founder & Executive Director
+**Samuel C. Ryan** | 
+Founder & Executive Director | 
 LinkedIn: [linkedin.com/in/samuelcryan](https://www.linkedin.com/in/samuelcryan)
 
 ---
