@@ -2,14 +2,21 @@
 
 import logging
 import uuid
+import json
 from datetime import datetime
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.shared.database.connection import get_db
 from src.shared.database.models import PendingSubmission
-from src.shared.models.schemas import AuthenticationBundle, CertificateBundle, SubmissionResponse
+from src.shared.models.schemas import (
+    AuthenticationBundle,
+    CameraSubmission,
+    CertificateBundle,
+    SubmissionResponse,
+)
 from src.aggregator.validation.sma_client import sma_client
 from src.aggregator.validation.certificate_validator import certificate_validator
 
@@ -19,7 +26,135 @@ router = APIRouter(prefix="/api/v1", tags=["aggregator"])
 
 
 @router.post("/submit", response_model=SubmissionResponse, status_code=status.HTTP_202_ACCEPTED)
-async def submit_authentication_bundle(
+async def submit_camera_bundle(
+    submission: CameraSubmission,
+    db: AsyncSession = Depends(get_db),
+) -> SubmissionResponse:
+    """
+    Submit camera authentication bundle with 2-hash array (raw + processed).
+
+    This is the Phase 1 endpoint for cameras to submit image hashes for verification.
+    The submission includes 1-2 hashes (raw, optionally processed) grouped by transaction_id.
+
+    Args:
+        submission: Camera submission with image_hashes array and structured camera_token
+        db: Database session
+
+    Returns:
+        Receipt with transaction ID and status
+    """
+    transaction_id = str(uuid.uuid4())
+
+    logger.info(
+        f"Received camera submission {transaction_id}: "
+        f"{len(submission.image_hashes)} hashes, "
+        f"manufacturer={submission.manufacturer_cert.authority_id}"
+    )
+
+    # Store all image hashes with shared transaction_id
+    submission_records = []
+    for entry in submission.image_hashes:
+        pending = PendingSubmission(
+            image_hash=entry.image_hash,
+            modification_level=entry.modification_level,
+            parent_image_hash=entry.parent_image_hash,
+            transaction_id=transaction_id,
+            manufacturer_authority_id=submission.manufacturer_cert.authority_id,
+            camera_token_json=submission.camera_token.model_dump_json(),
+            timestamp=submission.timestamp,
+            sma_validated=False,
+            batched=False,
+            # Legacy fields set to None
+            encrypted_token=None,
+            table_references=None,
+            key_indices=None,
+            device_signature=None,
+        )
+        db.add(pending)
+        submission_records.append(pending)
+
+    await db.commit()
+
+    logger.info(
+        f"Camera submission {transaction_id} queued: "
+        f"hashes={[s.image_hash[:16] + '...' for s in submission_records]}"
+    )
+
+    # Validate camera token with SMA (validates once for all hashes in transaction)
+    try:
+        await validate_camera_transaction_inline(
+            transaction_id=transaction_id,
+            camera_token=submission.camera_token,
+            manufacturer_authority_id=submission.manufacturer_cert.authority_id,
+            validation_endpoint=submission.manufacturer_cert.validation_endpoint,
+            db=db,
+        )
+    except Exception as e:
+        logger.error(f"Validation error for transaction {transaction_id}: {e}")
+
+    return SubmissionResponse(
+        receipt_id=transaction_id,
+        status="pending_validation",
+        message=f"Submitted {len(submission.image_hashes)} hashes for validation",
+    )
+
+
+async def validate_camera_transaction_inline(
+    transaction_id: str,
+    camera_token,  # CameraToken object
+    manufacturer_authority_id: str,
+    validation_endpoint: str,
+    db: AsyncSession,
+) -> None:
+    """
+    Validate camera transaction with SMA (inline for Phase 1).
+
+    All hashes in the transaction share the same camera_token validation.
+    If validation passes, all hashes are marked as validated.
+    If validation fails, all hashes are marked as failed.
+
+    Args:
+        transaction_id: UUID grouping all hashes from this camera submission
+        camera_token: Structured CameraToken object
+        manufacturer_authority_id: Manufacturer ID (e.g., "CANON_001")
+        validation_endpoint: SMA validation URL
+        db: Database session
+    """
+    logger.info(f"Validating camera transaction {transaction_id} with SMA")
+
+    # Call SMA for validation (new format)
+    validation_result = await sma_client.validate_camera_token(
+        camera_token=camera_token,
+        manufacturer_authority_id=manufacturer_authority_id,
+    )
+
+    # Update all submissions in this transaction
+    from sqlalchemy import update
+
+    stmt = (
+        update(PendingSubmission)
+        .where(PendingSubmission.transaction_id == transaction_id)
+        .values(
+            validation_attempted_at=datetime.utcnow(),
+            sma_validated=validation_result.valid,
+            validation_result="PASS" if validation_result.valid else "FAIL",
+        )
+    )
+
+    await db.execute(stmt)
+    await db.commit()
+
+    if not validation_result.valid:
+        logger.warning(
+            f"SMA validation FAILED for transaction {transaction_id}: "
+            f"{validation_result.message}"
+        )
+    else:
+        logger.info(f"SMA validation PASSED for transaction {transaction_id}")
+
+
+@router.post("/submit-legacy", response_model=SubmissionResponse, status_code=status.HTTP_202_ACCEPTED)
+async def submit_authentication_bundle_legacy(
     bundle: AuthenticationBundle,
     db: AsyncSession = Depends(get_db),
 ) -> SubmissionResponse:
