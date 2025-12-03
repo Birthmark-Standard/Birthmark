@@ -1,12 +1,15 @@
 """SMA (Simulated Manufacturer Authority) validation client."""
 
 import logging
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import httpx
 
 from src.shared.config import settings
 from src.shared.models.schemas import SMAValidationRequest, SMAValidationResponse
+
+if TYPE_CHECKING:
+    from src.shared.models.schemas import CameraToken
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +32,68 @@ class SMAClient:
         self.endpoint = endpoint or settings.sma_validation_endpoint
         self.timeout = timeout or settings.sma_request_timeout
 
+    async def validate_camera_token(
+        self,
+        camera_token: "CameraToken",
+        manufacturer_authority_id: str,
+    ) -> SMAValidationResponse:
+        """
+        Validate structured camera token with SMA (Phase 1 - NEW FORMAT).
+
+        IMPORTANT: SMA never sees the image hash. Only the camera token
+        is sent for validation.
+
+        Args:
+            camera_token: Structured CameraToken object with ciphertext, auth_tag, nonce, table_id, key_index
+            manufacturer_authority_id: Manufacturer ID (e.g., "CANON_001")
+
+        Returns:
+            Validation response with PASS/FAIL
+        """
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(
+                    self.endpoint,
+                    json={
+                        "camera_token": {
+                            "ciphertext": camera_token.ciphertext,
+                            "auth_tag": camera_token.auth_tag,
+                            "nonce": camera_token.nonce,
+                            "table_id": camera_token.table_id,
+                            "key_index": camera_token.key_index,
+                        },
+                        "manufacturer_authority_id": manufacturer_authority_id,
+                    },
+                )
+                response.raise_for_status()
+
+                data = response.json()
+                return SMAValidationResponse(
+                    valid=data.get("valid", False),
+                    message=data.get("message"),
+                )
+
+        except httpx.TimeoutException:
+            logger.error(f"SMA camera token validation timeout after {self.timeout}s")
+            return SMAValidationResponse(
+                valid=False,
+                message="SMA validation timeout",
+            )
+
+        except httpx.HTTPError as e:
+            logger.error(f"SMA camera token validation HTTP error: {e}")
+            return SMAValidationResponse(
+                valid=False,
+                message=f"SMA HTTP error: {str(e)}",
+            )
+
+        except Exception as e:
+            logger.error(f"SMA camera token validation unexpected error: {e}")
+            return SMAValidationResponse(
+                valid=False,
+                message=f"Unexpected error: {str(e)}",
+            )
+
     async def validate_token(
         self,
         encrypted_token: bytes,
@@ -36,7 +101,7 @@ class SMAClient:
         key_indices: list[int],
     ) -> SMAValidationResponse:
         """
-        Validate camera token with SMA (Phase 1).
+        Validate camera token with SMA (LEGACY FORMAT - DEPRECATED).
 
         IMPORTANT: SMA never sees the image hash. Only the encrypted NUC token
         is sent for validation.
