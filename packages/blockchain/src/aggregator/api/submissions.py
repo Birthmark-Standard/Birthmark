@@ -19,6 +19,7 @@ from src.shared.models.schemas import (
 )
 from src.aggregator.validation.sma_client import sma_client
 from src.aggregator.validation.certificate_validator import certificate_validator
+from src.aggregator.blockchain.blockchain_client import blockchain_client
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,6 @@ async def submit_camera_bundle(
             camera_token_json=submission.camera_token.model_dump_json(),
             timestamp=submission.timestamp,
             sma_validated=False,
-            batched=False,
             # Legacy fields set to None
             encrypted_token=None,
             table_references=None,
@@ -152,6 +152,46 @@ async def validate_camera_transaction_inline(
     else:
         logger.info(f"SMA validation PASSED for transaction {transaction_id}")
 
+        # Submit validated hashes to blockchain immediately (no batching)
+        from sqlalchemy import select
+
+        stmt = select(PendingSubmission).where(
+            PendingSubmission.transaction_id == transaction_id
+        )
+        result = await db.execute(stmt)
+        submissions = result.scalars().all()
+
+        for submission in submissions:
+            try:
+                blockchain_result = await blockchain_client.submit_hash(
+                    image_hash=submission.image_hash,
+                    timestamp=submission.timestamp,
+                    aggregator_id="aggregator_node_001",  # TODO: Get from config
+                    modification_level=submission.modification_level,
+                    parent_image_hash=submission.parent_image_hash,
+                    manufacturer_authority_id=submission.manufacturer_authority_id,
+                )
+
+                if blockchain_result.success:
+                    # Update submission with blockchain tx_id
+                    submission.tx_id = blockchain_result.tx_id
+                    logger.info(
+                        f"Hash {submission.image_hash[:16]}... submitted to blockchain: "
+                        f"tx_id={blockchain_result.tx_id}, block_height={blockchain_result.block_height}"
+                    )
+                else:
+                    logger.error(
+                        f"Blockchain submission failed for {submission.image_hash[:16]}...: "
+                        f"{blockchain_result.message}"
+                    )
+
+            except Exception as e:
+                logger.error(
+                    f"Error submitting {submission.image_hash[:16]}... to blockchain: {e}"
+                )
+
+        await db.commit()
+
 
 @router.post("/submit-legacy", response_model=SubmissionResponse, status_code=status.HTTP_202_ACCEPTED)
 async def submit_authentication_bundle_legacy(
@@ -159,10 +199,10 @@ async def submit_authentication_bundle_legacy(
     db: AsyncSession = Depends(get_db),
 ) -> SubmissionResponse:
     """
-    Submit authentication bundle from camera.
+    Submit authentication bundle from camera (LEGACY endpoint).
 
-    This is the entry point for cameras to submit image hashes for verification.
-    The bundle is queued for SMA validation and batching.
+    This is the legacy entry point for cameras to submit image hashes for verification.
+    The bundle is queued for SMA validation and blockchain submission.
 
     Args:
         bundle: Authentication bundle with image hash and encrypted camera token
@@ -188,7 +228,6 @@ async def submit_authentication_bundle_legacy(
         gps_hash=bundle.gps_hash,
         device_signature=bundle.device_signature,
         sma_validated=False,
-        batched=False,
     )
 
     db.add(submission)
@@ -257,7 +296,7 @@ async def submit_certificate_bundle(
     Submit certificate-based authentication bundle (Phase 2).
 
     This endpoint accepts X.509 certificate bundles from iOS devices with ECDSA signatures.
-    The bundle is validated with SMA and queued for batching to blockchain.
+    The bundle is validated with SMA and submitted to blockchain.
 
     Args:
         bundle: Certificate bundle with image hash, certificate, timestamp, and signature
@@ -283,7 +322,6 @@ async def submit_certificate_bundle(
         gps_hash=bundle.gps_hash,
         device_signature=bundle.bundle_signature.encode() if isinstance(bundle.bundle_signature, str) else bundle.bundle_signature,
         sma_validated=False,
-        batched=False,
     )
 
     db.add(submission)

@@ -4,6 +4,10 @@
 **Branch:** `claude/validate-submission-server-01Bd2WVoNMS6ynwwjY4X6AHL`
 **Status:** ✅ **READY FOR INTEGRATION TESTING**
 
+> **⚠️ ARCHITECTURE UPDATE (Dec 3, 2025):** Batching has been removed from the design.
+> The custom Birthmark blockchain has no gas fees, so each hash is submitted individually after SMA validation.
+> See [ARCHITECTURE_CHANGE_NO_BATCHING.md](ARCHITECTURE_CHANGE_NO_BATCHING.md) for complete details.
+
 ---
 
 ## ✅ Code Quality Checks

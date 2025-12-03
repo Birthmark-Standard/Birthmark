@@ -43,7 +43,7 @@ class Block(Base):
 
 
 class Transaction(Base):
-    """Transaction containing batch of image hashes from an aggregator."""
+    """Transaction containing image hash submission from an aggregator."""
 
     __tablename__ = "transactions"
 
@@ -51,7 +51,7 @@ class Transaction(Base):
     tx_hash = Column(CHAR(64), nullable=False, unique=True, index=True)
     block_height = Column(BigInteger, ForeignKey("blocks.block_height"), nullable=False, index=True)
     aggregator_id = Column(String(255), nullable=False)
-    batch_size = Column(Integer, nullable=False)
+    batch_size = Column(Integer, nullable=False)  # Number of hashes in this transaction
     signature = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -86,7 +86,7 @@ class ImageHash(Base):
 
 
 class PendingSubmission(Base):
-    """Camera submissions awaiting SMA validation and batching."""
+    """Camera submissions awaiting SMA validation and blockchain submission."""
 
     __tablename__ = "pending_submissions"
 
@@ -116,15 +116,11 @@ class PendingSubmission(Base):
     validation_attempted_at = Column(DateTime, nullable=True)
     validation_result = Column(String(50), nullable=True)  # PASS, FAIL, ERROR
 
-    # Batching tracking
-    batched = Column(Boolean, default=False, nullable=False, index=True)
-    batched_at = Column(DateTime, nullable=True)
+    # Blockchain submission tracking (for crash recovery during server outages)
     tx_id = Column(Integer, ForeignKey("transactions.tx_id"), nullable=True)
 
     __table_args__ = (
         Index("idx_pending_validated", "sma_validated"),
-        Index("idx_pending_batched", "batched"),
-        Index("idx_pending_status", "sma_validated", "batched"),
         Index("idx_transaction_id", "transaction_id"),
         Index("idx_modification_level", "modification_level"),
         Index("idx_parent_hash", "parent_image_hash"),
@@ -187,7 +183,7 @@ class ModificationRecordDB(Base):
     exported_at = Column(DateTime, nullable=False)  # When record exported
     recorded_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # When stored in DB
 
-    # TODO Phase 3: Link to blockchain transaction when final hash is batched
+    # TODO Phase 3: Link to blockchain transaction when final hash is submitted
     tx_id = Column(Integer, ForeignKey("transactions.tx_id"), nullable=True)
 
     __table_args__ = (
