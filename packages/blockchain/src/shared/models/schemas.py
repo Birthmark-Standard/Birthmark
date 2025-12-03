@@ -1,13 +1,104 @@
 """Pydantic schemas for API request/response validation."""
 
-from typing import List, Optional
+from typing import List, Optional, Literal
 from pydantic import BaseModel, Field, field_validator
 import re
 import base64
 
 
+class ImageHashEntry(BaseModel):
+    """Single image hash with modification level and parent reference."""
+
+    image_hash: str = Field(..., min_length=64, max_length=64, description="SHA-256 hash (64 hex chars)")
+    modification_level: int = Field(..., ge=0, le=1, description="0=raw, 1=processed")
+    parent_image_hash: Optional[str] = Field(None, min_length=64, max_length=64, description="Parent hash for provenance")
+
+    @field_validator("image_hash", "parent_image_hash")
+    @classmethod
+    def validate_hash(cls, v: Optional[str]) -> Optional[str]:
+        """Validate SHA-256 hash format."""
+        if v is None:
+            return v
+        if not re.match(r'^[a-f0-9]{64}$', v, re.IGNORECASE):
+            raise ValueError("Hash must be 64 hexadecimal characters")
+        return v.lower()
+
+
+class CameraToken(BaseModel):
+    """Structured camera token with AES-GCM components."""
+
+    ciphertext: str = Field(..., description="Hex-encoded AES-GCM ciphertext")
+    auth_tag: str = Field(..., min_length=32, max_length=32, description="AES-GCM auth tag (32 hex chars)")
+    nonce: str = Field(..., min_length=24, max_length=24, description="AES-GCM nonce (24 hex chars)")
+    table_id: int = Field(..., ge=0, lt=250, description="Key table ID (0-249)")
+    key_index: int = Field(..., ge=0, lt=1000, description="Key index within table (0-999)")
+
+    @field_validator("ciphertext", "auth_tag", "nonce")
+    @classmethod
+    def validate_hex(cls, v: str) -> str:
+        """Validate hexadecimal encoding."""
+        if not re.match(r'^[a-f0-9]+$', v, re.IGNORECASE):
+            raise ValueError("Must be hexadecimal string")
+        return v.lower()
+
+
+class ManufacturerCert(BaseModel):
+    """Manufacturer certificate with authority identification."""
+
+    authority_id: str = Field(..., description="Manufacturer authority ID (e.g., 'CANON_001')")
+    validation_endpoint: str = Field(..., description="URL to manufacturer's validation server")
+
+    @field_validator("validation_endpoint")
+    @classmethod
+    def validate_endpoint(cls, v: str) -> str:
+        """Validate endpoint is a URL."""
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("Validation endpoint must be HTTP(S) URL")
+        return v
+
+
+class CameraSubmission(BaseModel):
+    """Camera submission with 2-hash array (raw + processed) - Phase 1."""
+
+    submission_type: Literal["camera"] = "camera"
+    image_hashes: List[ImageHashEntry] = Field(
+        ...,
+        min_length=1,
+        max_length=2,
+        description="1-2 image hashes (raw, processed)"
+    )
+    camera_token: CameraToken = Field(..., description="Structured camera authentication token")
+    manufacturer_cert: ManufacturerCert = Field(..., description="Manufacturer certificate")
+    timestamp: int = Field(..., gt=0, description="Unix timestamp when image was captured")
+
+    @field_validator("image_hashes")
+    @classmethod
+    def validate_hash_consistency(cls, v: List[ImageHashEntry]) -> List[ImageHashEntry]:
+        """Validate modification levels and parent references are consistent."""
+        if len(v) == 2:
+            # First should be raw (level 0), second should be processed (level 1)
+            if v[0].modification_level != 0:
+                raise ValueError("First hash must be raw (modification_level=0)")
+            if v[1].modification_level != 1:
+                raise ValueError("Second hash must be processed (modification_level=1)")
+            # Processed must reference raw as parent
+            if v[1].parent_image_hash != v[0].image_hash:
+                raise ValueError("Processed hash must have raw hash as parent")
+            # Raw cannot have parent
+            if v[0].parent_image_hash is not None:
+                raise ValueError("Raw hash cannot have parent")
+        elif len(v) == 1:
+            # Single hash must be raw
+            if v[0].modification_level != 0:
+                raise ValueError("Single hash submission must be raw (modification_level=0)")
+            if v[0].parent_image_hash is not None:
+                raise ValueError("Raw hash cannot have parent")
+        return v
+
+
+# DEPRECATED: Old Phase 1 format (kept for backward compatibility)
 class AuthenticationBundle(BaseModel):
-    """Camera submission bundle (from camera to aggregator)."""
+    """Camera submission bundle (DEPRECATED - use CameraSubmission instead)."""
 
     image_hash: str = Field(..., min_length=64, max_length=64, description="SHA-256 hash (64 hex chars)")
     encrypted_nuc_token: bytes = Field(..., description="AES-GCM encrypted NUC hash")

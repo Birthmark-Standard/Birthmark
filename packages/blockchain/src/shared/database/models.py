@@ -92,12 +92,23 @@ class PendingSubmission(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     image_hash = Column(CHAR(64), nullable=False, index=True)
-    encrypted_token = Column(LargeBinary, nullable=False)
-    table_references = Column(ARRAY(Integer), nullable=False)
-    key_indices = Column(ARRAY(Integer), nullable=False)
+
+    # Legacy fields (for backward compatibility with old AuthenticationBundle)
+    encrypted_token = Column(LargeBinary, nullable=True)  # Now nullable
+    table_references = Column(ARRAY(Integer), nullable=True)  # Now nullable
+    key_indices = Column(ARRAY(Integer), nullable=True)  # Now nullable
+    device_signature = Column(LargeBinary, nullable=True)  # Now nullable
+
+    # New camera submission fields (CameraSubmission format)
+    modification_level = Column(Integer, nullable=False, default=0, index=True)  # 0=raw, 1=processed
+    parent_image_hash = Column(CHAR(64), nullable=True, index=True)  # For provenance chain
+    transaction_id = Column(String(36), nullable=True, index=True)  # Groups 2 hashes from same submission
+    manufacturer_authority_id = Column(String(100), nullable=True)  # e.g., "CANON_001"
+    camera_token_json = Column(Text, nullable=True)  # JSON-encoded CameraToken object
+
+    # Common fields
     timestamp = Column(BigInteger, nullable=False)  # Unix timestamp
     gps_hash = Column(CHAR(64), nullable=True)
-    device_signature = Column(LargeBinary, nullable=False)
 
     # Validation tracking
     received_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -114,6 +125,9 @@ class PendingSubmission(Base):
         Index("idx_pending_validated", "sma_validated"),
         Index("idx_pending_batched", "batched"),
         Index("idx_pending_status", "sma_validated", "batched"),
+        Index("idx_transaction_id", "transaction_id"),
+        Index("idx_modification_level", "modification_level"),
+        Index("idx_parent_hash", "parent_image_hash"),
     )
 
 
