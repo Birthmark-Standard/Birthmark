@@ -4,6 +4,9 @@
 **Branch:** `claude/validate-submission-server-01Bd2WVoNMS6ynwwjY4X6AHL`
 **Status:** ✅ **READY FOR LOCAL TESTING**
 
+> **⚠️ ARCHITECTURE UPDATE (Dec 3, 2025):** Batching has been removed from the design.
+> Direct blockchain submission replaces the batching service. See [ARCHITECTURE_CHANGE_NO_BATCHING.md](ARCHITECTURE_CHANGE_NO_BATCHING.md).
+
 ---
 
 ## Overview
