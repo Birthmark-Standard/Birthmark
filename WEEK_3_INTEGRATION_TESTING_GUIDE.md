@@ -4,6 +4,10 @@
 **Branch:** `claude/validate-submission-server-01Bd2WVoNMS6ynwwjY4X6AHL`
 **Status:** ✅ Code validated, ready for integration testing
 
+> **⚠️ ARCHITECTURE UPDATE (Dec 3, 2025):** Batching has been removed from the design.
+> Each hash is now submitted individually to the blockchain immediately after SMA validation.
+> See [ARCHITECTURE_CHANGE_NO_BATCHING.md](ARCHITECTURE_CHANGE_NO_BATCHING.md) for complete details.
+
 ---
 
 ## Overview
