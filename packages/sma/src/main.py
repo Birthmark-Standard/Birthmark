@@ -590,10 +590,25 @@ async def list_devices(device_family: Optional[str] = None):
 
 # Validation endpoint - matches blockchain expectation
 class ValidationRequest(BaseModel):
-    """Request model for token validation from blockchain aggregator."""
+    """Request model for token validation from blockchain aggregator (LEGACY - Phase 1 old format)."""
     ciphertext: str = Field(..., description="Hex-encoded encrypted NUC token")
     table_references: List[int] = Field(..., min_length=3, max_length=3, description="3 table IDs")
     key_indices: List[int] = Field(..., min_length=3, max_length=3, description="3 key indices")
+
+
+class CameraTokenValidation(BaseModel):
+    """Structured camera token for validation (NEW format)."""
+    ciphertext: str = Field(..., description="Hex-encoded AES-GCM ciphertext")
+    auth_tag: str = Field(..., min_length=32, max_length=32, description="AES-GCM auth tag (32 hex chars)")
+    nonce: str = Field(..., min_length=24, max_length=24, description="AES-GCM nonce (24 hex chars)")
+    table_id: int = Field(..., ge=0, lt=250, description="Key table ID (0-249)")
+    key_index: int = Field(..., ge=0, lt=1000, description="Key index within table (0-999)")
+
+
+class CameraTokenValidationRequest(BaseModel):
+    """Request model for camera token validation (NEW format from aggregator)."""
+    camera_token: CameraTokenValidation = Field(..., description="Structured camera token")
+    manufacturer_authority_id: str = Field(..., description="Manufacturer ID (e.g., 'CANON_001')")
 
 
 class ValidationResponse(BaseModel):
@@ -603,21 +618,114 @@ class ValidationResponse(BaseModel):
 
 
 @app.post("/validate", response_model=ValidationResponse, tags=["Validation"])
-async def validate_token(request: ValidationRequest):
+async def validate_camera_token_new(request: CameraTokenValidationRequest):
     """
-    Validate encrypted NUC token from blockchain aggregator.
+    Validate structured camera token from blockchain aggregator (NEW format).
 
     Phase 1: Simplified validation (format checking + table existence)
     Phase 2: Full cryptographic validation (decrypt + compare NUC hash)
 
     Args:
-        request: Validation request with encrypted token and table references
+        request: Camera token validation request with structured token
 
     Returns:
         Validation response (PASS/FAIL)
 
     Note: This endpoint is called by the blockchain aggregator, NOT directly by cameras.
     The aggregator never sends the image hash - only the encrypted camera token.
+
+    Privacy: Image hashes are NEVER sent to SMA, preserving camera anonymity.
+    """
+    if not table_manager:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="SMA not initialized (key tables not loaded)"
+        )
+
+    try:
+        token = request.camera_token
+
+        # Validate ciphertext is valid hex
+        try:
+            encrypted_bytes = bytes.fromhex(token.ciphertext)
+        except ValueError:
+            return ValidationResponse(
+                valid=False,
+                message="Invalid ciphertext format (must be hex)"
+            )
+
+        # Validate auth_tag is valid hex
+        try:
+            auth_tag_bytes = bytes.fromhex(token.auth_tag)
+            if len(auth_tag_bytes) != 16:  # AES-GCM auth tag is 16 bytes
+                return ValidationResponse(
+                    valid=False,
+                    message=f"Invalid auth_tag length: {len(auth_tag_bytes)} bytes (expected 16)"
+                )
+        except ValueError:
+            return ValidationResponse(
+                valid=False,
+                message="Invalid auth_tag format (must be hex)"
+            )
+
+        # Validate nonce is valid hex
+        try:
+            nonce_bytes = bytes.fromhex(token.nonce)
+            if len(nonce_bytes) != 12:  # AES-GCM nonce is 12 bytes
+                return ValidationResponse(
+                    valid=False,
+                    message=f"Invalid nonce length: {len(nonce_bytes)} bytes (expected 12)"
+                )
+        except ValueError:
+            return ValidationResponse(
+                valid=False,
+                message="Invalid nonce format (must be hex)"
+            )
+
+        # Check table_id is valid
+        if token.table_id not in table_manager.key_tables:
+            return ValidationResponse(
+                valid=False,
+                message=f"Invalid table_id: {token.table_id} (table not found)"
+            )
+
+        # Check key_index is in valid range (already validated by Pydantic, but double-check)
+        if not (0 <= token.key_index < 1000):
+            return ValidationResponse(
+                valid=False,
+                message=f"Invalid key_index: {token.key_index} (must be 0-999)"
+            )
+
+        # Phase 1: Simple validation (format checks passed, table exists)
+        # Phase 2: TODO - Decrypt token using table key at key_index and validate against NUC hash
+        # For Phase 1 testing, we accept valid format as PASS
+        print(f"✓ Camera token validated: manufacturer={request.manufacturer_authority_id}, table={token.table_id}, index={token.key_index}")
+        return ValidationResponse(
+            valid=True,
+            message="Phase 1 validation: format valid, table exists"
+        )
+
+    except Exception as e:
+        # Log error but don't expose details to aggregator
+        print(f"Validation error: {str(e)}")
+        return ValidationResponse(
+            valid=False,
+            message="Validation failed"
+        )
+
+
+@app.post("/validate-legacy", response_model=ValidationResponse, tags=["Validation"])
+async def validate_token_legacy(request: ValidationRequest):
+    """
+    Validate encrypted NUC token (LEGACY format - 3 table references).
+
+    DEPRECATED: Use /validate with structured CameraTokenValidationRequest instead.
+
+    Args:
+        request: Validation request with encrypted token and 3 table references
+
+    Returns:
+        Validation response (PASS/FAIL)
     """
     if not table_manager:
         raise HTTPException(
@@ -653,11 +761,9 @@ async def validate_token(request: ValidationRequest):
                 )
 
         # Phase 1: Simple validation (format checks passed)
-        # Phase 2: TODO - Decrypt token using table keys and validate against NUC hash
-        # For Phase 1 testing, we accept valid format as PASS
         return ValidationResponse(
             valid=True,
-            message="Phase 1 validation: format valid"
+            message="Legacy validation: format valid"
         )
 
     except Exception as e:
