@@ -51,6 +51,12 @@ The Birthmark Standard authenticates images at the hardware level using each cam
    No account needed, no API keys, no fees, just math
 ```
 
+### Visual Pipeline
+
+![Birthmark Authentication Pipeline](./docs/Full_Visual_Pipeline.png)
+
+The complete system architecture showing how all components interact: from camera capture through manufacturer validation, submission server processing, blockchain storage, and finally public verification.
+
 ---
 
 ## Current Status
