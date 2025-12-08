@@ -6,7 +6,9 @@
 
 ## The Problem
 
-Professional photographers face an unprecedented credibility crisis. As AI-generated images become indistinguishable from photographs, legitimate photographic work is increasingly dismissed as fake. Photojournalists, competition photographers, and documentary creators need a way to prove their images came from real cameras—not AI generators.
+Trust in online media is collapsing. As AI-generated images become indistinguishable from photographs, the public can no longer confidently determine what's real. This erodes our shared sense of reality and undermines the credibility of legitimate journalism, documentary work, and photographic evidence.
+
+Professional photographers face an unprecedented credibility crisis. Photojournalists, competition photographers, and documentary creators need a way to prove their images came from real cameras—not AI generators.
 
 Current solutions like C2PA embed authentication in image metadata, but this metadata gets stripped when images are shared on social media, converted between formats, or edited. By some estimates, 95% of real-world image distribution loses this metadata.
 
@@ -36,7 +38,7 @@ The Birthmark Standard authenticates images at the hardware level using each cam
    NUC fingerprint encrypted with rotating key
 
 2. SUBMIT
-   Authentication bundle sent to aggregation server
+   Authentication bundle sent to submission server
    Manufacturer validates camera authenticity (PASS/FAIL)
    Image hash submitted to blockchain
 
@@ -66,11 +68,9 @@ The complete system architecture showing how all components interact: from camer
 We're building a Raspberry Pi-based camera prototype that demonstrates the complete authentication pipeline. This proves the architecture works before seeking manufacturer partnerships.
 
 - Raspberry Pi 4 + HQ Camera + TPM secure element
-- Aggregation server with SMA validation
+- Submission server with SMA validation
 - Custom blockchain nodes operated by institutions
 - Photography club user validation
-
-**Target:** 2028 Presidential Election deployment
 
 ---
 
@@ -96,7 +96,7 @@ The system consists of five main components:
 
 **Camera Device** - Captures raw sensor data, computes SHA-256 hash, encrypts device fingerprint with rotating keys from assigned key tables, submits authentication bundle.
 
-**Aggregation Server** - Receives submissions, validates camera authenticity via manufacturer, submits validated hashes to blockchain.
+**Submission Server** - Receives submissions, validates camera authenticity via manufacturer, submits validated hashes to blockchain.
 
 **Simulated Manufacturer Authority (SMA)** - Maintains key tables and NUC records, validates encrypted tokens without seeing image content, returns PASS/FAIL.
 
@@ -114,7 +114,7 @@ For detailed technical specifications, see [CLAUDE.md](./CLAUDE.md) and the docu
 birthmark/
 ├── packages/
 │   ├── camera-pi/        # Raspberry Pi prototype
-│   ├── aggregator/       # Aggregation server
+│   ├── aggregator/       # Submission server
 │   ├── sma/              # Simulated Manufacturer Authority
 │   ├── blockchain/       # Custom Birthmark blockchain
 │   ├── mobile-app/       # Android app (Phase 2)
@@ -191,7 +191,7 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 
 **Phase 3** - Manufacturer partnerships, production blockchain network with institutional nodes, public verification tools
 
-**Target** - Deployed infrastructure for 2028 Presidential Election
+Our goal is to establish trustworthy media authentication infrastructure that helps restore confidence in online information and supports our shared ability to distinguish reality from fabrication.
 
 ---
 
