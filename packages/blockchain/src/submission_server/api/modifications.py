@@ -1,5 +1,5 @@
 """
-Modification tracking API endpoints for Birthmark blockchain aggregator.
+Modification tracking API endpoints for Birthmark blockchain submission server.
 
 Handles modification records from editing software (GIMP plugin, etc.)
 and provides provenance chain verification.
@@ -33,7 +33,7 @@ async def submit_modification_record(
     """
     Submit modification record from editing software.
 
-    The aggregator:
+    The submission server:
     1. Validates the software certificate with SSA (TODO in Phase 3)
     2. Stores the modification record
     3. Links it to the original image hash
@@ -180,7 +180,7 @@ async def get_provenance_chain(
                         type="capture",
                         timestamp=datetime.fromtimestamp(capture.timestamp).isoformat(),
                         authority_type="manufacturer",
-                        authority_id=capture.aggregator or "unknown",
+                        authority_id=capture.submission_server or "unknown",
                         modification_level=0,
                     ))
                     verified = True

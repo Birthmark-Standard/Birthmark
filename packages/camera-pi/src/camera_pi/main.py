@@ -16,8 +16,8 @@ from .raw_capture import create_capture_manager, RawCaptureConfig
 from .provisioning_client import ProvisioningClient
 from .camera_token import create_token_generator_from_provisioning
 from .tpm_interface import create_tpm_interface_from_provisioning
-from .aggregation_client import (
-    create_aggregation_client,
+from .submission_client import (
+    create_submission_client,
     AuthenticationBundle,
     SubmissionQueue
 )
@@ -32,7 +32,7 @@ class BirthmarkCamera:
     def __init__(
         self,
         provisioning_path: Optional[Path] = None,
-        aggregation_url: str = "http://localhost:8545",
+        submission_url: str = "http://localhost:8545",
         output_dir: Optional[Path] = None,
         use_mock_camera: bool = False,
         use_certificates: bool = False
@@ -42,7 +42,7 @@ class BirthmarkCamera:
 
         Args:
             provisioning_path: Path to provisioning data file
-            aggregation_url: Birthmark blockchain node URL
+            submission_url: Birthmark blockchain node URL
             output_dir: Output directory for images
             use_mock_camera: Use mock camera for testing
             use_certificates: Use certificate-based authentication (new format)
@@ -81,11 +81,11 @@ class BirthmarkCamera:
             self.provisioning_data
         )
 
-        self.aggregation_client = create_aggregation_client(aggregation_url)
+        self.submission_client = create_submission_client(submission_url)
 
         # Initialize submission queue (pass private key for certificate signing)
         self.submission_queue = SubmissionQueue(
-            self.aggregation_client,
+            self.submission_client,
             device_private_key=self.tpm._private_key
         )
         self.submission_queue.start_worker()
@@ -162,7 +162,7 @@ class BirthmarkCamera:
             print(f"✓ Using embedded certificate (no token generation needed)")
 
             # Step 3: Create certificate bundle with ISP validation
-            from .aggregation_client import CertificateBundle
+            from .submission_client import CertificateBundle
 
             bundle = CertificateBundle(
                 image_hash=capture_result.image_hash,
@@ -286,7 +286,7 @@ class BirthmarkCamera:
             True if server is reachable
         """
         print("Testing blockchain node connection...")
-        if self.aggregation_client.test_connection():
+        if self.submission_client.test_connection():
             print("✓ Blockchain node is reachable")
             return True
         else:
@@ -362,7 +362,7 @@ Examples:
     )
 
     parser.add_argument(
-        '--aggregator',
+        '--submission-server',
         default='http://localhost:8545',
         help='Birthmark blockchain node URL (default: http://localhost:8545)'
     )
@@ -404,7 +404,7 @@ Examples:
         # Initialize camera
         camera = BirthmarkCamera(
             provisioning_path=args.provisioning,
-            aggregation_url=args.aggregator,
+            submission_url=args.submission_server,
             output_dir=args.output,
             use_mock_camera=args.mock,
             use_certificates=args.use_certificates

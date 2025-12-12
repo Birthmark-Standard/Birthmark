@@ -34,12 +34,12 @@ from .tpm_interface import (
     create_tpm_interface_from_provisioning
 )
 
-from .aggregation_client import (
-    AggregationClient,
+from .submission_client import (
+    SubmissionClient,
     AuthenticationBundle,
     SubmissionQueue,
     SubmissionReceipt,
-    create_aggregation_client
+    create_submission_client
 )
 
 from .main import BirthmarkCamera
@@ -93,12 +93,12 @@ __all__ = [
     'TPMConfig',
     'create_tpm_interface_from_provisioning',
 
-    # Aggregation
-    'AggregationClient',
+    # Submission
+    'SubmissionClient',
     'AuthenticationBundle',
     'SubmissionQueue',
     'SubmissionReceipt',
-    'create_aggregation_client',
+    'create_submission_client',
 
     # Main application
     'BirthmarkCamera',
