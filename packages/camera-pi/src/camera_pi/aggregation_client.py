@@ -220,7 +220,7 @@ class AggregationClient:
         Raises:
             requests.exceptions.RequestException: If submission fails after retries
         """
-        endpoint = f"{self.server_url}/api/v1/submit"
+        endpoint = f"{self.server_url}/api/v1/submit-legacy"
         payload = bundle.to_json()
 
         attempts = 0
