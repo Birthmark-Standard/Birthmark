@@ -13,7 +13,7 @@ from src.shared.config import settings
 from src.shared.crypto.signatures import ValidatorKeys
 from src.aggregator.api import submissions, modifications
 from src.node.api import verification, status
-from src.aggregator.batching_service import BatchingService
+from src.node.api import blockchain
 
 # Configure logging
 logging.basicConfig(
@@ -21,9 +21,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 )
 logger = logging.getLogger(__name__)
-
-# Global batching service instance
-batching_service: BatchingService | None = None
 
 
 @asynccontextmanager
@@ -37,20 +34,13 @@ async def lifespan(app: FastAPI):
     logger.info(f"Consensus mode: {settings.consensus_mode}")
 
     # Load or generate validator keys
-    global batching_service
     validator_keys = load_or_generate_keys()
-
-    # Start batching service in background
-    batching_service = BatchingService(validator_keys, batch_interval_seconds=30)
-    batching_task = asyncio.create_task(batching_service.start())
+    logger.info(f"Loaded validator keys: {validator_keys.validator_id}")
 
     yield  # Application is running
 
     # Shutdown
     logger.info("Shutting down Birthmark Blockchain Node")
-    if batching_service:
-        await batching_service.stop()
-    batching_task.cancel()
 
 
 def load_or_generate_keys() -> ValidatorKeys:
@@ -90,6 +80,7 @@ app.include_router(submissions.router)  # Camera submission API
 app.include_router(modifications.router)  # Modification tracking (Phase 3)
 app.include_router(verification.router)  # Public verification API
 app.include_router(status.router)  # Health and status
+app.include_router(blockchain.router)  # Phase 1 blockchain node
 
 
 @app.get("/")
