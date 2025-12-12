@@ -30,35 +30,30 @@ The Birthmark Standard is open-source infrastructure that proves images originat
 
 ## System Architecture (Phase 1)
 ```
-┌─────────────────┐
-│  Camera (Pi 4)  │
-│  + HQ Camera    │
-│  + Simulated SE │
-└────────┬────────┘
-         │ POST /submit
-         ▼
-┌─────────────────────────┐
-│  Submission Server      │
-│  (FastAPI + PostgreSQL) │
-└────────┬───────┬────────┘
-         │       │
-         │       └──────────────────┐
-         │                          │
-         ▼                          ▼
-┌─────────────────────┐   ┌──────────────────────┐
-│ Manufacturer        │   │ Birthmark Media      │
-│ Authority (SMA)     │   │ Registry             │
-│ (validates camera)  │   │ (Cosmos SDK)         │
-└─────────────────────┘   └──────────────────────┘
-         │                          │
-         │ PASS/FAIL                │
-         └──────────────────────────┘
-                  │
-                  ▼
          ┌─────────────────┐
-         │  Web Verifier   │
-         │  (React app)    │
-         └─────────────────┘
+         │  Camera (Pi 4)  │
+         │  + HQ Camera    │
+         │  + Simulated SE │
+         └────────┬────────┘
+                  │ POST /submit
+                  ▼
+         ┌─────────────────────────┐        ┌───────────────────┐
+         │  Submission Server      │◀──────▶│ Manufacturer      │
+         │  (FastAPI + PostgreSQL) │ validate│ Authority (SMA)   │
+         └─────────────┬───────────┘  cert  └───────────────────┘
+                       │                            PASS/FAIL
+                       │ (if PASS)
+                       ▼
+            ┌──────────────────────┐
+            │ Birthmark Media      │
+            │ Registry             │
+            └──────────┬───────────┘
+                       │
+                       ▼
+            ┌──────────────────────┐
+            │  Web Verifier        │
+            │  (React app)         │
+            └──────────────────────┘
 ```
 
 ### Data Flow
