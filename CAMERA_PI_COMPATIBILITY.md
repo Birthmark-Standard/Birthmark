@@ -77,7 +77,7 @@
 endpoint = f"{self.server_url}/api/v1/submit"
 
 # TO:
-endpoint = f"{self.server_server}/api/v1/submit-legacy"
+endpoint = f"{self.server_url}/api/v1/submit-legacy"
 ```
 
 **That's it!** Your camera-pi will now work with the submission server.
