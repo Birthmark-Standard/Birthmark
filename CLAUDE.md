@@ -1,235 +1,352 @@
-# Birthmark Standard - Claude Code Context
+Birthmark Standard - Phase 1 Development Context
 
-**Last Updated:** November 2025  
-**Current Phase:** Phase 1 (Hardware Prototype)  
+**Last Updated:** December 11, 2025  
+**Current Status:** Camera authentication pipeline validated ✅  
+**Next:** Building Submission Server and Simulated Manufacturer Authority  
 **Repository:** github.com/Birthmark-Standard/Birthmark
 
 ---
 
 ## Project Overview
 
-The Birthmark Standard is an open-source, hardware-backed photo authentication system that proves images originated from legitimate cameras rather than AI generation. It uses camera sensors' unique Non-Uniformity Correction (NUC) maps as hardware fingerprints, combined with blockchain verification on a custom Birthmark blockchain operated by like-minded institutions.
+The Birthmark Standard is open-source infrastructure that proves images originated from legitimate camera hardware rather than AI generation. Unlike C2PA (which embeds metadata that gets stripped by social media), Birthmark stores authentication records on an independent blockchain operated by journalism organizations, surviving all forms of metadata loss.
 
-**Target:** Deployment for 2028 Presidential Election  
-**Organization:** The Birthmark Standard Foundation (501(c)(3) pending)
+**Phase 1 Goal:** Build working prototype with Raspberry Pi camera proving complete authentication pipeline from sensor capture through blockchain verification.
 
-### Core Innovation
-
-Unlike C2PA which embeds metadata that gets stripped by social media platforms, Birthmark authenticates images independently of metadata. The system proves an image hash was captured by a legitimate camera at a specific time, even after the image has been copied, shared, or had its metadata removed.
+**Organization:** The Birthmark Standard Foundation (501(c)(3) pending)  
+**Founder:** Samuel C. Ryan (samryan.pdx@proton.me)
 
 ---
 
-## System Architecture
+## Core Innovation
 
-### Component Overview
+**Problem:** C2PA metadata is stripped when images are shared on social media (95% of authenticated images lose their credentials).
 
+**Solution:** Store authentication records on blockchain independent of image files. Anyone can hash an image and query the blockchain to verify provenance, regardless of compression, conversion, or platform sharing.
+
+**Key Differentiator:** Blockchain operated by journalism organizations (NPPA, IFCN, CPJ, Bellingcat), not tech companies. Trust distributed across aligned institutions with reputational stakes in credibility.
+
+---
+
+## System Architecture (Phase 1)
 ```
-Camera Device          Aggregation Server              Birthmark Blockchain
-─────────────         ──────────────────              ────────────────────
-│ Sensor     │        │ Server Queue    │
-│ Secure Elem│   ──►  │ Decision Gate   │────────►   Blockchain Nodes
-│ Wireless   │        │ Batch Accum     │            │ (Like-Minded Institutions)
-                      │ Hash Storage    │            │ Direct Hash Registry
-                      └────────┬────────┘            │ Immutable Ledger
-                               │
-                               ▼
-                      Manufacturer (SMA)
-                     ──────────────────
-                     │ Validation Server│
-                     │ Key Tables       │
-                     │ NUC Records      │
-                     │ Identity Mapping │
+┌─────────────────┐
+│  Camera (Pi 4)  │
+│  + HQ Camera    │
+│  + Simulated SE │
+└────────┬────────┘
+         │ POST /submit
+         ▼
+┌─────────────────────────┐
+│  Submission Server      │
+│  (FastAPI + PostgreSQL) │
+└────────┬───────┬────────┘
+         │       │
+         │       └──────────────────┐
+         │                          │
+         ▼                          ▼
+┌─────────────────────┐   ┌──────────────────────┐
+│ Manufacturer        │   │ Birthmark Media      │
+│ Authority (SMA)     │   │ Registry             │
+│ (validates camera)  │   │ (Cosmos SDK)         │
+└─────────────────────┘   └──────────────────────┘
+         │                          │
+         │ PASS/FAIL                │
+         └──────────────────────────┘
+                  │
+                  ▼
+         ┌─────────────────┐
+         │  Web Verifier   │
+         │  (React app)    │
+         └─────────────────┘
 ```
 
-**Data Flow:**
-1. Camera sends authentication bundle to Aggregation Server only
-2. Aggregation Server forwards encrypted token to SMA for validation
-3. SMA returns PASS/FAIL (never sees image hash)
-4. Aggregation Server submits validated hashes to Birthmark blockchain
-5. Full SHA-256 hashes stored directly on blockchain operated by trusted institutions
+### Data Flow
 
-### Critical Privacy Invariants
+1. **Camera captures image**
+   - Hash raw Bayer sensor data (SHA-256)
+   - Process through ISP, hash processed image
+   - Generate simulated NUC hash
+   - Encrypt NUC hash with random table/key selection
+   - Create manufacturer certificate
+   - Submit to Submission Server
 
-- **SMA never sees image hashes** - only validates camera authenticity
-- **Aggregator cannot track individual cameras** - rotating encrypted tokens
-- **Images never stored** - only SHA-256 hashes of raw sensor data
-- **Manufacturer validates device, not content**
+2. **Submission Server receives submission**
+   - Extract manufacturer certificate
+   - Route certificate to Manufacturer Authority
+   - Authority validates camera authenticity (returns PASS/FAIL)
+   - If PASS: post image hashes to Birthmark Media Registry
 
----
+3. **Registry stores record**
+   - Coalition blockchain nodes validate and store
+   - Record becomes permanent and queryable
+   - Survives all metadata stripping
 
-## Development Phases
-
-### Phase 1: Hardware Prototype (Current)
-**Timeline:** 4-6 weeks  
-**Goal:** Raspberry Pi camera proving parallel raw sensor hashing
-
-**Components:**
-- Raspberry Pi 4 + HQ Camera + LetsTrust TPM
-- Aggregation Server (FastAPI + PostgreSQL)
-- Simulated Manufacturer Authority (SMA)
-- Custom Birthmark Blockchain Nodes
-
-**Key Deliverables:**
-- Camera captures 12MP raw Bayer, hashes with TPM
-- <5 second background processing, zero user latency
-- Photography club validation (50-100 photographers)
-- 500+ test images verified on blockchain
-
-### Phase 2: Android App
-**Timeline:** 3-4 months
-**Goal:** Validate architecture on consumer mobile devices
-
-**Key Differences from Phase 1:**
-- Hashes processed images (not raw sensor data)
-- Device fingerprint instead of NUC map
-- Same aggregation server infrastructure
-- Google Play Internal Testing closed beta (60-100 testers)
-
-**Why Android:**
-- Primary manufacturer target (Fairphone) uses Android platform
-- Better hardware access for authentication prototypes
-- Broader manufacturer ecosystem opportunities
-- Android Camera2 API enables camera integration testing
-
-**Note:** iOS development remains possible in Phase 3 if manufacturer partners require it. The authentication architecture is platform-agnostic.
-
-### Phase 3: Manufacturer Integration
-**Timeline:** Negotiation phase  
-**Goal:** Production camera partnerships
+4. **Public verification**
+   - User hashes image locally
+   - Query Birthmark Media Registry
+   - Returns: validated/modified status + provenance chain
 
 ---
 
-## Package Structure
+## Phase 1 Scope
 
+### ✅ Completed (December 11, 2025)
+
+**Camera Package:**
+- Raw Bayer capture from Sony IMX477 (4056x3040)
+- ISP-processed image capture
+- SHA-256 hashing of both raw and processed
+- Simulated Secure Element with AES-256-GCM
+- HKDF key derivation (3 master keys: tables 847, 1203, 1654)
+- Manufacturer certificate generation
+- Complete authentication pipeline validated
+
+**Test Results:**
+```
+Raw hash: a9d1dbb063ffd40ed3da020e14aa994a...
+Processed hash: 29d6c8498815c58cb274cb4878cd3f4f...
+Certificate: Table 1203, Key 452, encrypted NUC hash
+```
+
+### 🚧 Current Work
+
+**Submission Server:** FastAPI server accepting camera/software submissions
+**SMA:** Validation endpoint for camera tokens
+**Integration:** End-to-end flow from camera to validation
+
+### 📋 Remaining Phase 1
+
+- Birthmark Media Registry (Cosmos SDK single-node testnet)
+- Web verification interface (React app)
+- Complete end-to-end demonstration
+- Documentation for Phase 2 handoff
+
+---
+
+## Repository Structure
 ```
 birthmark/
 ├── packages/
-│   ├── camera-pi/                 # Raspberry Pi prototype (Phase 1)
+│   ├── camera-pi/              # Raspberry Pi camera implementation
 │   │   ├── src/
-│   │   │   ├── sensor_capture.py  # Raw Bayer data capture
-│   │   │   ├── hash_pipeline.py   # SHA-256 hashing
-│   │   │   ├── tpm_interface.py   # LetsTrust secure element
-│   │   │   └── submission.py      # Send to aggregator
-│   │   └── tests/
+│   │   │   ├── capture.py              # Camera capture & hashing
+│   │   │   ├── secure_element.py       # Simulated SE (Phase 1)
+│   │   │   ├── certificate.py          # Certificate generation
+│   │   │   └── submit.py               # Submission Server client
+│   │   ├── tests/
+│   │   └── README.md
 │   │
-│   ├── blockchain/                # Birthmark Blockchain Node (Merged Aggregator+Validator)
+│   ├── submission-server/      # Entry point for authentications
 │   │   ├── src/
-│   │   │   ├── aggregator/        # Camera submission API, SMA validation, batching
-│   │   │   ├── node/              # Block storage, consensus, verification API
-│   │   │   └── shared/            # Database models, crypto, config
-│   │   ├── scripts/               # Genesis block initialization
-│   │   └── tests/                 # Unit and integration tests
+│   │   │   ├── api.py                  # FastAPI endpoints
+│   │   │   ├── validation.py           # Authority routing
+│   │   │   ├── blockchain.py           # Registry posting
+│   │   │   └── database.py             # PostgreSQL models
+│   │   ├── tests/
+│   │   └── README.md
 │   │
-│   ├── sma/                       # Simulated Manufacturer Authority
+│   ├── sma/                    # Simulated Manufacturer Authority
 │   │   ├── src/
-│   │   │   ├── key_tables/        # 2,500 tables × 1,000 keys
-│   │   │   ├── provisioning/      # Device certificate issuance
-│   │   │   ├── validation/        # Token validation (PASS/FAIL)
-│   │   │   └── identity/          # NUC records (never sees image hash)
-│   │   └── tests/
+│   │   │   ├── server.py               # Validation API
+│   │   │   ├── keys.py                 # Key table management
+│   │   │   ├── crypto.py               # Decryption & validation
+│   │   │   └── provision.py            # Camera provisioning
+│   │   ├── tests/
+│   │   └── README.md
 │   │
-│   ├── mobile-app/                # Android App (Phase 2)
-│   │   └── (Kotlin/Jetpack Compose structure)
+│   ├── registry/               # Birthmark Media Registry
+│   │   ├── node/                       # Cosmos SDK setup
+│   │   ├── contracts/                  # Smart contract logic
+│   │   ├── scripts/                    # Deployment scripts
+│   │   └── README.md
 │   │
-│   └── verifier/                  # Image Viewer / Validation Client
-│       ├── src/
-│       │   ├── hash_image.py      # Client-side hashing
-│       │   └── query_blockchain.py # Direct hash lookup
-│       └── web/                   # Simple web UI for demo
+│   └── verifier/               # Verification interface
+│       ├── web/                        # React application
+│       ├── api/                        # Query library
+│       └── README.md
 │
-├── shared/
-│   ├── types/                     # Core data structures
-│   │   ├── submission.py          # What camera sends to aggregator
-│   │   ├── validation.py          # Aggregator ↔ SMA messages
-│   │   └── blockchain.py          # Blockchain transaction structures
-│   │
-│   ├── crypto/                    # Shared cryptographic utilities
-│   │   ├── hashing.py             # SHA-256 standardization
-│   │   ├── key_derivation.py      # HKDF for key table rotation
-│   │   └── encryption.py          # Symmetric encryption for NUC tokens
-│   │
-│   └── protocols/                 # API contracts (source of truth)
-│       ├── camera_to_aggregator.yaml   # OpenAPI spec
-│       ├── aggregator_to_sma.yaml      # Validation API
-│       └── aggregator_to_chain.py      # Blockchain API client
+├── shared/                     # Common code across packages
+│   ├── types/                          # Data structures
+│   ├── crypto/                         # Cryptographic utilities
+│   └── protocols/                      # API specifications
 │
 ├── docs/
-│   ├── architecture/              # Your diagrams live here
-│   │   ├── system_overview.png
-│   │   ├── validation_flow.png
-│   │   └── verification_flow.png
-│   ├── phase_plans/               # Your existing phase documentation
-│   └── CLAUDE_CODE_CONTEXT.md     # Key context for AI assistance
+│   ├── architecture/                   # Technical diagrams
+│   ├── specs/                          # Detailed specifications
+│   └── phase1/                         # Phase 1 documentation
 │
-└── scripts/
-    ├── provision_device.sh        # Set up new camera
-    ├── deploy_blockchain.sh       # Deploy blockchain node
-    └── integration_test.sh        # End-to-end test
+├── CLAUDE.md                   # This file - Phase 1 context
+├── README.md                   # Project overview
+└── PHASE1_SUCCESS.md           # Milestone tracking
 ```
 
 ---
 
-## Interface Specifications
+## Hardware Configuration
 
-### Camera → Aggregator Submission
+### Raspberry Pi 4 Setup
 
+**Components:**
+- Raspberry Pi 4 Model B (4GB RAM)
+- Sony IMX477 HQ Camera (12.3 MP, 7.9mm sensor)
+- 6mm CS-mount lens
+- LetsTrust TPM SLB 9670 (deferred - hardware issue)
+- 32GB microSD card (A2 rated)
+
+**Camera Connection:**
+- **CSI Port 2** (near Ethernet jack) ✅ CORRECT
+- Port 1 is for displays only
+- 15-pin ribbon cable
+
+**TPM Status:**
+- Hardware communication issue (deferred)
+- Using Simulated Secure Element for Phase 1
+- Same cryptographic algorithms and data structures
+- Production migration path: swap SimulatedSecureElement → HardwareSecureElement
+
+**Software:**
+- Raspberry Pi OS (64-bit, Bookworm)
+- Python 3.11
+- picamera2 library
+- libcamera v0.6.0+rpt20251202
+
+---
+
+## Data Structures
+
+### Camera Submission (GPS Disabled - Default)
 ```python
-@dataclass
-class AuthenticationBundle:
-    image_hash: str              # SHA-256 of raw Bayer data (64 hex chars)
-    encrypted_nuc_token: bytes   # AES-GCM encrypted NUC hash
-    table_references: List[int]  # 3 table IDs (0-2499)
-    key_indices: List[int]       # 3 key indices (0-999)
-    timestamp: int               # Unix timestamp
-    gps_hash: Optional[str]      # SHA-256 of GPS coordinates (optional)
-    device_signature: bytes      # TPM signature over bundle
-```
-
-**Endpoint:** `POST /api/v1/submit`  
-**Response:** `202 Accepted` with receipt ID
-
-### Aggregator → SMA Validation
-
-```python
-@dataclass
-class ValidationRequest:
-    encrypted_token: bytes
-    table_references: List[int]
-    key_indices: List[int]
-    # Note: NO image hash - SMA never sees image content
-```
-
-**Response:** `PASS` or `FAIL` (boolean)  
-**SMA decrypts token, validates against NUC records**
-
-### Aggregator → Blockchain
-
-```python
-POST /blockchain/submit-batch
 {
-    "hashes": List[str],  # Array of SHA-256 hashes (64 hex chars)
-    "timestamps": List[int],  # Unix timestamps for each hash
-    "aggregator_signature": str  # Signature over batch
+    "submission_type": "camera",
+    "image_hashes": [
+        {
+            "image_hash": "a9d1dbb063ffd40ed3da020e14aa994a...",  # Raw
+            "modification_level": 0,
+            "parent_image_hash": None
+        },
+        {
+            "image_hash": "29d6c8498815c58cb274cb4878cd3f4f...",  # Processed
+            "modification_level": 1,
+            "parent_image_hash": "a9d1dbb063ffd40ed3da020e14aa994a..."
+        }
+    ],
+    "manufacturer_cert": {
+        "authority_id": "SIMULATED_CAMERA_001",
+        "validation_endpoint": "http://localhost:8001/validate",
+        "camera_token": {
+            "ciphertext": "2f358ac4a60fe6726e8a853161c8c4d8...",
+            "nonce": "6acb56f767fc4f1f52428f0a..."
+        },
+        "key_reference": {
+            "table_id": 1203,
+            "key_index": 452
+        }
+    },
+    "timestamp": 1699564800
 }
 ```
 
-**Batching:** 100-1,000 images per batch
-**Cost:** Zero gas fees (blockchain operated by institutions)
-
-### Verification Query
-
+### Registry Record
 ```python
-@dataclass
-class VerificationRequest:
-    image_hash: str  # SHA-256 of image to verify
+{
+    "image_hash": "sha256_hex_64_chars",
+    "submission_type": "camera" | "software",
+    "modification_level": 0 | 1 | 2,  # Raw | Validated | Modified
+    "modification_display": "Validated Raw" | "Validated" | "Modified",
+    "parent_image_hash": "sha256_hex_64_chars" | None,
+    "authority_id": "SIMULATED_CAMERA_001",
+    "submission_server_id": "server_public_key",
+    "timestamp": 1699564800,  # When server processed, not capture time
+    "block_number": 12345
+}
+```
 
-@dataclass
-class VerificationResponse:
-    verified: bool
-    timestamp: Optional[int]
-    block_height: Optional[int]
-    aggregator: Optional[str]
-    blockchain_node: Optional[str]
+---
+
+## API Specifications
+
+### Submission Server
+
+**POST /submit**
+```json
+// Camera submission
+{
+    "submission_type": "camera",
+    "image_hashes": [...],
+    "manufacturer_cert": {...},
+    "timestamp": 1699564800
+}
+
+// Response
+{
+    "submission_id": "uuid",
+    "status": "pending_validation"
+}
+```
+
+**GET /status/{submission_id}**
+```json
+{
+    "submission_id": "uuid",
+    "status": "validated" | "rejected" | "pending",
+    "authority_response": "PASS" | "FAIL" | null,
+    "blockchain_posted": true | false
+}
+```
+
+### Simulated Manufacturer Authority
+
+**POST /validate**
+```json
+// Request (from Submission Server)
+{
+    "camera_token": {
+        "ciphertext": "hex_string",
+        "nonce": "hex_string"
+    },
+    "key_reference": {
+        "table_id": 1203,
+        "key_index": 452
+    }
+}
+
+// Response
+{
+    "valid": true | false,
+    "authority_validation": "PASS" | "FAIL",
+    "failure_reason": null | "Invalid token" | "Unknown camera"
+}
+```
+
+### Birthmark Media Registry
+
+**POST /submit-batch** (from Submission Server)
+```json
+{
+    "image_hashes": [
+        {
+            "hash": "sha256_hex",
+            "modification_level": 0,
+            "parent_hash": null,
+            "authority_id": "SIMULATED_CAMERA_001",
+            "timestamp": 1699564800
+        }
+    ]
+}
+```
+
+**GET /verify/{image_hash}** (public)
+```json
+{
+    "verified": true,
+    "modification_level": 1,
+    "modification_display": "Validated",
+    "authority_id": "SIMULATED_CAMERA_001",
+    "timestamp": 1699564800,
+    "block_number": 12345,
+    "provenance_chain": [...]
+}
 ```
 
 ---
@@ -237,69 +354,51 @@ class VerificationResponse:
 ## Cryptographic Standards
 
 ### Hashing
-- **Algorithm:** SHA-256
-- **Input:** Raw Bayer sensor data (12MP = ~24MB)
-- **Output:** 64 character hex string
-- **Performance target:** <500ms on Raspberry Pi TPM
+- Algorithm: SHA-256
+- Input: Raw Bayer sensor data OR processed image bytes
+- Output: 64 character hex string
+- Performance: <100ms on Raspberry Pi 4
 
 ### Key Tables (SMA)
-- **Total tables:** 2,500
-- **Keys per table:** 1,000
-- **Key size:** 256-bit
-- **Derivation:** HKDF from master keys
-- **Camera assignment:** 3 random tables per device
+- Total tables: 2,500
+- Keys per table: 1,000
+- Key size: 256-bit
+- Derivation: HKDF-SHA256 from master keys
+- Camera assignment: 3 random tables per device
 
 ### Encryption
-- **Algorithm:** AES-256-GCM
-- **Purpose:** Encrypt NUC hash with rotating keys
-- **Authentication tag:** 16 bytes
-- **Nonce:** 12 bytes (unique per encryption)
-
-### Device Certificates
-- **Format:** X.509
-- **Key type:** ECDSA P-256
-- **Chain:** Device cert → Manufacturer CA → Root
-- **Storage:** TPM/Secure Element
+- Algorithm: AES-256-GCM (authenticated encryption)
+- Purpose: Encrypt NUC hash for transmission
+- Authentication tag: 16 bytes (prevents tampering)
+- Nonce: 12 bytes (unique per encryption)
 
 ---
 
 ## Database Schemas
 
-### Aggregation Server (PostgreSQL)
-
+### Submission Server (PostgreSQL)
 ```sql
--- Pending submissions awaiting batching
-CREATE TABLE pending_submissions (
-    id SERIAL PRIMARY KEY,
-    image_hash CHAR(64) NOT NULL,
-    encrypted_token BYTEA NOT NULL,
-    table_references INTEGER[] NOT NULL,
-    key_indices INTEGER[] NOT NULL,
+-- Pending submissions awaiting validation
+CREATE TABLE submissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    submission_type VARCHAR(20) NOT NULL,  -- 'camera' or 'software'
+    image_hashes JSONB NOT NULL,           -- Array of hash objects
+    certificate JSONB NOT NULL,            -- Manufacturer/developer cert
     timestamp BIGINT NOT NULL,
     received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    sma_validated BOOLEAN DEFAULT FALSE
+    
+    -- Validation status
+    validation_status VARCHAR(20) DEFAULT 'pending',  -- pending/validated/rejected
+    authority_response JSONB,
+    blockchain_posted BOOLEAN DEFAULT FALSE,
+    blockchain_block BIGINT
 );
 
--- Completed batches
-CREATE TABLE batches (
-    id SERIAL PRIMARY KEY,
-    image_count INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    block_height BIGINT,  -- Blockchain block height
-    confirmed BOOLEAN DEFAULT FALSE
-);
-
--- Image hash to batch mapping (for verification)
-CREATE TABLE image_batch_map (
-    image_hash CHAR(64) PRIMARY KEY,
-    batch_id INTEGER REFERENCES batches(id),
-    block_height BIGINT,
-    timestamp BIGINT
-);
+CREATE INDEX idx_validation_status ON submissions(validation_status);
+CREATE INDEX idx_timestamp ON submissions(timestamp);
 ```
 
 ### SMA (PostgreSQL)
-
 ```sql
 -- Key tables (2,500 tables with master keys)
 CREATE TABLE key_tables (
@@ -307,326 +406,278 @@ CREATE TABLE key_tables (
     master_key BYTEA NOT NULL  -- 256-bit key for HKDF
 );
 
--- Registered devices
-CREATE TABLE registered_devices (
-    device_serial VARCHAR(255) PRIMARY KEY,
-    nuc_hash BYTEA NOT NULL,  -- SHA-256 (32 bytes)
-    table_assignments INTEGER[3] NOT NULL,
-    device_certificate TEXT NOT NULL,
-    device_public_key TEXT NOT NULL,
-    device_family VARCHAR(50)  -- 'Raspberry Pi', 'Android', etc.
+-- Registered cameras (provisioned during manufacturing)
+CREATE TABLE cameras (
+    serial_number VARCHAR(50) PRIMARY KEY,
+    nuc_hash BYTEA NOT NULL,                 -- SHA-256 of NUC map (32 bytes)
+    table_ids INTEGER[3] NOT NULL,           -- 3 assigned tables
+    provisioned_at TIMESTAMP NOT NULL,
+    camera_model VARCHAR(100),
+    firmware_version VARCHAR(50)
+);
+
+-- Validation audit log
+CREATE TABLE validation_log (
+    id SERIAL PRIMARY KEY,
+    encrypted_token BYTEA NOT NULL,
+    table_id INTEGER NOT NULL,
+    key_index INTEGER NOT NULL,
+    validation_result VARCHAR(10) NOT NULL,  -- 'PASS' or 'FAIL'
+    failure_reason TEXT,
+    validated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
 ---
 
-## Blockchain API (Custom Birthmark Blockchain)
+## Privacy Architecture
 
-The Birthmark blockchain is operated by a network of nodes run by like-minded institutions (universities, archives, journalism organizations). It stores full SHA-256 image hashes directly on-chain.
+### What Different Parties See
 
-### Node Architecture
+**Camera Manufacturer (via SMA):**
+- ✅ "One of my cameras authenticated a photo"
+- ✅ Authentication frequency per camera (usage statistics)
+- ❌ Which specific camera (table shared by ~12,000 devices)
+- ❌ Image content or hashes
+- ❌ Precise capture timestamp
+- ❌ GPS location
 
-**Consensus:** Proof-of-Authority (PoA) with trusted validator nodes
-**Block Time:** 1-5 seconds
-**Storage:** Direct hash registry (no Merkle batching)
-**Cost:** Zero gas fees (institutions donate hosting)
+**Submission Server:**
+- ✅ Image hashes (to post to Registry)
+- ✅ Certificate table/key reference
+- ✅ Manufacturer validation result (PASS/FAIL)
+- ❌ Which specific camera (table anonymity)
+- ❌ NUC hash (encrypted, cannot decrypt)
+- ❌ Image content
 
-### REST API Endpoints
+**Registry (Blockchain Nodes):**
+- ✅ Image hashes (SHA-256, irreversible)
+- ✅ Modification levels
+- ✅ Authority IDs
+- ✅ Timestamps (server processing time, not capture time)
+- ❌ Image content
+- ❌ Photographer identity
+- ❌ Specific camera serial numbers
 
-**Submit Batch (Aggregator Only):**
-```
-POST /api/v1/submit-batch
-Authorization: Bearer <aggregator-token>
+**Public Verifier:**
+- ✅ "This hash was authenticated by this manufacturer on this date"
+- ❌ Who took the photo
+- ❌ Where (unless GPS-enabled version and they have that image)
+- ❌ Which specific camera unit
 
-{
-    "hashes": ["abc123...", "def456...", ...],
-    "timestamps": [1699999999, 1700000000, ...],
-    "signature": "aggregator_signature_over_batch"
-}
+### Privacy Mechanisms
 
-Response: {
-    "block_height": 123456,
-    "transaction_id": "txn_abc123",
-    "hashes_stored": 100
-}
-```
-
-**Query Hash (Public):**
-```
-GET /api/v1/verify/{image_hash}
-
-Response: {
-    "verified": true,
-    "timestamp": 1699999999,
-    "block_height": 123456,
-    "aggregator": "institution_name"
-}
-```
-
-**Node Status:**
-```
-GET /api/v1/status
-
-Response: {
-    "node_id": "university_of_oregon",
-    "block_height": 123456,
-    "total_hashes": 1500000,
-    "validator_nodes": 5,
-    "uptime": "99.9%"
-}
-```
-
----
-
-## Hardware Specifications (Phase 1)
-
-### Raspberry Pi 4 Setup
-
-**Components:**
-- Raspberry Pi 4 Model B (4GB RAM)
-- Raspberry Pi HQ Camera (Sony IMX477, 12.3MP)
-- LetsTrust TPM Module (Infineon SLB 9670)
-- 64GB microSD (A2 rated)
-- Optional: GPS Module (Neo-6M), RTC (DS3231)
-
-**Total cost:** ~$200-250
-
-### Camera Capture Pipeline
-
-```python
-from picamera2 import Picamera2
-import hashlib
-
-def capture_and_hash():
-    """Capture raw Bayer and compute hash"""
-    picam2 = Picamera2()
-    config = picam2.create_still_configuration(
-        raw={'format': 'SRGGB10', 'size': (4056, 3040)}
-    )
-    picam2.configure(config)
-    picam2.start()
-    
-    raw_array = picam2.capture_array("raw")
-    bayer_bytes = raw_array.tobytes()
-    image_hash = hashlib.sha256(bayer_bytes).hexdigest()
-    
-    picam2.stop()
-    return image_hash
-```
-
-### Performance Targets
-
-- **Total capture time:** <650ms
-- **Parallel hashing overhead:** <5% CPU
-- **User-perceivable latency:** Zero
-- **Sustained capture rate:** 1 photo/second
-- **Reliability:** 100+ captures without failure
-
----
-
-## API Endpoints (Aggregation Server)
-
-### Submission API
-
-```
-POST /api/v1/submit
-Content-Type: application/json
-
-{
-    "image_hash": "a1b2c3...",
-    "encrypted_token": "base64...",
-    "table_references": [42, 1337, 2001],
-    "key_indices": [7, 99, 512],
-    "timestamp": 1732000000,
-    "gps_hash": "optional...",
-    "signature": "base64..."
-}
-
-Response: 202 Accepted
-{
-    "receipt_id": "uuid",
-    "status": "pending_validation"
-}
-```
-
-### Verification API
-
-```
-GET /api/v1/verify/{image_hash}
-
-Response: 200 OK
-{
-    "verified": true,
-    "batch_id": 42,
-    "timestamp": 1732000000,
-    "block_height": 123456,
-    "blockchain_tx": "0x...",
-    "confirmation_time": "2024-11-13T10:30:00Z"
-}
-```
-
-### Health Check
-
-```
-GET /api/v1/health
-
-Response: 200 OK
-{
-    "status": "healthy",
-    "pending_submissions": 847,
-    "last_batch": "2024-11-13T10:00:00Z",
-    "sma_connection": "ok",
-    "blockchain_connection": "ok"
-}
-```
+1. **Key Table Anonymity:** Camera randomly selects from 3 tables shared by ~12,000 devices
+2. **Encrypted Tokens:** NUC hash encrypted, never transmitted in plaintext
+3. **Hash-Only Storage:** Image content never transmitted or stored anywhere
+4. **Separated Concerns:** No single entity has complete information
+5. **Timestamp Obfuscation:** Registry timestamps reflect server processing, not photo capture
+6. **GPS Opt-In:** Location hashing disabled by default, user must explicitly enable
 
 ---
 
 ## Testing Requirements
 
 ### Unit Tests
-
-Each component must have comprehensive unit tests:
-- Cryptographic operations (hash, encrypt, sign)
+- Cryptographic operations (hash, encrypt, decrypt)
 - Database operations (CRUD, queries)
 - API endpoint validation
-- Merkle tree generation and verification
+- Certificate parsing and validation
 - Key derivation consistency
 
 ### Integration Tests
-
-Cross-component testing:
-- Camera → Aggregator submission flow
-- Aggregator → SMA validation flow
-- Aggregator → Blockchain posting
+- Camera → Submission Server flow
+- Submission Server → SMA validation
+- Submission Server → Registry posting
 - End-to-end verification query
 
 ### Performance Benchmarks
-
-- Hash computation time (target: <500ms on Pi)
-- API response time (target: <100ms for verification)
-- Batch processing time (target: <5s for 1000 images)
-- Direct hash query (target: <10ms)
+- Camera capture + hash: <100ms
+- Submission Server response: <200ms
+- SMA validation: <100ms
+- Registry query: <500ms
+- End-to-end camera to verified: <5s
 
 ---
 
 ## Development Conventions
 
 ### Code Style
-- **Python:** Black formatter, type hints required
-- **Solidity:** Hardhat linter, NatSpec comments
-- **TypeScript:** ESLint + Prettier
-- **All:** Comprehensive docstrings/comments
+- Python: Black formatter, type hints required
+- Docstrings: Google style for all public functions
+- Classes: PascalCase, Functions: snake_case
+- Constants: UPPER_SNAKE_CASE
 
 ### Git Workflow
 - Feature branches from `main`
+- Descriptive commit messages (Conventional Commits)
 - Pull requests with code review
-- Semantic versioning
-- Conventional commits
+- Semantic versioning (v0.x.x for Phase 1)
 
 ### Security Practices
 - No secrets in code (use environment variables)
 - Input validation on all APIs
 - Rate limiting on public endpoints
 - Audit logging for sensitive operations
+- Constant-time comparisons for crypto
 
 ---
 
 ## Common Development Tasks
 
-### Running the Blockchain Node (Merged Aggregator+Validator)
-
+### Running Submission Server
 ```bash
-cd packages/blockchain
+cd packages/submission-server
 pip install -e ".[dev]"
 cp .env.example .env
-# Edit .env with database and SMA settings
+# Edit .env with database credentials
 alembic upgrade head
-python scripts/init_genesis.py  # First time only
-uvicorn src.main:app --reload --port 8545
+uvicorn src.api:app --reload --port 8000
 ```
 
-### Running the SMA
-
+### Running SMA
 ```bash
 cd packages/sma
 pip install -r requirements.txt
 python scripts/generate_key_tables.py  # First time only
-uvicorn src.main:app --port 8001 --reload
+uvicorn src.server:app --reload --port 8001
 ```
 
-### Running Camera Prototype
-
+### Running Camera
 ```bash
 cd packages/camera-pi
 pip install -r requirements.txt
-python scripts/provision_device.py  # First time only
+python scripts/provision_camera.py  # First time only
 python src/main.py
+```
+
+### Running Integration Tests
+```bash
+# Start all services first (submission-server, sma, registry)
+pytest tests/integration/ -v
 ```
 
 ---
 
-## Known Limitations & Future Work
+## Known Limitations (Phase 1)
 
-### Phase 1 Limitations
-- Single aggregator (no federation yet)
-- Testnet only (no real monetary value)
-- Manual provisioning (no automated manufacturing)
-- Limited to Raspberry Pi hardware
+### Hardware
+- ❌ TPM hardware issue (using simulated SE)
+- ❌ No GPS module installed
+- ⚠️ Single camera system (no fleet management)
 
-### Phase 2 Additions
-- Android app with device fingerprints (not NUC)
-- Larger key tables (2,500 × 1,000)
-- Time-based batching (6-hour timeout)
-- Production database optimizations
+### Software
+- ⚠️ Simulated SE keys stored in files (no physical tamper resistance)
+- ⚠️ Local network only (no internet connectivity)
+- ⚠️ Single-node blockchain (testnet)
+- ⚠️ Mock provisioning (no real manufacturing integration)
 
-### Phase 3 Requirements
-- Manufacturer API integration
-- Production blockchain network deployment
-- Federated aggregator network
-- Public verification interface
+### Scope
+- Phase 1 proves concept with prototype hardware
+- Phase 2 will address production deployment
+- Phase 3 will integrate with real manufacturers
 
 ---
 
-## Frequently Referenced Files
+## Success Metrics (Phase 1)
 
-When Claude Code needs specific implementation details:
+### Technical Validation
+- ✅ Camera captures raw Bayer and hashes correctly
+- ✅ Complete authentication certificate generation
+- [ ] Submission Server accepts and validates submissions
+- [ ] SMA validates camera tokens without seeing image hashes
+- [ ] Registry stores and returns verification results
+- [ ] End-to-end flow: camera → submission → validation → registry → verification
 
-- **Aggregator API design:** `docs/phase-plans/Birthmark_Phase_1_Plan_Aggregation_Server.md`
-- **SMA key table logic:** `docs/phase-plans/Birthmark_Phase_1-2_Plan_SMA.md`
-- **Blockchain specs:** `packages/blockchain/README.md`
-- **Camera hardware setup:** `docs/phase-plans/Birthmark_Phase_1_Plan_Simulated_Camera.md`
-- **Android architecture:** `docs/phase-plans/Birthmark_Phase_2_Plan_Android_App.md`
-- **Security architecture:** `docs/specs/Birthmark_Camera_Security_Architecture.md`
-
----
-
-## Success Metrics
-
-### Phase 1 (Current)
-- [ ] 99%+ uptime for aggregation server
-- [ ] <5 second hash time on Raspberry Pi
-- [ ] Zero gas fees on Birthmark blockchain
-- [ ] 80%+ photography club satisfaction
-- [ ] 500+ images verified end-to-end
-
-### Technical Quality
-- [ ] 100% of valid tokens pass SMA validation
-- [ ] Direct hash queries verify 100% of the time
-- [ ] <100ms verification API response time
+### Performance
+- [ ] Camera overhead <100ms
+- [ ] Submission Server response <200ms
+- [ ] SMA validation <100ms
+- [ ] Registry query <500ms
 - [ ] Zero false positives or negatives
 
----
-
-## Contact & Resources
-
-**Founder:** Samuel C. Ryan  
-**Organization:** The Birthmark Standard Foundation  
-**GitHub:** github.com/Birthmark-Standard/Birthmark  
-**License:** Open source (specific license TBD)
-
-**Related Standards:** C2PA (complementary, addresses different threat model)
+### Documentation
+- [ ] Complete API documentation
+- [ ] Architecture diagrams
+- [ ] Deployment guides
+- [ ] Security threat model
+- [ ] Phase 2 handoff documentation
 
 ---
 
-*This document is the authoritative source of truth for Claude Code development context. Update as architecture evolves.*
+## Phase 2 Transition Plan
+
+### What Moves to phase1 Branch
+- Simulated Secure Element implementation
+- Local-only testing infrastructure
+- Mock provisioning scripts
+- Single-node blockchain testnet
+- Phase 1-specific documentation
+
+### What Stays in main Branch
+- Abstract secure element interface
+- Core data structures
+- API specifications
+- Cryptographic utilities
+- Architecture documentation
+
+### Branching Strategy
+```bash
+# When Phase 1 complete:
+git checkout -b phase1
+git tag v1.0-phase1-complete
+git push origin phase1 --tags
+
+# Back to main for Phase 2:
+git checkout main
+# Refactor with hardware abstraction layer
+# Add Android app package
+# Add production blockchain deployment
+```
+
+---
+
+## Resources & Documentation
+
+### Technical Specifications
+- Camera Security Architecture: `/mnt/project/Birthmark_Camera_Security_Architecture.docx`
+- Registry Specs: `/mnt/project/Birthmark_Media_Registry_Specs.docx`
+- Simulated Authorities: `/mnt/project/Simulated_Authorities_Specs.docx`
+- Complete Architecture: `/mnt/project/Birthmark_Standard_Technical_Architecture.docx`
+
+### Governance & Applications
+- Registry Governance Charter: `/mnt/project/Birthmark_Media_Registry_Governance_Charter.docx`
+- Mozilla Grant Application: `/mnt/project/Mozilla_Grant_Application.docx`
+- Craig Newmark Application: `/mnt/project/Craig_Newmark_Application.docx`
+
+### Contact
+- Executive Director: Samuel C. Ryan
+- Email: samryan.pdx@proton.me
+- Website: birthmarkstandard.org
+- GitHub: github.com/Birthmark-Standard/Birthmark
+
+---
+
+## Current Session Context (December 11, 2025)
+
+### What We Just Accomplished
+- ✅ Camera authentication pipeline fully validated
+- ✅ Raw and processed image hashing working
+- ✅ Simulated Secure Element encryption tested
+- ✅ Certificate generation complete
+- ✅ Test pipeline script created (`test_pipeline.py`)
+
+### What We're Building Now
+1. Submission Server (FastAPI + PostgreSQL)
+2. Simulated Manufacturer Authority (validation endpoint)
+3. Integration testing (camera → server → SMA → PASS/FAIL)
+
+### Next Session Goals
+- Complete Submission Server MVP
+- Complete SMA validation logic
+- Test end-to-end flow
+- Begin blockchain testnet setup
+
+---
+
+**This document is the authoritative context for Phase 1 development. All code, architecture decisions, and implementation details should align with this specification.**
