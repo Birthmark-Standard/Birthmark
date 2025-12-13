@@ -1,7 +1,7 @@
 """
-Aggregation server client for submitting authentication bundles.
+Submission server client for submitting authentication bundles.
 
-Handles HTTP communication with the Birthmark aggregation server.
+Handles HTTP communication with the Birthmark submission server.
 """
 
 import json
@@ -16,10 +16,10 @@ import requests
 @dataclass
 class AuthenticationBundle:
     """
-    Complete authentication bundle sent to blockchain aggregator.
+    Complete authentication bundle sent to blockchain submission server.
 
-    This format MUST match what blockchain aggregator expects.
-    Updated for merged blockchain+aggregator architecture (Nov 2025).
+    This format MUST match what blockchain submission server expects.
+    Updated for merged blockchain+submission server architecture (Nov 2025).
     """
     image_hash: str  # SHA-256 of raw Bayer data (64 hex chars)
     camera_token: dict  # CameraToken.to_dict() - will be converted to blockchain format
@@ -163,16 +163,16 @@ class CertificateBundle:
 
 @dataclass
 class SubmissionReceipt:
-    """Receipt from aggregation server."""
+    """Receipt from submission server."""
     receipt_id: str
     status: str  # "pending_validation", "accepted", "rejected"
     timestamp: Optional[str] = None
     message: Optional[str] = None
 
 
-class AggregationClient:
+class SubmissionClient:
     """
-    HTTP client for Birthmark aggregation server.
+    HTTP client for Birthmark submission server.
 
     Handles synchronous and asynchronous submission of authentication bundles.
     """
@@ -184,10 +184,10 @@ class AggregationClient:
         max_retries: int = 3
     ):
         """
-        Initialize aggregation client.
+        Initialize submission client.
 
         Args:
-            server_url: Base URL of aggregation server
+            server_url: Base URL of submission server
             timeout: Request timeout in seconds
             max_retries: Maximum retry attempts for failed requests
         """
@@ -208,7 +208,7 @@ class AggregationClient:
         retry: bool = True
     ) -> SubmissionReceipt:
         """
-        Submit authentication bundle to aggregation server (synchronous).
+        Submit authentication bundle to submission server (synchronous).
 
         Args:
             bundle: AuthenticationBundle to submit
@@ -360,7 +360,7 @@ class AggregationClient:
 
     def test_connection(self) -> bool:
         """
-        Test connection to aggregation server.
+        Test connection to submission server.
 
         Returns:
             True if server is reachable and healthy
@@ -382,7 +382,7 @@ class SubmissionQueue:
 
     def __init__(
         self,
-        client: AggregationClient,
+        client: SubmissionClient,
         max_queue_size: int = 100,
         device_private_key=None
     ):
@@ -390,7 +390,7 @@ class SubmissionQueue:
         Initialize submission queue.
 
         Args:
-            client: AggregationClient for submissions
+            client: SubmissionClient for submissions
             max_queue_size: Maximum queue size (blocks if full)
             device_private_key: Device private key for certificate signing (optional)
         """
@@ -515,27 +515,27 @@ class SubmissionQueue:
         }
 
 
-def create_aggregation_client(
+def create_submission_client(
     server_url: str = "https://api.birthmarkstandard.org"
-) -> AggregationClient:
+) -> SubmissionClient:
     """
-    Create aggregation client with default settings.
+    Create submission client with default settings.
 
     Args:
-        server_url: Aggregation server URL
+        server_url: Submission server URL
 
     Returns:
-        AggregationClient instance
+        SubmissionClient instance
     """
-    return AggregationClient(server_url=server_url)
+    return SubmissionClient(server_url=server_url)
 
 
 if __name__ == "__main__":
     # Example usage
-    print("=== Aggregation Client Test ===\n")
+    print("=== Submission Client Test ===\n")
 
     # Create client
-    client = AggregationClient(server_url="http://localhost:8000")
+    client = SubmissionClient(server_url="http://localhost:8000")
 
     # Test connection
     print("Testing connection...")

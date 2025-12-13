@@ -1,4 +1,4 @@
-"""Aggregator API for camera submissions."""
+"""Submission Server API for camera submissions."""
 
 import logging
 import uuid
@@ -17,13 +17,13 @@ from src.shared.models.schemas import (
     CertificateBundle,
     SubmissionResponse,
 )
-from src.aggregator.validation.sma_client import sma_client
-from src.aggregator.validation.certificate_validator import certificate_validator
-from src.aggregator.blockchain.blockchain_client import blockchain_client
+from src.submission_server.validation.sma_client import sma_client
+from src.submission_server.validation.certificate_validator import certificate_validator
+from src.submission_server.blockchain.blockchain_client import blockchain_client
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1", tags=["aggregator"])
+router = APIRouter(prefix="/api/v1", tags=["submission_server"])
 
 
 @router.post("/submit", response_model=SubmissionResponse, status_code=status.HTTP_202_ACCEPTED)
@@ -166,7 +166,7 @@ async def validate_camera_transaction_inline(
                 blockchain_result = await blockchain_client.submit_hash(
                     image_hash=submission.image_hash,
                     timestamp=submission.timestamp,
-                    aggregator_id="aggregator_node_001",  # TODO: Get from config
+                    aggregator_id="submission_server_node_001",  # TODO: Get from config
                     modification_level=submission.modification_level,
                     parent_image_hash=submission.parent_image_hash,
                     manufacturer_authority_id=submission.manufacturer_authority_id,

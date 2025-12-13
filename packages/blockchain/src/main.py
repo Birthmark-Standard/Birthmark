@@ -11,7 +11,7 @@ import uvicorn
 
 from src.shared.config import settings
 from src.shared.crypto.signatures import ValidatorKeys
-from src.aggregator.api import submissions, modifications
+from src.submission_server.api import submissions, modifications
 from src.node.api import verification, status
 from src.node.api import blockchain
 
