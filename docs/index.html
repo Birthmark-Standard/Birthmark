@@ -83,86 +83,6 @@
         </div>
     </section>
 
-    <section id="how-it-works" class="technical-section" style="scroll-margin-top: 80px;">
-        <div class="container">
-            <h2>1. Creating the Image Hash</h2>
-            <div class="technical-content">
-                <div class="technical-text">
-                    <h3>Camera-Side Authentication</h3>
-                    <p>At the moment of image capture, a secure chip in the camera creates an unforgeable digital signature before the image is even processed.</p>
-                    
-                    <ul class="technical-list">
-                        <li><strong>Raw image hashing:</strong> A hash is created from the raw image data before any processing like white balance or compression</li>
-                        <li><strong>Processed image hashing:</strong> A second hash is created from the processed image that you actually save</li>
-                        <li><strong>Timestamp and metadata:</strong> The camera records when the photo was taken and optionally a hash of the GPS coordinates</li>
-                        <li><strong>Parallel processing:</strong> Authentication happens in the background while your photo is being captured—no delays or extra steps</li>
-                    </ul>
-
-                    <p><strong>Result:</strong> A bundle containing both image hashes, timestamp, and optional location hash—ready to be sent to the aggregation server for validation and blockchain recording.</p>
-                </div>
-                
-                <div class="technical-diagram">
-                    <div>
-                        <img src="./Take_a_picture.png" alt="Diagram showing parallel hashing workflow: camera captures image, creates raw and processed hashes simultaneously, sends to Birthmark Media Registry for validation and blockchain recording" onclick="window.open('./Take_a_picture.png', '_blank')">
-                        <p class="diagram-caption">Click to view full size</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="technical-section">
-        <div class="container">
-            <h2>2. Validating Camera Authenticity</h2>
-            <div class="technical-content">
-                <div class="technical-diagram">
-                    <div>
-                        <img src="./Validate_the_camera.png" alt="Diagram showing privacy-preserving camera validation: camera encrypts calibration file with key table, submission server forwards certificate to manufacturer, manufacturer validates and returns PASS/FAIL without seeing image hashes" onclick="window.open('./Validate_the_camera.png', '_blank')">
-                        <p class="diagram-caption">Click to view full size - Shows separation of concerns: manufacturer validates camera, never sees image content</p>
-                    </div>
-                </div>
-
-                <div class="technical-text">
-                    <h3>Privacy-Preserving Validation</h3>
-                    <p>The manufacturer confirms that images come from real cameras without being able to see what photographers are capturing or track individual cameras.</p>
-                    
-                    <ul class="technical-list">
-                        <li><strong>Encrypted camera identifiers:</strong> Each camera's unique sensor identifier is encrypted using randomly assigned keys, so only the manufacturer can verify it</li>
-                        <li><strong>Separation of concerns:</strong> Manufacturers receive the encrypted camera ID but never see image hashes, timestamps, or locations</li>
-                        <li><strong>Anonymity sets:</strong> About 12,000 cameras share each encryption key, preventing tracking of individual cameras</li>
-                        <li><strong>Binary response:</strong> Manufacturer returns only PASS (legitimate camera) or FAIL (unknown/forged)—nothing else</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="technical-section">
-        <div class="container">
-            <h2>3. Verifying Images on Blockchain</h2>
-            <div class="technical-content">
-                <div class="technical-text">
-                    <h3>Immutable Public Verification</h3>
-                    <p>Anyone can verify an image's authenticity by checking the blockchain record—no corporate gatekeepers or subscription services required.</p>
-
-                    <ul class="technical-list">
-                        <li><strong>Direct hash storage:</strong> Full SHA-256 image hashes are stored directly on-chain on the custom Birthmark blockchain, eliminating the need for complex cryptographic proofs</li>
-                        <li><strong>Institutional validators:</strong> The blockchain is operated by trusted institutions (universities, archives, journalism organizations) running validator nodes</li>
-                        <li><strong>Zero gas fees:</strong> No transaction costs—institutions donate hosting as a public service for truth in media</li>
-                        <li><strong>Public verification API:</strong> Open protocol allows anyone to build verification tools without asking permission</li>
-                    </ul>
-                </div>
-
-                <div class="technical-diagram">
-                    <div>
-                        <img src="./Validate_a_picture.png" alt="Diagram showing user verification workflow: select image, hash it locally in web browser, send hash to Birthmark Blockchain, receive match result with timestamp and metadata" onclick="window.open('./Validate_a_picture.png', '_blank')">
-                        <p class="diagram-caption">Click to view full size - User verification happens client-side</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="problem-section">
         <div class="container">
             <h2>Learn More</h2>
@@ -235,7 +155,6 @@
                 <div class="footer-section">
                     <h3>The Birthmark Standard Foundation</h3>
                     <p>Creating hardware-backed photo authentication infrastructure on a custom blockchain operated by trusted institutions as a public good.</p>
-                    <p style="margin-top: 1rem;">Target: 2028 Presidential Election</p>
                     <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;"><strong>Foundation Sustainability:</strong> Node sales, optional service contracts, technical training, and grant funding. Commits to 12-month operating reserves.</p>
                 </div>
                 <div class="footer-section">
@@ -248,7 +167,7 @@
                 <div class="footer-section">
                     <h3>Contact</h3>
                     <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
-                    <a href="https://www.linkedin.com/in/samuelcryan">LinkedIn</a>
+                    <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
                     <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
                     <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.8;">Complementary to C2PA: Provides backup authentication when metadata gets stripped through social media sharing.</p>
                 </div>
