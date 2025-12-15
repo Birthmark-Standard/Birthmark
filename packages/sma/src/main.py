@@ -29,6 +29,7 @@ from .identity.device_registry import DeviceRegistry, DeviceRegistration
 from .identity.submission_logger import SubmissionLogger
 from .identity.abuse_detection import AbuseDetector, run_daily_abuse_check
 from .validation.certificate_validator import CertificateValidator
+from .validation.token_validator import validate_camera_token
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "shared"))
@@ -696,13 +697,36 @@ async def validate_camera_token_new(request: CameraTokenValidationRequest):
                 message=f"Invalid key_index: {token.key_index} (must be 0-999)"
             )
 
-        # Phase 1: Simple validation (format checks passed, table exists)
-        # Phase 2: TODO - Decrypt token using table key at key_index and validate against NUC hash
-        # For Phase 1 testing, we accept valid format as PASS
-        print(f"✓ Camera token validated: manufacturer={request.manufacturer_authority_id}, table={token.table_id}, index={token.key_index}")
+        # Phase 1: Cryptographic validation - decrypt and verify NUC hash
+        if not device_registry:
+            return ValidationResponse(
+                valid=False,
+                message="Device registry not initialized"
+            )
+
+        # Validate token using cryptographic validation
+        valid, message, device = validate_camera_token(
+            table_manager=table_manager,
+            device_registry=device_registry,
+            ciphertext=token.ciphertext,
+            auth_tag=token.auth_tag,
+            nonce=token.nonce,
+            table_id=token.table_id,
+            key_index=token.key_index
+        )
+
+        # Log validation result
+        if valid and device:
+            print(f"✓ Camera authenticated: device={device.device_serial}, "
+                  f"manufacturer={request.manufacturer_authority_id}, "
+                  f"table={token.table_id}, index={token.key_index}")
+        else:
+            print(f"✗ Validation failed: manufacturer={request.manufacturer_authority_id}, "
+                  f"table={token.table_id}, reason={message}")
+
         return ValidationResponse(
-            valid=True,
-            message="Phase 1 validation: format valid, table exists"
+            valid=valid,
+            message=message
         )
 
     except Exception as e:
