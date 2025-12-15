@@ -116,8 +116,8 @@ async def verify_image(file: UploadFile = File(...)):
             modification_level = verification_data.get('modification_level', 0)
             modification_display = {
                 0: "Raw (Original Sensor Data)",
-                1: "Processed (Camera ISP)",
-                2: "Modified (Software Edited)"
+                1: "Validated (Camera ISP or Minor Software Edits)",
+                2: "Modified (Significant Software Edits)"
             }.get(modification_level, f"Level {modification_level}")
 
             logger.info(f"   ✅ VERIFIED - {modification_display}")
@@ -194,8 +194,8 @@ async def verify_hash(image_hash: str):
             modification_level = verification_data.get('modification_level', 0)
             modification_display = {
                 0: "Raw (Original Sensor Data)",
-                1: "Processed (Camera ISP)",
-                2: "Modified (Software Edited)"
+                1: "Validated (Camera ISP or Minor Software Edits)",
+                2: "Modified (Significant Software Edits)"
             }.get(modification_level, f"Level {modification_level}")
 
             logger.info(f"   ✅ VERIFIED - {modification_display}")
