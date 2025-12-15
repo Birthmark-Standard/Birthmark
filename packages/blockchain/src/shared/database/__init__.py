@@ -17,6 +17,8 @@ from .models import (
     Transaction,
     ImageHash,
     PendingSubmission,
+    NodeState,
+    ModificationRecordDB,
 )
 
 __all__ = [
@@ -34,4 +36,6 @@ __all__ = [
     "Transaction",
     "ImageHash",
     "PendingSubmission",
+    "NodeState",
+    "ModificationRecordDB",
 ]
