@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthmark Image Verifier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .preview-area {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .hash-display {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: #333;
+        }
+
+        .hash-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+
+        .verify-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .verify-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .verify-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result-area {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .result-verified {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .result-not-verified {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-verified .result-title {
+            color: #155724;
+        }
+
+        .result-not-verified .result-title {
+            color: #721c24;
+        }
+
+        .result-details {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .result-value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .provenance-chain {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+        }
+
+        .provenance-title {
+            font-weight: 700;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .provenance-link {
+            color: #667eea;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .provenance-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Birthmark Verifier</h1>
+        <p class="subtitle">Verify image authenticity against the blockchain</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">Click to upload or drag & drop</div>
+            <div class="upload-hint">Supports JPG, PNG, and other image formats</div>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="preview-area" id="previewArea">
+            <img id="previewImage" class="preview-image" alt="Preview">
+
+            <div class="hash-display">
+                <div class="hash-label">Image Hash (SHA-256):</div>
+                <div id="hashValue"></div>
+            </div>
+
+            <button class="verify-button" id="verifyButton">
+                Verify on Blockchain
+            </button>
+        </div>
+
+        <div class="result-area" id="resultArea"></div>
+
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewArea = document.getElementById('previewArea');
+        const previewImage = document.getElementById('previewImage');
+        const hashValue = document.getElementById('hashValue');
+        const verifyButton = document.getElementById('verifyButton');
+        const resultArea = document.getElementById('resultArea');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let selectedFile = null;
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File selection
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('Please select an image file');
+                return;
+            }
+
+            selectedFile = file;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewArea.style.display = 'block';
+                resultArea.style.display = 'none';
+                errorMessage.style.display = 'none';
+                hashValue.textContent = 'Computing hash...';
+            };
+            reader.readAsDataURL(file);
+
+            // Hash will be computed server-side
+            hashValue.textContent = 'Hash will be computed when you verify';
+        }
+
+        // Verify button
+        verifyButton.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            verifyButton.disabled = true;
+            verifyButton.innerHTML = '<span class="spinner"></span> Verifying...';
+            resultArea.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const response = await fetch('/api/verify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                displayResult(result);
+
+            } catch (error) {
+                showError(`Verification failed: ${error.message}`);
+            } finally {
+                verifyButton.disabled = false;
+                verifyButton.textContent = 'Verify on Blockchain';
+            }
+        });
+
+        function displayResult(result) {
+            hashValue.textContent = result.image_hash;
+
+            resultArea.className = 'result-area';
+            resultArea.classList.add(result.verified ? 'result-verified' : 'result-not-verified');
+
+            let html = `
+                <div class="result-icon">${result.verified ? '✅' : '❌'}</div>
+                <div class="result-title">${result.verified ? 'Image Verified!' : 'Not Verified'}</div>
+                <div style="text-align: center; margin-bottom: 15px; color: ${result.verified ? '#155724' : '#721c24'};">
+                    ${result.message}
+                </div>
+            `;
+
+            if (result.verified) {
+                html += `
+                    <div class="result-details">
+                        <div class="result-row">
+                            <span class="result-label">Block Height:</span>
+                            <span class="result-value">${result.block_height}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Transaction ID:</span>
+                            <span class="result-value">${result.tx_id}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Timestamp:</span>
+                            <span class="result-value">${new Date(result.timestamp * 1000).toLocaleString()}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Modification Level:</span>
+                            <span class="result-value">${result.modification_display}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Submission Server:</span>
+                            <span class="result-value">${result.submission_server_id || 'N/A'}</span>
+                        </div>
+                    </div>
+                `;
+
+                if (result.parent_image_hash) {
+                    html += `
+                        <div class="provenance-chain">
+                            <div class="provenance-title">📜 Provenance Chain</div>
+                            <div style="color: #856404; margin-bottom: 8px;">This image was processed from an authenticated raw image:</div>
+                            <a href="#" class="provenance-link" onclick="verifyParentHash('${result.parent_image_hash}'); return false;">
+                                ${result.parent_image_hash}
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+
+            resultArea.innerHTML = html;
+            resultArea.style.display = 'block';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        async function verifyParentHash(hash) {
+            verifyButton.disabled = true;
+            verifyButton.innerHTML = '<span class="spinner"></span> Verifying Parent...';
+
+            try {
+                const response = await fetch(`/api/verify-hash/${hash}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const result = await response.json();
+                displayResult(result);
+            } catch (error) {
+                showError(`Failed to verify parent hash: ${error.message}`);
+            } finally {
+                verifyButton.disabled = false;
+                verifyButton.textContent = 'Verify on Blockchain';
+            }
+        }
+    </script>
+</body>
+</html>
