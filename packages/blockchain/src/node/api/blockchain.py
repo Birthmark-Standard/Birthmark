@@ -27,13 +27,14 @@ router = APIRouter(prefix="/api/v1/blockchain", tags=["blockchain"])
 
 
 class HashSubmission(BaseModel):
-    """Single hash submission from aggregator."""
+    """Single hash submission from submission server."""
     image_hash: str = Field(..., min_length=64, max_length=64)
     timestamp: int
-    aggregator_id: str
-    modification_level: int = 0  # Always 0 for Phase 1
-    parent_image_hash: Optional[str] = None  # Always None for Phase 1
+    submission_server_id: str  # Renamed from aggregator_id
+    modification_level: int = 0  # 0=raw, 1=processed
+    parent_image_hash: Optional[str] = None  # For provenance chain
     manufacturer_authority_id: Optional[str] = None
+    gps_hash: Optional[str] = None  # Optional GPS location proof
 
 
 class HashSubmissionResponse(BaseModel):
@@ -49,7 +50,9 @@ class HashVerification(BaseModel):
     timestamp: Optional[int] = None
     block_height: Optional[int] = None
     tx_id: Optional[int] = None
-    aggregator_id: Optional[str] = None
+    submission_server_id: Optional[str] = None  # Renamed from aggregator_id
+    modification_level: Optional[int] = None
+    parent_image_hash: Optional[str] = None
 
 
 @router.post("/submit", response_model=HashSubmissionResponse)
@@ -63,7 +66,9 @@ async def submit_hash(
     Phase 1: Direct storage, no batching, single node.
     Each hash gets its own transaction in the current block.
     """
-    logger.info(f"Blockchain: Receiving hash {submission.image_hash[:16]}...")
+    logger.info(f"📥 Blockchain: Receiving hash {submission.image_hash[:16]}...")
+    logger.info(f"   Timestamp: {submission.timestamp}, Level: {submission.modification_level}, "
+                f"Parent: {submission.parent_image_hash[:16] + '...' if submission.parent_image_hash else 'None'}")
 
     # Get or create current block
     current_block = await get_or_create_current_block(db)
@@ -74,7 +79,7 @@ async def submit_hash(
             f"{submission.image_hash}{submission.timestamp}".encode()
         ).hexdigest(),
         block_height=current_block.block_height,
-        aggregator_id=submission.aggregator_id,
+        submission_server_id=submission.submission_server_id,  # Normalized: only in Transaction
         batch_size=1,  # Always 1 for Phase 1 (no batching)
         signature="phase1_mock_signature",  # Phase 1 simplified
         created_at=datetime.utcnow()
@@ -82,14 +87,15 @@ async def submit_hash(
     db.add(transaction)
     await db.flush()  # Get tx_id
 
-    # Store hash
+    # Store hash with provenance chain
     image_hash_record = ImageHash(
         image_hash=submission.image_hash,
         tx_id=transaction.tx_id,
         block_height=current_block.block_height,
         timestamp=submission.timestamp,
-        aggregator_id=submission.aggregator_id,
-        gps_hash=None,  # Phase 1 doesn't use GPS
+        parent_image_hash=submission.parent_image_hash,  # Provenance tracking
+        modification_level=submission.modification_level,  # 0=raw, 1=processed
+        gps_hash=submission.gps_hash,  # Optional GPS location proof
         created_at=datetime.utcnow()
     )
     db.add(image_hash_record)
@@ -100,8 +106,8 @@ async def submit_hash(
     await db.commit()
 
     logger.info(
-        f"✓ Hash stored: tx_id={transaction.tx_id}, "
-        f"block={current_block.block_height}"
+        f"✅ Hash stored: tx_id={transaction.tx_id}, block={current_block.block_height}, "
+        f"hash={submission.image_hash[:16]}..."
     )
 
     return HashSubmissionResponse(
@@ -119,22 +125,29 @@ async def verify_hash(
     """
     Verify if hash exists on blockchain.
 
-    Returns verification status with block height and timestamp.
+    Returns verification status with block height, timestamp, and provenance chain.
     """
-    # Query for hash
-    stmt = select(ImageHash).where(ImageHash.image_hash == image_hash)
+    # Query for hash with joined transaction to get submission_server_id
+    stmt = select(ImageHash, Transaction.submission_server_id).join(
+        Transaction, ImageHash.tx_id == Transaction.tx_id
+    ).where(ImageHash.image_hash == image_hash)
     result = await db.execute(stmt)
-    hash_record = result.scalar_one_or_none()
+    row = result.one_or_none()
 
-    if hash_record:
+    if row:
+        hash_record, submission_server_id = row
+        logger.info(f"🔍 Verification: Hash {image_hash[:16]}... found (verified)")
         return HashVerification(
             verified=True,
             timestamp=hash_record.timestamp,
             block_height=hash_record.block_height,
             tx_id=hash_record.tx_id,
-            aggregator_id=hash_record.aggregator_id
+            submission_server_id=submission_server_id,
+            modification_level=hash_record.modification_level,
+            parent_image_hash=hash_record.parent_image_hash
         )
     else:
+        logger.info(f"🔍 Verification: Hash {image_hash[:16]}... not found")
         return HashVerification(verified=False)
 
 
