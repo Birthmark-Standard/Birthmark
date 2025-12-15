@@ -52,10 +52,11 @@ class BlockchainClient:
         self,
         image_hash: str,
         timestamp: int,
-        aggregator_id: str,
+        submission_server_id: str,
         modification_level: int = 0,
         parent_image_hash: Optional[str] = None,
         manufacturer_authority_id: Optional[str] = None,
+        gps_hash: Optional[str] = None,
     ) -> BlockchainSubmissionResponse:
         """
         Submit a single validated image hash to the blockchain.
@@ -63,10 +64,11 @@ class BlockchainClient:
         Args:
             image_hash: SHA-256 hash of image (64 hex chars)
             timestamp: Unix timestamp when photo was taken
-            aggregator_id: ID of this aggregator node
+            submission_server_id: ID of this submission server node
             modification_level: 0=raw, 1=processed
             parent_image_hash: Parent hash for provenance chain (if processed)
-            manufacturer_authority_id: Manufacturer ID (e.g., "CANON_001")
+            manufacturer_authority_id: Manufacturer ID (e.g., "SIMULATED_CAMERA_001")
+            gps_hash: Optional SHA-256 GPS location hash
 
         Returns:
             Blockchain submission response with tx_id and block_height
@@ -78,10 +80,11 @@ class BlockchainClient:
                     json={
                         "image_hash": image_hash,
                         "timestamp": timestamp,
-                        "aggregator_id": aggregator_id,
+                        "submission_server_id": submission_server_id,
                         "modification_level": modification_level,
                         "parent_image_hash": parent_image_hash,
                         "manufacturer_authority_id": manufacturer_authority_id,
+                        "gps_hash": gps_hash,
                     },
                 )
 

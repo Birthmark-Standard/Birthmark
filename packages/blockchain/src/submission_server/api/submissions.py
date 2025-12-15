@@ -46,11 +46,26 @@ async def submit_camera_bundle(
     """
     transaction_id = str(uuid.uuid4())
 
-    logger.info(
-        f"Received camera submission {transaction_id}: "
-        f"{len(submission.image_hashes)} hashes, "
-        f"manufacturer={submission.manufacturer_cert.authority_id}"
-    )
+    logger.info("="*80)
+    logger.info(f"📨 CAMERA SUBMISSION RECEIVED (Transaction ID: {transaction_id})")
+    logger.info("="*80)
+    logger.info(f"Number of hashes: {len(submission.image_hashes)}")
+    logger.info(f"Manufacturer: {submission.manufacturer_cert.authority_id}")
+    logger.info(f"Validation endpoint: {submission.manufacturer_cert.validation_endpoint}")
+    logger.info("\n📋 IMAGE HASHES:")
+    for idx, entry in enumerate(submission.image_hashes, 1):
+        logger.info(f"  [{idx}] Hash: {entry.image_hash[:16]}...{entry.image_hash[-16:]}")
+        logger.info(f"      Level: {entry.modification_level} ({'Raw' if entry.modification_level == 0 else 'Processed'})")
+        logger.info(f"      Parent: {entry.parent_image_hash[:16] + '...' if entry.parent_image_hash else 'None'}")
+
+    logger.info("\n🔐 CAMERA TOKEN:")
+    logger.info(f"  Ciphertext: {submission.camera_token.ciphertext[:32]}...")
+    logger.info(f"  Auth Tag: {submission.camera_token.auth_tag[:16]}...")
+    logger.info(f"  Nonce: {submission.camera_token.nonce[:16]}...")
+    logger.info(f"  Table ID: {submission.camera_token.table_id}")
+    logger.info(f"  Key Index: {submission.camera_token.key_index}")
+    logger.info(f"Timestamp: {submission.timestamp}")
+    logger.info("="*80)
 
     # Store all image hashes with shared transaction_id
     submission_records = []
@@ -120,13 +135,23 @@ async def validate_camera_transaction_inline(
         validation_endpoint: SMA validation URL
         db: Database session
     """
-    logger.info(f"Validating camera transaction {transaction_id} with SMA")
+    logger.info("\n" + "="*80)
+    logger.info(f"🔒 VALIDATING with SMA: {manufacturer_authority_id}")
+    logger.info("="*80)
+    logger.info(f"Transaction ID: {transaction_id}")
+    logger.info(f"Sending to: {validation_endpoint}")
+    logger.info(f"Token - Table: {camera_token.table_id}, Key: {camera_token.key_index}")
 
     # Call SMA for validation (new format)
     validation_result = await sma_client.validate_camera_token(
         camera_token=camera_token,
         manufacturer_authority_id=manufacturer_authority_id,
     )
+
+    logger.info("\n📬 SMA VALIDATION RESPONSE:")
+    logger.info(f"  Result: {'✅ PASS' if validation_result.valid else '❌ FAIL'}")
+    logger.info(f"  Message: {validation_result.message if validation_result.message else 'N/A'}")
+    logger.info("="*80)
 
     # Update all submissions in this transaction
     from sqlalchemy import update
@@ -145,12 +170,14 @@ async def validate_camera_transaction_inline(
     await db.commit()
 
     if not validation_result.valid:
-        logger.warning(
-            f"SMA validation FAILED for transaction {transaction_id}: "
-            f"{validation_result.message}"
-        )
+        logger.warning("\n" + "⚠"*40)
+        logger.warning(f"❌ SMA VALIDATION FAILED for transaction {transaction_id}")
+        logger.warning(f"Reason: {validation_result.message}")
+        logger.warning("⚠"*40 + "\n")
     else:
-        logger.info(f"SMA validation PASSED for transaction {transaction_id}")
+        logger.info("\n" + "✓"*40)
+        logger.info(f"✅ SMA VALIDATION PASSED for transaction {transaction_id}")
+        logger.info("✓"*40 + "\n")
 
         # Submit validated hashes to blockchain immediately (no batching)
         from sqlalchemy import select
@@ -166,24 +193,29 @@ async def validate_camera_transaction_inline(
                 blockchain_result = await blockchain_client.submit_hash(
                     image_hash=submission.image_hash,
                     timestamp=submission.timestamp,
-                    aggregator_id="submission_server_node_001",  # TODO: Get from config
+                    submission_server_id="submission_server_phase1_001",  # Phase 1 node ID
                     modification_level=submission.modification_level,
                     parent_image_hash=submission.parent_image_hash,
                     manufacturer_authority_id=submission.manufacturer_authority_id,
+                    gps_hash=None,  # GPS not used in Phase 1
                 )
 
                 if blockchain_result.success:
                     # Update submission with blockchain tx_id
                     submission.tx_id = blockchain_result.tx_id
-                    logger.info(
-                        f"Hash {submission.image_hash[:16]}... submitted to blockchain: "
-                        f"tx_id={blockchain_result.tx_id}, block_height={blockchain_result.block_height}"
-                    )
+                    logger.info("\n" + "🔗"*40)
+                    logger.info(f"⛓️  BLOCKCHAIN SUBMISSION SUCCESS")
+                    logger.info(f"   Hash: {submission.image_hash[:16]}...{submission.image_hash[-16:]}")
+                    logger.info(f"   TX ID: {blockchain_result.tx_id}")
+                    logger.info(f"   Block Height: {blockchain_result.block_height}")
+                    logger.info(f"   Modification Level: {submission.modification_level}")
+                    logger.info("🔗"*40 + "\n")
                 else:
-                    logger.error(
-                        f"Blockchain submission failed for {submission.image_hash[:16]}...: "
-                        f"{blockchain_result.message}"
-                    )
+                    logger.error("\n" + "❌"*40)
+                    logger.error(f"⛓️  BLOCKCHAIN SUBMISSION FAILED")
+                    logger.error(f"   Hash: {submission.image_hash[:16]}...")
+                    logger.error(f"   Error: {blockchain_result.message}")
+                    logger.error("❌"*40 + "\n")
 
             except Exception as e:
                 logger.error(
