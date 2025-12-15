@@ -23,7 +23,12 @@ from src.shared.database.connection import Base
 
 
 class Block(Base):
-    """Blockchain block containing validated image hash transactions."""
+    """
+    Blockchain block containing validated image hash transactions.
+
+    Blocks are proposed by validator nodes and contain batches of transactions
+    from submission servers.
+    """
 
     __tablename__ = "blocks"
 
@@ -43,14 +48,19 @@ class Block(Base):
 
 
 class Transaction(Base):
-    """Transaction containing image hash submission from an aggregator."""
+    """
+    Transaction containing image hash submission from a submission server.
+
+    Each transaction contains a batch of validated image hashes. The submission_server_id
+    is stored here (not duplicated in image_hashes) for investigation queries.
+    """
 
     __tablename__ = "transactions"
 
     tx_id = Column(Integer, primary_key=True, autoincrement=True)
     tx_hash = Column(CHAR(64), nullable=False, unique=True, index=True)
     block_height = Column(BigInteger, ForeignKey("blocks.block_height"), nullable=False, index=True)
-    aggregator_id = Column(String(255), nullable=False)
+    submission_server_id = Column(String(255), nullable=False)
     batch_size = Column(Integer, nullable=False)  # Number of hashes in this transaction
     signature = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -63,16 +73,31 @@ class Transaction(Base):
 
 
 class ImageHash(Base):
-    """Individual image hash with metadata for fast verification queries."""
+    """
+    Individual image hash with metadata for fast verification queries.
+
+    This is the primary table for verification lookups. Optimized for:
+    - Single hash verification (primary key on image_hash)
+    - Provenance chain tracking (parent_image_hash, modification_level)
+
+    Note: submission_server_id is NOT stored here (only in Transaction) to avoid
+    duplication. Investigation queries can join to Transaction if needed.
+    """
 
     __tablename__ = "image_hashes"
 
     image_hash = Column(CHAR(64), primary_key=True)
     tx_id = Column(Integer, ForeignKey("transactions.tx_id"), nullable=False, index=True)
     block_height = Column(BigInteger, ForeignKey("blocks.block_height"), nullable=False, index=True)
-    timestamp = Column(BigInteger, nullable=False)  # Unix timestamp
-    aggregator_id = Column(String(255), nullable=False)
-    gps_hash = Column(CHAR(64), nullable=True)  # Optional GPS location hash
+    timestamp = Column(BigInteger, nullable=False)  # Unix timestamp (server processing time)
+
+    # Provenance chain
+    parent_image_hash = Column(CHAR(64), nullable=True, index=True)  # For tracking raw->processed
+    modification_level = Column(Integer, nullable=False, default=0)  # 0=raw, 1=processed, 2+=modified
+
+    # Optional GPS location proof
+    gps_hash = Column(CHAR(64), nullable=True)  # SHA-256 of GPS coordinates (if provided)
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
@@ -81,34 +106,34 @@ class ImageHash(Base):
     __table_args__ = (
         Index("idx_hashes_block", "block_height"),
         Index("idx_hashes_timestamp", "timestamp"),
-        Index("idx_hashes_aggregator", "aggregator_id"),
+        Index("idx_hashes_parent", "parent_image_hash"),
+        Index("idx_hashes_modification_level", "modification_level"),
     )
 
 
 class PendingSubmission(Base):
-    """Camera submissions awaiting SMA validation and blockchain submission."""
+    """
+    Camera submissions awaiting SMA validation and blockchain submission.
+
+    Phase 1: Camera submissions only (no software modifications)
+    Submissions are grouped by transaction_id (raw + processed from same capture).
+    """
 
     __tablename__ = "pending_submissions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     image_hash = Column(CHAR(64), nullable=False, index=True)
 
-    # Legacy fields (for backward compatibility with old AuthenticationBundle)
-    encrypted_token = Column(LargeBinary, nullable=True)  # Now nullable
-    table_references = Column(ARRAY(Integer), nullable=True)  # Now nullable
-    key_indices = Column(ARRAY(Integer), nullable=True)  # Now nullable
-    device_signature = Column(LargeBinary, nullable=True)  # Now nullable
-
-    # New camera submission fields (CameraSubmission format)
+    # Camera submission data
     modification_level = Column(Integer, nullable=False, default=0, index=True)  # 0=raw, 1=processed
-    parent_image_hash = Column(CHAR(64), nullable=True, index=True)  # For provenance chain
-    transaction_id = Column(String(36), nullable=True, index=True)  # Groups 2 hashes from same submission
-    manufacturer_authority_id = Column(String(100), nullable=True)  # e.g., "CANON_001"
-    camera_token_json = Column(Text, nullable=True)  # JSON-encoded CameraToken object
+    parent_image_hash = Column(CHAR(64), nullable=True, index=True)  # For provenance chain (processed→raw)
+    transaction_id = Column(String(36), nullable=False, index=True)  # Groups raw+processed from same capture
+    manufacturer_authority_id = Column(String(100), nullable=False)  # e.g., "SIMULATED_CAMERA_001"
+    camera_token_json = Column(Text, nullable=False)  # JSON-encoded CameraToken object
 
-    # Common fields
-    timestamp = Column(BigInteger, nullable=False)  # Unix timestamp
-    gps_hash = Column(CHAR(64), nullable=True)
+    # Timestamps and location
+    timestamp = Column(BigInteger, nullable=False)  # Unix timestamp (camera capture time)
+    gps_hash = Column(CHAR(64), nullable=True)  # SHA-256 of GPS coordinates (optional)
 
     # Validation tracking
     received_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -116,14 +141,14 @@ class PendingSubmission(Base):
     validation_attempted_at = Column(DateTime, nullable=True)
     validation_result = Column(String(50), nullable=True)  # PASS, FAIL, ERROR
 
-    # Blockchain submission tracking (for crash recovery during server outages)
+    # Blockchain submission tracking (for crash recovery)
     tx_id = Column(Integer, ForeignKey("transactions.tx_id"), nullable=True)
 
     __table_args__ = (
         Index("idx_pending_validated", "sma_validated"),
-        Index("idx_transaction_id", "transaction_id"),
-        Index("idx_modification_level", "modification_level"),
-        Index("idx_parent_hash", "parent_image_hash"),
+        Index("idx_pending_transaction_id", "transaction_id"),
+        Index("idx_pending_modification_level", "modification_level"),
+        Index("idx_pending_parent_hash", "parent_image_hash"),
     )
 
 
@@ -153,10 +178,12 @@ class NodeState(Base):
 
 class ModificationRecordDB(Base):
     """
-    Modification records from editing software (Phase 3).
+    Modification records from editing software (Phase 3+).
+
+    NOT USED IN PHASE 1 - Created for future use.
 
     Tracks the editing provenance chain from authenticated captures
-    through software modifications.
+    through software modifications (Photoshop, Lightroom, etc.).
     """
 
     __tablename__ = "modification_records"
@@ -183,7 +210,7 @@ class ModificationRecordDB(Base):
     exported_at = Column(DateTime, nullable=False)  # When record exported
     recorded_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # When stored in DB
 
-    # TODO Phase 3: Link to blockchain transaction when final hash is submitted
+    # Phase 3+: Link to blockchain transaction when final hash is submitted
     tx_id = Column(Integer, ForeignKey("transactions.tx_id"), nullable=True)
 
     __table_args__ = (
