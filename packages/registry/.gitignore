@@ -1,0 +1,43 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lock files (for libraries)
+# Comment this if you want to track Cargo.lock for applications
+# Cargo.lock
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node data
+/data/
+/chains/
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+ENV/
+.venv/
+
+# Logs
+*.log
+
+# Generated chain specs
+*-raw.json
+genesis.json
+
+# Docker volumes
+volumes/

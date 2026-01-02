@@ -1,0 +1,52 @@
+[package]
+name = "pallet-birthmark"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "FRAME pallet for Birthmark image authentication records"
+publish = false
+
+[dependencies]
+codec = { workspace = true }
+scale-info = { workspace = true }
+
+# Frame dependencies
+frame-benchmarking = { workspace = true, optional = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+
+# Substrate primitives
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
+sp-core = { workspace = true }
+
+# Pallet dependencies
+pallet-timestamp = { workspace = true }
+
+[dev-dependencies]
+sp-io = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+    "codec/std",
+    "scale-info/std",
+    "frame-support/std",
+    "frame-system/std",
+    "frame-benchmarking?/std",
+    "sp-runtime/std",
+    "sp-std/std",
+    "sp-core/std",
+    "pallet-timestamp/std",
+]
+runtime-benchmarks = [
+    "frame-benchmarking/runtime-benchmarks",
+    "frame-support/runtime-benchmarks",
+    "frame-system/runtime-benchmarks",
+]
+try-runtime = [
+    "frame-support/try-runtime",
+    "frame-system/try-runtime",
+]
