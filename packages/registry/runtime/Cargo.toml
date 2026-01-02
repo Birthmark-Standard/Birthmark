@@ -54,7 +54,7 @@ pallet-preimage = { workspace = true }
 pallet-birthmark = { path = "../pallets/birthmark", default-features = false }
 
 [build-dependencies]
-substrate-wasm-builder = { version = "17.0.0", optional = true }
+substrate-wasm-builder = { workspace = true, optional = true }
 
 [features]
 default = ["std"]

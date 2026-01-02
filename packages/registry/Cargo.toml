@@ -16,6 +16,7 @@ license = "Apache-2.0"
 # Substrate primitives
 sp-api = { version = "26.0.0", default-features = false }
 sp-block-builder = { version = "26.0.0", default-features = false }
+sp-blockchain = { version = "28.0.0" }
 sp-consensus-aura = { version = "0.32.0", default-features = false }
 sp-consensus-grandpa = { version = "13.0.0", default-features = false }
 sp-core = { version = "28.0.0", default-features = false }
@@ -25,6 +26,7 @@ sp-offchain = { version = "26.0.0", default-features = false }
 sp-runtime = { version = "31.0.1", default-features = false }
 sp-session = { version = "27.0.0", default-features = false }
 sp-std = { version = "14.0.0", default-features = false }
+sp-timestamp = { version = "26.0.0", default-features = false }
 sp-transaction-pool = { version = "26.0.0", default-features = false }
 sp-version = { version = "29.0.0", default-features = false }
 sp-genesis-builder = { version = "0.8.0", default-features = false }
@@ -76,6 +78,10 @@ serde = { version = "1.0", features = ["derive"] }
 jsonrpsee = { version = "0.24.7", features = ["server"] }
 clap = { version = "4.5.21", features = ["derive"] }
 futures = { version = "0.3.31" }
+
+# Build dependencies
+substrate-wasm-builder = { version = "17.0.0" }
+substrate-build-script-utils = { version = "11.0.0" }
 
 [profile.release]
 panic = "unwind"
