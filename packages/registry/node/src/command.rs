@@ -2,6 +2,7 @@ use crate::{chain_spec, cli::{Cli, Subcommand}, service};
 use sc_cli::SubstrateCli;
 use sc_service::PartialComponents;
 use birthmark_runtime::Block;
+use clap::Parser;
 
 impl SubstrateCli for Cli {
     fn impl_name() -> String {

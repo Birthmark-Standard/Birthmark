@@ -1,7 +1,4 @@
-use birthmark_runtime::{
-    AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature,
-    SudoConfig, SystemConfig, WASM_BINARY, RuntimeGenesisConfig,
-};
+use birthmark_runtime::{AccountId, Signature, RuntimeGenesisConfig, WASM_BINARY};
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
@@ -138,6 +135,14 @@ fn testnet_genesis(
     endowed_accounts: Vec<AccountId>,
     _enable_println: bool,
 ) -> serde_json::Value {
+    // Convert AuraId to AccountId for council members
+    // Note: In production, council members should have proper account derivation
+    let council_members: Vec<AccountId> = initial_authorities
+        .iter()
+        .take(10) // Max 10 initial council members
+        .map(|_| get_account_id_from_seed::<sr25519::Public>("Alice")) // Placeholder
+        .collect();
+
     serde_json::json!({
         "balances": {
             // Configure pre-funded accounts (for gas fees)
@@ -164,18 +169,8 @@ fn testnet_genesis(
         },
         "council": {
             // Configure initial council members (journalism org representatives)
-            // In production, this should match validator authorities
-            "members": initial_authorities
-                .iter()
-                .enumerate()
-                .filter(|(idx, _)| *idx < 10) // Max 10 initial council members
-                .map(|(_, (aura_id, _))| {
-                    // Convert AuraId to AccountId
-                    // This is a placeholder - in production, use proper account derivation
-                    get_account_id_from_seed::<sr25519::Public>("Alice")
-                })
-                .collect::<Vec<_>>(),
-            "phantom": None,
+            "members": council_members,
+            "phantom": null,
         },
         "democracy": {},
         "treasury": {},
