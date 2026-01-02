@@ -1,0 +1,64 @@
+[package]
+name = "birthmark-node"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+build = "build.rs"
+publish = false
+
+[[bin]]
+name = "birthmark-node"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+jsonrpsee = { workspace = true }
+codec = { workspace = true }
+
+# Substrate client
+sc-cli = { workspace = true }
+sc-client-api = { workspace = true }
+sc-executor = { workspace = true }
+sc-network = { workspace = true }
+sc-service = { workspace = true }
+sc-telemetry = { workspace = true }
+sc-transaction-pool = { workspace = true }
+sc-transaction-pool-api = { workspace = true }
+sc-consensus-aura = { workspace = true }
+sc-consensus = { workspace = true }
+sc-consensus-grandpa = { workspace = true }
+sc-basic-authorship = { workspace = true }
+sc-offchain = { workspace = true }
+sc-rpc-api = { workspace = true }
+
+# Substrate primitives
+sp-api = { workspace = true }
+sp-block-builder = { workspace = true }
+sp-blockchain = { workspace = true }
+sp-consensus-aura = { workspace = true }
+sp-consensus-grandpa = { workspace = true }
+sp-core = { workspace = true }
+sp-inherents = { workspace = true }
+sp-runtime = { workspace = true }
+sp-timestamp = { workspace = true }
+sp-transaction-pool = { workspace = true }
+sp-io = { workspace = true }
+sp-genesis-builder = { workspace = true }
+
+# Frame dependencies
+frame-system = { workspace = true }
+pallet-transaction-payment = { workspace = true }
+
+# Local dependencies
+birthmark-runtime = { path = "../runtime" }
+
+[build-dependencies]
+substrate-build-script-utils = { version = "11.0.0" }
+
+[features]
+default = []
+runtime-benchmarks = ["birthmark-runtime/runtime-benchmarks"]
