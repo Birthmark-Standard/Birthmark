@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .hash_image import hash_image_bytes, verify_hash_format
+from .owner_verification import verify_owner_attribution
 
 # Configure logging
 logging.basicConfig(
@@ -55,6 +56,9 @@ class VerificationResult(BaseModel):
     modification_level: Optional[int] = None
     modification_display: Optional[str] = None
     parent_image_hash: Optional[str] = None
+    owner_hash: Optional[str] = None
+    owner_verified: Optional[bool] = None
+    owner_name: Optional[str] = None
     message: str
 
 
@@ -94,7 +98,7 @@ async def verify_image(file: UploadFile = File(...)):
         image_hash = hash_image_bytes(image_bytes)
         logger.info(f"   Image hash: {image_hash[:32]}...")
 
-        # Query blockchain
+        # Query blockchain (keep image_bytes for owner verification)
         async with httpx.AsyncClient(timeout=10.0) as client:
             blockchain_url = f"{BLOCKCHAIN_NODE_URL}/api/v1/blockchain/verify/{image_hash}"
             logger.info(f"   Querying: {blockchain_url}")
@@ -122,6 +126,17 @@ async def verify_image(file: UploadFile = File(...)):
 
             logger.info(f"   ✅ VERIFIED - {modification_display}")
 
+            # Verify owner attribution if present
+            blockchain_owner_hash = verification_data.get('owner_hash')
+            owner_result = verify_owner_attribution(image_bytes, blockchain_owner_hash)
+
+            # Build message
+            base_message = f"✅ Image verified on blockchain! {modification_display}"
+            if owner_result['has_owner_metadata'] and owner_result['owner_verified']:
+                base_message += f" | Photo by: {owner_result['owner_name']}"
+            elif owner_result['has_owner_metadata'] and not owner_result['owner_verified']:
+                base_message += f" | ⚠ {owner_result['warning']}"
+
             result = VerificationResult(
                 image_hash=image_hash,
                 verified=True,
@@ -132,7 +147,10 @@ async def verify_image(file: UploadFile = File(...)):
                 modification_level=modification_level,
                 modification_display=modification_display,
                 parent_image_hash=verification_data.get('parent_image_hash'),
-                message=f"✅ Image verified on blockchain! {modification_display}"
+                owner_hash=blockchain_owner_hash,
+                owner_verified=owner_result['owner_verified'],
+                owner_name=owner_result['owner_name'],
+                message=base_message
             )
         else:
             logger.info(f"   ❌ NOT VERIFIED - Image not found on blockchain")
@@ -200,6 +218,12 @@ async def verify_hash(image_hash: str):
 
             logger.info(f"   ✅ VERIFIED - {modification_display}")
 
+            # Note: Cannot verify owner attribution without image file
+            blockchain_owner_hash = verification_data.get('owner_hash')
+            message = f"✅ Hash verified on blockchain! {modification_display}"
+            if blockchain_owner_hash:
+                message += " | Owner attribution present (upload image file to verify)"
+
             return VerificationResult(
                 image_hash=image_hash,
                 verified=True,
@@ -210,7 +234,10 @@ async def verify_hash(image_hash: str):
                 modification_level=modification_level,
                 modification_display=modification_display,
                 parent_image_hash=verification_data.get('parent_image_hash'),
-                message=f"✅ Hash verified on blockchain! {modification_display}"
+                owner_hash=blockchain_owner_hash,
+                owner_verified=None,  # Cannot verify without image file
+                owner_name=None,
+                message=message
             )
         else:
             logger.info(f"   ❌ NOT VERIFIED")

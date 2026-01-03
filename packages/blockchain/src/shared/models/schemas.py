@@ -106,9 +106,10 @@ class AuthenticationBundle(BaseModel):
     key_indices: List[int] = Field(..., min_length=3, max_length=3, description="3 key indices (0-999)")
     timestamp: int = Field(..., gt=0, description="Unix timestamp")
     gps_hash: Optional[str] = Field(None, min_length=64, max_length=64, description="Optional GPS hash")
+    owner_hash: Optional[str] = Field(None, min_length=64, max_length=64, description="Optional SHA-256 hash of (owner_name + owner_salt)")
     device_signature: bytes = Field(..., description="TPM signature over bundle")
 
-    @field_validator("image_hash", "gps_hash")
+    @field_validator("image_hash", "gps_hash", "owner_hash")
     @classmethod
     def validate_hash(cls, v: Optional[str]) -> Optional[str]:
         """Validate SHA-256 hash format."""
@@ -151,9 +152,10 @@ class CertificateBundle(BaseModel):
     software_cert: Optional[str] = Field(None, description="Base64-encoded DER software cert (Phase 2)")
     timestamp: int = Field(..., gt=0, description="Unix timestamp")
     gps_hash: Optional[str] = Field(None, min_length=64, max_length=64, description="Optional GPS hash")
+    owner_hash: Optional[str] = Field(None, min_length=64, max_length=64, description="Optional SHA-256 hash of (owner_name + owner_salt)")
     bundle_signature: str = Field(..., description="Base64-encoded ECDSA signature over bundle")
 
-    @field_validator("image_hash", "gps_hash")
+    @field_validator("image_hash", "gps_hash", "owner_hash")
     @classmethod
     def validate_hash(cls, v: Optional[str]) -> Optional[str]:
         """Validate SHA-256 hash format."""

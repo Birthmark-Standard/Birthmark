@@ -22,6 +22,8 @@ from .submission_client import (
     SubmissionQueue
 )
 from .crypto.signing import sign_bundle
+from .config import CameraConfig
+from .owner_attribution import generate_owner_metadata, write_owner_exif
 
 
 class BirthmarkCamera:
@@ -35,7 +37,8 @@ class BirthmarkCamera:
         submission_url: str = "http://localhost:8545",
         output_dir: Optional[Path] = None,
         use_mock_camera: bool = False,
-        use_certificates: bool = False
+        use_certificates: bool = False,
+        config_path: Optional[Path] = None
     ):
         """
         Initialize Birthmark camera.
@@ -46,6 +49,7 @@ class BirthmarkCamera:
             output_dir: Output directory for images
             use_mock_camera: Use mock camera for testing
             use_certificates: Use certificate-based authentication (new format)
+            config_path: Path to camera configuration file
         """
         # Set up output directory
         if output_dir is None:
@@ -55,6 +59,13 @@ class BirthmarkCamera:
 
         # Store mode
         self.use_certificates = use_certificates
+
+        # Load camera configuration
+        self.config = CameraConfig.load(config_path)
+        if self.config.owner_attribution.is_configured():
+            print(f"✓ Owner attribution enabled: {self.config.owner_attribution.owner_name}")
+        else:
+            print("ℹ Owner attribution disabled")
 
         # Load provisioning data
         print("Loading provisioning data...")
@@ -156,12 +167,22 @@ class BirthmarkCamera:
                 "metric_version": "v2.0"
             }
 
+        # Generate owner attribution metadata if enabled
+        owner_metadata = None
+        owner_hash = None
+        if self.config.owner_attribution.is_configured():
+            owner_metadata = generate_owner_metadata(
+                self.config.owner_attribution.owner_name
+            )
+            owner_hash = owner_metadata.owner_hash
+            print(f"✓ Owner attribution: {owner_metadata.owner_name[:30]}...")
+
         if self.use_certificates:
             # Certificate mode: No token generation needed
             token_time = 0.0
             print(f"✓ Using embedded certificate (no token generation needed)")
 
-            # Step 3: Create certificate bundle with ISP validation
+            # Step 3: Create certificate bundle with ISP validation and owner hash
             from .submission_client import CertificateBundle
 
             bundle = CertificateBundle(
@@ -169,6 +190,7 @@ class BirthmarkCamera:
                 camera_cert_pem=self.provisioning_data.device_certificate,
                 timestamp=capture_result.timestamp,
                 gps_hash=None,  # TODO: GPS integration
+                owner_hash=owner_hash,
                 bundle_signature=None,  # Sign in to_json()
                 isp_validation=isp_validation_data
             )
@@ -189,13 +211,14 @@ class BirthmarkCamera:
             print(f"✓ Camera token: table={camera_token.table_id}, "
                   f"key_index={camera_token.key_index} ({token_time:.3f}s)")
 
-            # Step 3: Create authentication bundle with ISP validation
+            # Step 3: Create authentication bundle with ISP validation and owner hash
             bundle = AuthenticationBundle(
                 image_hash=capture_result.image_hash,
                 camera_token=camera_token.to_dict(),
                 timestamp=capture_result.timestamp,
                 table_assignments=self.provisioning_data.table_assignments,
                 gps_hash=None,  # TODO: GPS integration
+                owner_hash=owner_hash,
                 device_signature=None,  # Sign below
                 isp_validation=isp_validation_data
             )
@@ -214,14 +237,34 @@ class BirthmarkCamera:
         # Step 6: Save image metadata
         if save_image:
             output_file = self.output_dir / f"IMG_{capture_result.timestamp}.json"
+
+            # Prepare metadata
+            metadata = {
+                'image_hash': capture_result.image_hash,
+                'timestamp': capture_result.timestamp,
+                'device_serial': self.provisioning_data.device_serial,
+                'bundle': bundle.to_json() if hasattr(bundle, 'to_json') else {}
+            }
+
+            # Add owner attribution metadata if present
+            if owner_metadata:
+                from .owner_attribution import encode_salt_for_exif
+                metadata['owner_attribution'] = {
+                    'owner_name': owner_metadata.owner_name,
+                    'owner_salt_b64': encode_salt_for_exif(owner_metadata.owner_salt),
+                    'owner_hash': owner_metadata.owner_hash
+                }
+
             with open(output_file, 'w') as f:
-                json.dump({
-                    'image_hash': capture_result.image_hash,
-                    'timestamp': capture_result.timestamp,
-                    'device_serial': self.provisioning_data.device_serial,
-                    'bundle': bundle.to_json()
-                }, f, indent=2)
+                json.dump(metadata, f, indent=2)
             print(f"✓ Saved: {output_file.name}")
+
+            # TODO: If saving processed image to disk (JPEG/PNG), write EXIF:
+            # if capture_result.processed_image is not None:
+            #     image_file = self.output_dir / f"IMG_{capture_result.timestamp}.jpg"
+            #     # Save processed image...
+            #     if owner_metadata:
+            #         write_owner_exif(str(image_file), owner_metadata)
 
         total_time = time.time() - start_time
         self.capture_count += 1

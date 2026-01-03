@@ -82,6 +82,8 @@ pub mod pallet {
         pub parent_image_hash: Option<BoundedVec<u8, T::MaxImageHashLength>>,
         /// Authority identifier (manufacturer or software developer)
         pub authority_id: BoundedVec<u8, T::MaxAuthorityIdLength>,
+        /// SHA-256 hash of (owner_name + owner_salt) for attribution (optional)
+        pub owner_hash: Option<BoundedVec<u8, T::MaxImageHashLength>>,
         /// Timestamp when record was submitted to blockchain (NOT capture time)
         pub timestamp: T::Moment,
         /// Block number where record was stored
@@ -176,6 +178,7 @@ pub mod pallet {
         /// * `modification_level` - 0 (raw), 1 (validated), or 2 (modified)
         /// * `parent_image_hash` - Optional hash of parent image for provenance
         /// * `authority_id` - Manufacturer or software developer identifier
+        /// * `owner_hash` - Optional SHA-256 hash of (owner_name + owner_salt) for attribution
         ///
         /// # Errors
         ///
@@ -201,6 +204,7 @@ pub mod pallet {
             modification_level: u8,
             parent_image_hash: Option<Vec<u8>>,
             authority_id: Vec<u8>,
+            owner_hash: Option<Vec<u8>>,
         ) -> DispatchResult {
             // Verify origin is signed (authorization logic can be added via custom origin)
             let _who = ensure_signed(origin)?;
@@ -252,6 +256,22 @@ pub mod pallet {
                 None
             };
 
+            // Validate owner hash if provided
+            let bounded_owner = if let Some(owner) = owner_hash {
+                ensure!(
+                    owner.len() == 64,
+                    Error::<T>::InvalidHashLength
+                );
+
+                let bounded = owner
+                    .try_into()
+                    .map_err(|_| Error::<T>::InvalidHashLength)?;
+
+                Some(bounded)
+            } else {
+                None
+            };
+
             // Ensure hash doesn't already exist (immutability + duplicate prevention)
             ensure!(
                 !ImageRecords::<T>::contains_key(&bounded_hash),
@@ -269,6 +289,7 @@ pub mod pallet {
                 modification_level,
                 parent_image_hash: bounded_parent,
                 authority_id: bounded_authority.clone(),
+                owner_hash: bounded_owner,
                 timestamp,
                 block_number,
             };
@@ -319,6 +340,7 @@ pub mod pallet {
                 u8,                     // modification_level
                 Option<Vec<u8>>,        // parent_image_hash
                 Vec<u8>,                // authority_id
+                Option<Vec<u8>>,        // owner_hash
             )>,
         ) -> DispatchResult {
             let _who = ensure_signed(origin)?;
@@ -330,7 +352,7 @@ pub mod pallet {
             let count = records.len() as u32;
 
             // Process each record
-            for (image_hash, submission_type, modification_level, parent_image_hash, authority_id) in records {
+            for (image_hash, submission_type, modification_level, parent_image_hash, authority_id, owner_hash) in records {
                 // Reuse validation logic from submit_image_record
                 ensure!(image_hash.len() == 64, Error::<T>::InvalidHashLength);
                 ensure!(modification_level <= 2, Error::<T>::InvalidModificationLevel);
@@ -361,6 +383,16 @@ pub mod pallet {
                     None
                 };
 
+                let bounded_owner = if let Some(owner) = owner_hash {
+                    ensure!(owner.len() == 64, Error::<T>::InvalidHashLength);
+                    let bounded = owner
+                        .try_into()
+                        .map_err(|_| Error::<T>::InvalidHashLength)?;
+                    Some(bounded)
+                } else {
+                    None
+                };
+
                 ensure!(
                     !ImageRecords::<T>::contains_key(&bounded_hash),
                     Error::<T>::HashAlreadyExists
@@ -375,6 +407,7 @@ pub mod pallet {
                     modification_level,
                     parent_image_hash: bounded_parent,
                     authority_id: bounded_authority,
+                    owner_hash: bounded_owner,
                     timestamp,
                     block_number,
                 };
