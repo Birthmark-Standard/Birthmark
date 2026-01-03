@@ -26,6 +26,7 @@ class AuthenticationBundle:
     timestamp: int  # Unix timestamp (seconds since epoch)
     table_assignments: list[int]  # All 3 assigned tables (for privacy)
     gps_hash: Optional[str] = None  # SHA-256 of GPS coords (optional)
+    owner_hash: Optional[str] = None  # SHA-256 of (owner_name + owner_salt)
     device_signature: Optional[str] = None  # ECDSA signature (hex)
     isp_validation: Optional[dict] = None  # ISP validation data (variance-from-expected)
 
@@ -75,6 +76,9 @@ class AuthenticationBundle:
         if self.gps_hash:
             payload["gps_hash"] = self.gps_hash
 
+        if self.owner_hash:
+            payload["owner_hash"] = self.owner_hash
+
         if self.device_signature:
             payload["device_signature"] = base64.b64encode(
                 bytes.fromhex(self.device_signature)
@@ -92,7 +96,9 @@ class AuthenticationBundle:
             image_hash=data['image_hash'],
             camera_token=data['camera_token'],
             timestamp=data['timestamp'],
+            table_assignments=data.get('table_assignments', []),
             gps_hash=data.get('gps_hash'),
+            owner_hash=data.get('owner_hash'),
             device_signature=data.get('device_signature')
         )
 
@@ -109,6 +115,7 @@ class CertificateBundle:
     camera_cert_pem: str  # PEM-encoded device certificate
     timestamp: int  # Unix timestamp
     gps_hash: Optional[str] = None
+    owner_hash: Optional[str] = None  # SHA-256 of (owner_name + owner_salt)
     bundle_signature: Optional[str] = None  # ECDSA signature (hex)
     isp_validation: Optional[dict] = None  # ISP validation data (variance-from-expected)
 
@@ -154,6 +161,9 @@ class CertificateBundle:
 
         if self.gps_hash:
             payload["gps_hash"] = self.gps_hash
+
+        if self.owner_hash:
+            payload["owner_hash"] = self.owner_hash
 
         if self.isp_validation:
             payload["isp_validation"] = self.isp_validation
