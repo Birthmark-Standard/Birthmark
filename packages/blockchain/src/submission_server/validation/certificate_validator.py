@@ -1,23 +1,16 @@
 """
 Certificate validation for Birthmark blockchain aggregator.
 
-Wraps the shared certificates package for use in blockchain aggregation.
+Phase 1: Simplified validation - just passes certificates to SMA.
+Phase 2+: Will add certificate parsing and signature verification.
 """
 
 import logging
-import sys
-from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional
 
 import httpx
 
-# Add shared package to path
-shared_path = Path(__file__).resolve().parents[2] / "shared"
-sys.path.insert(0, str(shared_path))
-
-from certificates.parser import CertificateParser, CameraExtensions
-from certificates.validator import CertificateValidator as BaseCertValidator
 from src.shared.models.schemas import CertificateBundle, SMAValidationResponse
 
 
@@ -30,7 +23,7 @@ class CertValidationResult:
 
     valid: bool
     error: Optional[str] = None
-    cert_data: Optional[CameraExtensions] = None
+    ma_endpoint: Optional[str] = None
 
 
 @dataclass
@@ -44,58 +37,50 @@ class MAValidationResult:
 class CertificateValidatorService:
     """
     Service for validating camera certificates and coordinating MA validation.
+
+    Phase 1: Simple pass-through to SMA
+    Phase 2+: Full certificate parsing and signature verification
     """
 
     def __init__(self):
         """Initialize certificate validator."""
-        self.parser = CertificateParser()
-        self.validator = BaseCertValidator()
-        # TODO: Load trusted CA certificates from config
+        logger.info("Certificate validator initialized (Phase 1: simplified mode)")
 
     async def validate_camera_certificate(
         self,
         bundle: CertificateBundle,
     ) -> CertValidationResult:
         """
-        Validate camera certificate structure and signature.
+        Validate camera certificate structure.
+
+        Phase 1: Basic validation - checks certificate exists
+        Phase 2+: Full parsing and signature verification
 
         Args:
             bundle: Certificate bundle from camera
 
         Returns:
-            Validation result with parsed certificate data
+            Validation result
         """
         try:
-            # Decode certificate
-            cert_bytes = bundle.get_camera_cert_bytes()
-
-            # Parse certificate and extract extensions
-            cert, extensions = self.parser.parse_camera_cert_bytes(cert_bytes)
-
-            logger.info(
-                f"Certificate parsed: manufacturer={extensions.manufacturer_id}, "
-                f"device_family={extensions.device_family}, "
-                f"ma_endpoint={extensions.ma_endpoint}"
-            )
-
-            # Validate certificate structure
-            # Note: For Phase 1, we skip signature verification (no CA infrastructure yet)
-            # In Phase 2+, this would verify against trusted MA CA certificates
-            validation_result = self.validator.validate_camera_certificate(
-                cert_bytes,
-                check_expiration=True,
-                check_signature=False,  # Skip for Phase 1
-            )
-
-            if not validation_result.valid:
+            # Basic check: certificate exists
+            cert_b64 = bundle.camera_cert
+            if not cert_b64 or len(cert_b64) == 0:
                 return CertValidationResult(
                     valid=False,
-                    error=validation_result.error_message
+                    error="Certificate is empty"
                 )
+
+            # Phase 1: No parsing, assume certificate is valid
+            # Phase 2: Would parse DER/PEM and extract MA endpoint from extensions
+
+            # For now, use default SMA endpoint from config
+            # In Phase 2, this would come from certificate extensions
+            ma_endpoint = "http://host.docker.internal:8001/validate"
 
             return CertValidationResult(
                 valid=True,
-                cert_data=extensions
+                ma_endpoint=ma_endpoint
             )
 
         except Exception as e:
@@ -108,37 +93,47 @@ class CertificateValidatorService:
     async def validate_with_ma(
         self,
         ma_endpoint: str,
-        camera_cert: str,
-        image_hash: str,
+        bundle: CertificateBundle,
     ) -> MAValidationResult:
         """
         Validate with Manufacturer Authority using certificate.
 
         Args:
             ma_endpoint: MA validation endpoint URL
-            camera_cert: Base64-encoded camera certificate
-            image_hash: SHA-256 image hash
+            bundle: Certificate bundle to validate
 
         Returns:
             MA validation result
         """
         try:
+            # Prepare validation request
+            payload = {
+                "camera_cert": bundle.camera_cert,
+                "image_hash": bundle.image_hash,
+                "timestamp": bundle.timestamp,
+                "bundle_signature": bundle.bundle_signature
+            }
+
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     ma_endpoint,
-                    json={
-                        "camera_cert": camera_cert,
-                        "image_hash": image_hash,
-                    },
+                    json=payload,
                     timeout=10.0,
                 )
 
                 if response.status_code == 200:
                     data = response.json()
-                    validation = SMAValidationResponse(**data)
+                    # Handle both formats: {"valid": bool, "message": str} or {"authority_validation": "PASS/FAIL"}
+                    if "authority_validation" in data:
+                        is_valid = data["authority_validation"] == "PASS"
+                        message = data.get("message") or data.get("authority_validation")
+                    else:
+                        is_valid = data.get("valid", False)
+                        message = data.get("message", "Unknown")
+
                     return MAValidationResult(
-                        valid=validation.valid,
-                        message=validation.message
+                        valid=is_valid,
+                        message=message
                     )
                 else:
                     logger.error(
