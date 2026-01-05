@@ -13,7 +13,7 @@ from typing import Optional
 import httpx
 
 # Add shared package to path
-shared_path = Path(__file__).resolve().parents[5] / "shared"
+shared_path = Path(__file__).resolve().parents[2] / "shared"
 sys.path.insert(0, str(shared_path))
 
 from certificates.parser import CertificateParser, CameraExtensions
