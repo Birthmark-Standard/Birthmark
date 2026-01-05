@@ -243,7 +243,8 @@ class BirthmarkCamera:
                 'image_hash': capture_result.image_hash,
                 'timestamp': capture_result.timestamp,
                 'device_serial': self.provisioning_data.device_serial,
-                'bundle': bundle.to_json() if hasattr(bundle, 'to_json') else {}
+                'bundle': bundle.to_json(self.tpm._private_key) if self.use_certificates
+                         else (bundle.to_json() if hasattr(bundle, 'to_json') else {})
             }
 
             # Add owner attribution metadata if present
