@@ -407,8 +407,8 @@ Examples:
 
     parser.add_argument(
         '--submission-server',
-        default='http://localhost:8545',
-        help='Birthmark blockchain node URL (default: http://localhost:8545)'
+        default='http://192.168.50.111:8545',
+        help='Birthmark blockchain node URL (default: http://192.168.50.111:8545)'
     )
 
     parser.add_argument(
