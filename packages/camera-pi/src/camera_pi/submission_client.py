@@ -388,13 +388,15 @@ class SubmissionQueue:
     Background submission queue for asynchronous submissions.
 
     Allows camera to continue capturing while bundles are submitted in background.
+    Persists bundles to disk to survive power loss or network outages.
     """
 
     def __init__(
         self,
         client: SubmissionClient,
         max_queue_size: int = 100,
-        device_private_key=None
+        device_private_key=None,
+        persistent_queue=None
     ):
         """
         Initialize submission queue.
@@ -403,12 +405,14 @@ class SubmissionQueue:
             client: SubmissionClient for submissions
             max_queue_size: Maximum queue size (blocks if full)
             device_private_key: Device private key for certificate signing (optional)
+            persistent_queue: PersistentQueue for disk-based reliability (optional)
         """
         self.client = client
         self.queue = queue.Queue(maxsize=max_queue_size)
         self.worker_thread: Optional[threading.Thread] = None
         self.running = False
         self.device_private_key = device_private_key
+        self.persistent_queue = persistent_queue
 
         # Statistics
         self.submitted = 0
@@ -419,6 +423,15 @@ class SubmissionQueue:
         if self.running:
             print("⚠ Worker already running")
             return
+
+        # Retransmit any pending submissions from disk
+        if self.persistent_queue:
+            pending = self.persistent_queue.get_pending()
+            if pending:
+                print(f"📤 Retransmitting {len(pending)} pending submissions from disk...")
+                for submission in pending:
+                    # Re-enqueue for transmission
+                    self.queue.put(('retransmit', submission.bundle_id, submission.bundle_data))
 
         self.running = True
         self.worker_thread = threading.Thread(
@@ -468,6 +481,12 @@ class SubmissionQueue:
         if not self.running:
             raise RuntimeError("Worker not running. Call start_worker() first.")
 
+        # Save to persistent queue before memory queue
+        if self.persistent_queue and isinstance(bundle, CertificateBundle):
+            bundle_id = f"{bundle.image_hash[:16]}_{bundle.timestamp}"
+            bundle_data = bundle.to_json(self.device_private_key)
+            self.persistent_queue.enqueue(bundle_id, bundle_data)
+
         self.queue.put(bundle)
 
     def _worker_loop(self) -> None:
@@ -475,31 +494,74 @@ class SubmissionQueue:
         while self.running:
             try:
                 # Get bundle from queue (blocking with timeout)
-                bundle = self.queue.get(timeout=1)
+                item = self.queue.get(timeout=1)
 
                 # None signals shutdown
-                if bundle is None:
+                if item is None:
                     self.queue.task_done()
                     break
 
+                # Handle retransmit vs new submission
+                if isinstance(item, tuple) and item[0] == 'retransmit':
+                    # Retransmitting from persistent queue
+                    _, bundle_id, bundle_data = item
+                    bundle = None  # Will use raw data
+                else:
+                    # New submission
+                    bundle = item
+                    bundle_id = None
+                    bundle_data = None
+
                 # Submit bundle
                 try:
-                    # Check bundle type and call appropriate method
-                    if isinstance(bundle, CertificateBundle):
-                        if not self.device_private_key:
-                            raise RuntimeError("device_private_key required for certificate submission")
-                        receipt = self.client.submit_certificate(bundle, self.device_private_key, retry=True)
-                    elif isinstance(bundle, AuthenticationBundle):
-                        receipt = self.client.submit_bundle(bundle, retry=True)
-                    else:
-                        raise ValueError(f"Unknown bundle type: {type(bundle)}")
+                    if bundle_data:
+                        # Retransmit using pre-serialized data
+                        response = self.client.session.post(
+                            f"{self.client.server_url}/api/v1/submit-cert",
+                            json=bundle_data,
+                            timeout=self.client.timeout
+                        )
+                        if response.status_code in [200, 202]:
+                            receipt_id = response.json().get('receipt_id', 'unknown')
+                            self.submitted += 1
+                            print(f"✓ Retransmitted: {receipt_id} (total: {self.submitted})")
 
-                    self.submitted += 1
-                    print(f"✓ Submitted: {receipt.receipt_id} (total: {self.submitted})")
+                            # Remove from persistent queue on success
+                            if self.persistent_queue and bundle_id:
+                                self.persistent_queue.dequeue(bundle_id)
+                        else:
+                            raise Exception(f"HTTP {response.status_code}")
+
+                    else:
+                        # New submission
+                        bundle_id_new = None
+                        if isinstance(bundle, CertificateBundle):
+                            bundle_id_new = f"{bundle.image_hash[:16]}_{bundle.timestamp}"
+
+                            if not self.device_private_key:
+                                raise RuntimeError("device_private_key required for certificate submission")
+
+                            receipt = self.client.submit_certificate(bundle, self.device_private_key, retry=True)
+
+                            # Remove from persistent queue on success
+                            if self.persistent_queue:
+                                self.persistent_queue.dequeue(bundle_id_new)
+
+                        elif isinstance(bundle, AuthenticationBundle):
+                            receipt = self.client.submit_bundle(bundle, retry=True)
+                        else:
+                            raise ValueError(f"Unknown bundle type: {type(bundle)}")
+
+                        self.submitted += 1
+                        print(f"✓ Submitted: {receipt.receipt_id} (total: {self.submitted})")
 
                 except Exception as e:
                     self.failed += 1
                     print(f"✗ Submission failed: {e} (total failed: {self.failed})")
+
+                    # Record attempt in persistent queue
+                    if self.persistent_queue and bundle_id:
+                        self.persistent_queue.record_attempt(bundle_id)
 
                 finally:
                     self.queue.task_done()

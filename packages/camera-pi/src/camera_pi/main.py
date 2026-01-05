@@ -24,6 +24,7 @@ from .submission_client import (
 from .crypto.signing import sign_bundle
 from .config import CameraConfig
 from .owner_attribution import generate_owner_metadata, write_owner_exif
+from .persistent_queue import PersistentQueue
 
 
 class BirthmarkCamera:
@@ -94,10 +95,15 @@ class BirthmarkCamera:
 
         self.submission_client = create_submission_client(submission_url)
 
+        # Initialize persistent queue for reliable submission
+        pending_dir = self.output_dir.parent / "pending_submissions"
+        self.persistent_queue = PersistentQueue(pending_dir)
+
         # Initialize submission queue (pass private key for certificate signing)
         self.submission_queue = SubmissionQueue(
             self.submission_client,
-            device_private_key=self.tpm._private_key
+            device_private_key=self.tpm._private_key,
+            persistent_queue=self.persistent_queue
         )
         self.submission_queue.start_worker()
 

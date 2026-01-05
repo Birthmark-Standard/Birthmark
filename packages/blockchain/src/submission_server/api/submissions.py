@@ -330,6 +330,8 @@ async def submit_certificate_bundle(
     This endpoint accepts X.509 certificate bundles from iOS devices with ECDSA signatures.
     The bundle is validated with SMA and submitted to blockchain.
 
+    Idempotent: Duplicate submissions (same hash + timestamp) return the existing receipt.
+
     Args:
         bundle: Certificate bundle with image hash, certificate, timestamp, and signature
         db: Database session
@@ -337,6 +339,27 @@ async def submit_certificate_bundle(
     Returns:
         Receipt with submission ID and status
     """
+    # Check for duplicate submission (idempotency)
+    from sqlalchemy import select
+
+    stmt = select(PendingSubmission).where(
+        PendingSubmission.image_hash == bundle.image_hash,
+        PendingSubmission.timestamp == bundle.timestamp
+    )
+    result = await db.execute(stmt)
+    existing = result.scalar_one_or_none()
+
+    if existing:
+        logger.info(
+            f"🔁 Duplicate submission detected: hash={bundle.image_hash[:16]}..., "
+            f"timestamp={bundle.timestamp}, returning existing receipt_id={existing.transaction_id}"
+        )
+        return SubmissionResponse(
+            receipt_id=existing.transaction_id or str(existing.id),
+            status="already_received" if existing.sma_validated else "pending_validation",
+            message="Duplicate submission - returning existing receipt",
+        )
+
     receipt_id = str(uuid.uuid4())
 
     logger.info(
@@ -347,6 +370,7 @@ async def submit_certificate_bundle(
     # Create pending submission record
     submission = PendingSubmission(
         image_hash=bundle.image_hash,
+        transaction_id=receipt_id,  # Store receipt_id for idempotency
         encrypted_token=b"",  # Not used in Phase 2 (certificate-based)
         table_references=[],  # Not used in Phase 2
         key_indices=[],       # Not used in Phase 2
