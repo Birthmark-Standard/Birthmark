@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
 from src.shared.database.models import PendingSubmission
-from src.shared.database.connection import get_async_session
+from src.shared.database.connection import get_async_db
 from src.submission_server.validation.sma_client import sma_client
 from src.submission_server.blockchain.blockchain_client import blockchain_client
 
@@ -76,7 +76,7 @@ class ValidationWorker:
 
     async def _process_pending_validations(self):
         """Process submissions pending MA validation."""
-        async for session in get_async_session():
+        async with get_async_db() as session:
             try:
                 # Find submissions pending validation
                 stmt = select(PendingSubmission).where(
