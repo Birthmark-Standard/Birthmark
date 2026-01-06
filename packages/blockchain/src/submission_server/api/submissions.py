@@ -250,12 +250,22 @@ async def submit_authentication_bundle_legacy(
         f"timestamp={bundle.timestamp}"
     )
 
+    # Serialize camera token to JSON
+    import json
+    camera_token_data = {
+        "encrypted_nuc_token": bundle.encrypted_nuc_token.hex(),
+        "table_references": bundle.table_references,
+        "key_indices": bundle.key_indices,
+    }
+
     # Create pending submission record
     submission = PendingSubmission(
         image_hash=bundle.image_hash,
-        encrypted_token=bundle.encrypted_nuc_token,
-        table_references=bundle.table_references,
-        key_indices=bundle.key_indices,
+        camera_token_json=json.dumps(camera_token_data),
+        modification_level=0,  # Legacy endpoint assumes raw
+        parent_image_hash=None,
+        transaction_id=receipt_id,  # Use receipt as transaction ID
+        manufacturer_authority_id="legacy_camera",  # Will extract from token later
         timestamp=bundle.timestamp,
         gps_hash=bundle.gps_hash,
         device_signature=bundle.device_signature,
