@@ -307,6 +307,7 @@ async def validate_submission_inline(
     submission.validation_attempted_at = datetime.utcnow()
     submission.sma_validated = validation_result.valid
     submission.validation_result = "PASS" if validation_result.valid else "FAIL"
+    submission.validation_status = "validated" if validation_result.valid else "rejected"
 
     if not validation_result.valid:
         logger.warning(
@@ -371,33 +372,40 @@ async def submit_certificate_bundle(
     submission = PendingSubmission(
         image_hash=bundle.image_hash,
         transaction_id=receipt_id,  # Store receipt_id for idempotency
-        encrypted_token=b"",  # Not used in Phase 2 (certificate-based)
-        table_references=[],  # Not used in Phase 2
-        key_indices=[],       # Not used in Phase 2
+        validation_status="pending_ma_validation",  # Will be processed by background worker
+        manufacturer_authority_id=getattr(bundle, 'software_cert', "UNKNOWN"),
+        camera_cert=bundle.camera_cert,  # Store certificate for validation
+        encrypted_token=b"",  # Not used in certificate-based
+        table_references=[],  # Not used in certificate-based
+        key_indices=[],       # Not used in certificate-based
+        camera_token_json="{}",  # Not used in certificate-based
         timestamp=bundle.timestamp,
-        gps_hash=bundle.gps_hash,
+        gps_hash=getattr(bundle, 'owner_hash', bundle.gps_hash),  # Support owner_hash
         device_signature=bundle.bundle_signature.encode() if isinstance(bundle.bundle_signature, str) else bundle.bundle_signature,
         sma_validated=False,
     )
 
     db.add(submission)
     await db.commit()
+    await db.refresh(submission)  # Get the auto-generated ID
 
     logger.info(f"Certificate submission {receipt_id} queued for validation")
 
-    # Validate with SMA inline
+    # Try immediate validation (fast path) - non-blocking
+    # If this fails, background worker will retry
     try:
         await validate_certificate_submission_inline(
             submission,
             bundle.camera_cert,
             bundle.image_hash,
             bundle.timestamp,
-            bundle.gps_hash,
+            getattr(bundle, 'owner_hash', bundle.gps_hash),
             bundle.bundle_signature,
             db
         )
     except Exception as e:
-        logger.error(f"Validation error for {receipt_id}: {e}")
+        logger.warning(f"Immediate validation failed for {receipt_id}, will retry in background: {e}")
+        # Don't raise - let background worker handle it
 
     return SubmissionResponse(
         receipt_id=receipt_id,
@@ -442,6 +450,7 @@ async def validate_certificate_submission_inline(
     submission.validation_attempted_at = datetime.utcnow()
     submission.sma_validated = validation_result.valid
     submission.validation_result = "PASS" if validation_result.valid else "FAIL"
+    submission.validation_status = "validated" if validation_result.valid else "rejected"
 
     if not validation_result.valid:
         logger.warning(

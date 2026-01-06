@@ -12,6 +12,7 @@ import uvicorn
 from src.shared.config import settings
 from src.shared.crypto.signatures import ValidatorKeys
 from src.submission_server.api import submissions, modifications
+from src.submission_server.validation.validation_worker import validation_worker
 from src.node.api import verification, status
 from src.node.api import blockchain
 
@@ -37,10 +38,20 @@ async def lifespan(app: FastAPI):
     validator_keys = load_or_generate_keys()
     logger.info(f"Loaded validator keys: {validator_keys.validator_id}")
 
+    # Start background validation worker
+    logger.info("Starting MA validation worker...")
+    worker_task = asyncio.create_task(validation_worker.start())
+
     yield  # Application is running
 
     # Shutdown
     logger.info("Shutting down Birthmark Blockchain Node")
+    await validation_worker.stop()
+    worker_task.cancel()
+    try:
+        await worker_task
+    except asyncio.CancelledError:
+        pass
 
 
 def load_or_generate_keys() -> ValidatorKeys:

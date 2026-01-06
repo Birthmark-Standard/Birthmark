@@ -136,19 +136,35 @@ class PendingSubmission(Base):
     gps_hash = Column(CHAR(64), nullable=True)  # SHA-256 of GPS coordinates (optional)
 
     # Validation tracking
+    validation_status = Column(
+        String(50),
+        default="pending_ma_validation",
+        nullable=False,
+        index=True
+    )  # pending_ma_validation, validated, rejected, validation_failed
+    validation_retry_count = Column(Integer, default=0, nullable=False)
+    validation_next_retry = Column(String(50), nullable=True)  # ISO datetime string
     received_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     sma_validated = Column(Boolean, default=False, nullable=False, index=True)
     validation_attempted_at = Column(DateTime, nullable=True)
     validation_result = Column(String(50), nullable=True)  # PASS, FAIL, ERROR
 
+    # Certificate data (for certificate-based submissions)
+    camera_cert = Column(Text, nullable=True)  # Base64-encoded certificate
+    device_signature = Column(LargeBinary, nullable=True)  # Bundle signature
+
     # Blockchain submission tracking (for crash recovery)
+    blockchain_posted = Column(Boolean, default=False, nullable=False, index=True)
+    block_number = Column(BigInteger, nullable=True)
     tx_id = Column(Integer, ForeignKey("transactions.tx_id"), nullable=True)
 
     __table_args__ = (
         Index("idx_pending_validated", "sma_validated"),
+        Index("idx_pending_validation_status", "validation_status"),
         Index("idx_pending_transaction_id", "transaction_id"),
         Index("idx_pending_modification_level", "modification_level"),
         Index("idx_pending_parent_hash", "parent_image_hash"),
+        Index("idx_pending_blockchain_posted", "blockchain_posted"),
     )
 
 
