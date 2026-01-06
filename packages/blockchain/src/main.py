@@ -1,4 +1,4 @@
-"""Main FastAPI application for Birthmark Blockchain Node."""
+"""Main FastAPI application for Birthmark Media Registry."""
 
 import asyncio
 import logging
@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
     Handles startup and shutdown tasks.
     """
-    logger.info(f"Starting Birthmark Blockchain Node: {settings.node_id}")
+    logger.info(f"Starting Birthmark Media Registry: {settings.node_id}")
     logger.info(f"Consensus mode: {settings.consensus_mode}")
 
     # Load or generate validator keys
@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):
     yield  # Application is running
 
     # Shutdown
-    logger.info("Shutting down Birthmark Blockchain Node")
+    logger.info("Shutting down Birthmark Media Registry")
     await validation_worker.stop()
     worker_task.cancel()
     try:
@@ -71,8 +71,8 @@ def load_or_generate_keys() -> ValidatorKeys:
 
 # Create FastAPI application
 app = FastAPI(
-    title="Birthmark Blockchain Node",
-    description="Merged aggregator and blockchain validator for Birthmark Standard",
+    title="Birthmark Media Registry",
+    description="Submission server and blockchain registry for authenticated media provenance",
     version="0.1.0",
     lifespan=lifespan,
 )
@@ -98,7 +98,7 @@ app.include_router(blockchain.router)  # Phase 1 blockchain node
 async def root():
     """Root endpoint with basic info."""
     return {
-        "service": "Birthmark Blockchain Node",
+        "service": "Birthmark Media Registry",
         "node_id": settings.node_id,
         "version": "0.1.0",
         "consensus_mode": settings.consensus_mode,
