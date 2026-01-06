@@ -306,11 +306,18 @@ async def validate_submission_inline(
     """
     logger.info(f"Validating submission ID={submission.id} with SMA")
 
+    # Parse camera token JSON
+    import json
+    token_data = json.loads(submission.camera_token_json)
+    encrypted_token = bytes.fromhex(token_data["encrypted_nuc_token"])
+    table_references = token_data["table_references"]
+    key_indices = token_data["key_indices"]
+
     # Call SMA for validation
     validation_result = await sma_client.validate_token(
-        encrypted_token=submission.encrypted_token,
-        table_references=submission.table_references,
-        key_indices=submission.key_indices,
+        encrypted_token=encrypted_token,
+        table_references=table_references,
+        key_indices=key_indices,
     )
 
     # Update submission record
