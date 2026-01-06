@@ -30,6 +30,7 @@ from .identity.submission_logger import SubmissionLogger
 from .identity.abuse_detection import AbuseDetector, run_daily_abuse_check
 from .validation.certificate_validator import CertificateValidator
 from .validation.token_validator import validate_camera_token
+from .validation.validation_cache import validation_cache
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "shared"))
@@ -264,6 +265,19 @@ async def health_check():
         total_tables=len(table_manager.key_tables) if table_manager else 0,
         service="sma"
     )
+
+
+@app.get("/cache/stats", tags=["Monitoring"])
+async def get_cache_statistics():
+    """
+    Get validation cache statistics.
+
+    Returns cache performance metrics including hit rate and size.
+    """
+    return {
+        "cache": validation_cache.get_statistics(),
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 
 @app.get("/stats", response_model=StatsResponse, tags=["Monitoring"])
@@ -646,6 +660,22 @@ async def validate_camera_token_new(request: CameraTokenValidationRequest):
     try:
         token = request.camera_token
 
+        # Check cache first (idempotency)
+        cached_result = validation_cache.get_token_result(
+            token.ciphertext,
+            token.auth_tag,
+            token.nonce,
+            token.table_id,
+            token.key_index
+        )
+
+        if cached_result:
+            print(f"✓ Cache hit: returning cached result (count={cached_result.request_count})")
+            return ValidationResponse(
+                valid=cached_result.valid,
+                message=cached_result.message
+            )
+
         # Validate ciphertext is valid hex
         try:
             encrypted_bytes = bytes.fromhex(token.ciphertext)
@@ -723,6 +753,18 @@ async def validate_camera_token_new(request: CameraTokenValidationRequest):
         else:
             print(f"✗ Validation failed: manufacturer={request.manufacturer_authority_id}, "
                   f"table={token.table_id}, reason={message}")
+
+        # Cache the result for future requests (idempotency)
+        validation_cache.put_token_result(
+            token.ciphertext,
+            token.auth_tag,
+            token.nonce,
+            token.table_id,
+            token.key_index,
+            valid,
+            message,
+            device.device_serial if device else None
+        )
 
         return ValidationResponse(
             valid=valid,
@@ -842,6 +884,22 @@ async def validate_certificate(request: CertificateValidationRequest):
         )
 
     try:
+        # Check cache first (idempotency)
+        cached_result = validation_cache.get_cert_result(
+            request.camera_cert,
+            request.image_hash,
+            request.timestamp,
+            request.gps_hash,
+            request.bundle_signature
+        )
+
+        if cached_result:
+            print(f"✓ Cache hit: returning cached result (count={cached_result.request_count})")
+            return ValidationResponse(
+                valid=cached_result.valid,
+                message=cached_result.message
+            )
+
         print(f"Certificate bundle validation request:")
         print(f"  Image Hash: {request.image_hash[:16]}... (used for signature only)")
         print(f"  Timestamp: {request.timestamp}")
@@ -883,6 +941,19 @@ async def validate_certificate(request: CertificateValidationRequest):
             print(f"  ✓ Certificate bundle validated: {reason}")
         else:
             print(f"  ✗ Certificate bundle validation failed: {reason}")
+
+        # Cache the result for future requests (idempotency)
+        device = device_registry.get_device_by_secret(device_secret) if device_secret else None
+        validation_cache.put_cert_result(
+            request.camera_cert,
+            request.image_hash,
+            request.timestamp,
+            request.gps_hash,
+            request.bundle_signature,
+            is_valid,
+            reason,
+            device.device_serial if device else None
+        )
 
         return ValidationResponse(
             valid=is_valid,
