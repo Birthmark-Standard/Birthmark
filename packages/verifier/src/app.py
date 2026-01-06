@@ -73,7 +73,7 @@ async def root():
             status_code=404
         )
 
-    with open(html_path, 'r') as f:
+    with open(html_path, 'r', encoding='utf-8') as f:
         return HTMLResponse(content=f.read())
 
 
