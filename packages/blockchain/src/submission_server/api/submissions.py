@@ -307,6 +307,7 @@ async def validate_submission_inline(
     submission.validation_attempted_at = datetime.utcnow()
     submission.sma_validated = validation_result.valid
     submission.validation_result = "PASS" if validation_result.valid else "FAIL"
+    submission.validation_status = "validated" if validation_result.valid else "rejected"
 
     if not validation_result.valid:
         logger.warning(
@@ -330,6 +331,8 @@ async def submit_certificate_bundle(
     This endpoint accepts X.509 certificate bundles from iOS devices with ECDSA signatures.
     The bundle is validated with SMA and submitted to blockchain.
 
+    Idempotent: Duplicate submissions (same hash + timestamp) return the existing receipt.
+
     Args:
         bundle: Certificate bundle with image hash, certificate, timestamp, and signature
         db: Database session
@@ -337,6 +340,27 @@ async def submit_certificate_bundle(
     Returns:
         Receipt with submission ID and status
     """
+    # Check for duplicate submission (idempotency)
+    from sqlalchemy import select
+
+    stmt = select(PendingSubmission).where(
+        PendingSubmission.image_hash == bundle.image_hash,
+        PendingSubmission.timestamp == bundle.timestamp
+    )
+    result = await db.execute(stmt)
+    existing = result.scalar_one_or_none()
+
+    if existing:
+        logger.info(
+            f"🔁 Duplicate submission detected: hash={bundle.image_hash[:16]}..., "
+            f"timestamp={bundle.timestamp}, returning existing receipt_id={existing.transaction_id}"
+        )
+        return SubmissionResponse(
+            receipt_id=existing.transaction_id or str(existing.id),
+            status="already_received" if existing.sma_validated else "pending_validation",
+            message="Duplicate submission - returning existing receipt",
+        )
+
     receipt_id = str(uuid.uuid4())
 
     logger.info(
@@ -347,33 +371,41 @@ async def submit_certificate_bundle(
     # Create pending submission record
     submission = PendingSubmission(
         image_hash=bundle.image_hash,
-        encrypted_token=b"",  # Not used in Phase 2 (certificate-based)
-        table_references=[],  # Not used in Phase 2
-        key_indices=[],       # Not used in Phase 2
+        transaction_id=receipt_id,  # Store receipt_id for idempotency
+        validation_status="pending_ma_validation",  # Will be processed by background worker
+        manufacturer_authority_id=getattr(bundle, 'software_cert', "UNKNOWN"),
+        camera_cert=bundle.camera_cert,  # Store certificate for validation
+        encrypted_token=b"",  # Not used in certificate-based
+        table_references=[],  # Not used in certificate-based
+        key_indices=[],       # Not used in certificate-based
+        camera_token_json="{}",  # Not used in certificate-based
         timestamp=bundle.timestamp,
-        gps_hash=bundle.gps_hash,
+        gps_hash=getattr(bundle, 'owner_hash', bundle.gps_hash),  # Support owner_hash
         device_signature=bundle.bundle_signature.encode() if isinstance(bundle.bundle_signature, str) else bundle.bundle_signature,
         sma_validated=False,
     )
 
     db.add(submission)
     await db.commit()
+    await db.refresh(submission)  # Get the auto-generated ID
 
     logger.info(f"Certificate submission {receipt_id} queued for validation")
 
-    # Validate with SMA inline
+    # Try immediate validation (fast path) - non-blocking
+    # If this fails, background worker will retry
     try:
         await validate_certificate_submission_inline(
             submission,
             bundle.camera_cert,
             bundle.image_hash,
             bundle.timestamp,
-            bundle.gps_hash,
+            getattr(bundle, 'owner_hash', bundle.gps_hash),
             bundle.bundle_signature,
             db
         )
     except Exception as e:
-        logger.error(f"Validation error for {receipt_id}: {e}")
+        logger.warning(f"Immediate validation failed for {receipt_id}, will retry in background: {e}")
+        # Don't raise - let background worker handle it
 
     return SubmissionResponse(
         receipt_id=receipt_id,
@@ -418,6 +450,7 @@ async def validate_certificate_submission_inline(
     submission.validation_attempted_at = datetime.utcnow()
     submission.sma_validated = validation_result.valid
     submission.validation_result = "PASS" if validation_result.valid else "FAIL"
+    submission.validation_status = "validated" if validation_result.valid else "rejected"
 
     if not validation_result.valid:
         logger.warning(
@@ -426,6 +459,30 @@ async def validate_certificate_submission_inline(
         )
     else:
         logger.info(f"SMA validation PASSED for submission {submission.id}")
+
+        # Submit validated Birthmark Record to blockchain
+        try:
+            blockchain_result = await blockchain_client.submit_hash(
+                image_hash=submission.image_hash,
+                timestamp=submission.timestamp,
+                submission_server_id="submission_server_phase1_001",
+                modification_level=submission.modification_level or 0,
+                parent_image_hash=submission.parent_image_hash,
+                manufacturer_authority_id=submission.manufacturer_authority_id or "UNKNOWN",
+                owner_hash=gps_hash,  # Phase 1: Using gps_hash field for owner_hash
+            )
+
+            submission.blockchain_posted = True
+            submission.block_number = blockchain_result.get("block_height")
+
+            logger.info(
+                f"✅ Submitted to blockchain: hash={submission.image_hash[:16]}..., "
+                f"block={submission.block_number}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Error submitting {submission.image_hash[:16]}... to blockchain: {e}"
+            )
 
     await db.commit()
 
