@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
 
     # Load or generate validator keys
     validator_keys = load_or_generate_keys()
-    logger.info(f"Loaded validator keys: {validator_keys.validator_id}")
+    logger.info(f"✓ Loaded validator keys for node: {settings.node_id}")
 
     # Start background validation worker
     logger.info("Starting MA validation worker...")
