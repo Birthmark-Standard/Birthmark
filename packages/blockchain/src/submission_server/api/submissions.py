@@ -334,6 +334,35 @@ async def validate_submission_inline(
     else:
         logger.info(f"SMA validation PASSED for submission {submission.id}")
 
+        # Submit to blockchain
+        try:
+            blockchain_result = await blockchain_client.submit_hash(
+                image_hash=submission.image_hash,
+                timestamp=submission.timestamp,
+                submission_server_id="submission_server_phase1_001",
+                modification_level=submission.modification_level,
+                parent_image_hash=submission.parent_image_hash,
+                manufacturer_authority_id=submission.manufacturer_authority_id,
+                owner_hash=submission.gps_hash,
+            )
+
+            if blockchain_result.success:
+                submission.blockchain_posted = True
+                submission.block_number = blockchain_result.block_height
+                submission.tx_id = blockchain_result.tx_id
+                logger.info(
+                    f"✅ Submitted to blockchain: hash={submission.image_hash[:16]}..., "
+                    f"block={submission.block_number}, tx_id={submission.tx_id}"
+                )
+            else:
+                logger.error(
+                    f"❌ Blockchain submission failed: {blockchain_result.message}"
+                )
+        except Exception as e:
+            logger.error(
+                f"Error submitting {submission.image_hash[:16]}... to blockchain: {e}"
+            )
+
     await db.commit()
 
 
