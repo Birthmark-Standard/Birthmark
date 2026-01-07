@@ -413,8 +413,8 @@ Examples:
 
     parser.add_argument(
         '--submission-server',
-        default='http://192.168.50.111:8545',
-        help='Birthmark blockchain node URL (default: http://192.168.50.111:8545)'
+        default=os.environ.get('BIRTHMARK_SUBMISSION_SERVER', None),
+        help='Birthmark blockchain node URL (env: BIRTHMARK_SUBMISSION_SERVER)'
     )
 
     parser.add_argument(
@@ -449,6 +449,25 @@ Examples:
     )
 
     args = parser.parse_args()
+
+    # Prompt for submission server if not provided
+    if not args.submission_server:
+        print("\n⚠ No submission server URL configured")
+        print("\nOptions:")
+        print("  1. Set environment variable: export BIRTHMARK_SUBMISSION_SERVER=http://YOUR_IP:8545")
+        print("  2. Pass as argument: --submission-server http://YOUR_IP:8545")
+        print("  3. Enter now for this session only")
+        print()
+
+        user_input = input("Enter submission server URL (or press Enter to cancel): ").strip()
+
+        if not user_input:
+            print("❌ Submission server URL required")
+            sys.exit(1)
+
+        args.submission_server = user_input
+        print(f"✓ Using submission server: {args.submission_server}")
+        print()
 
     try:
         # Initialize camera
