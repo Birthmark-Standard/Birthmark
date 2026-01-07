@@ -515,7 +515,7 @@ async def validate_certificate_submission_inline(
                 modification_level=submission.modification_level or 0,
                 parent_image_hash=submission.parent_image_hash,
                 manufacturer_authority_id=submission.manufacturer_authority_id or "UNKNOWN",
-                owner_hash=gps_hash,  # Phase 1: Using gps_hash field for owner_hash
+                gps_hash=gps_hash,
             )
 
             submission.blockchain_posted = True
