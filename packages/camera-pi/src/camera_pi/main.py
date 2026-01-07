@@ -7,6 +7,7 @@ Demonstrates zero-latency photo authentication with hardware-backed security.
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
