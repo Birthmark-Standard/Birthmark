@@ -11,6 +11,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Optional
+from PIL import Image
 
 from .raw_capture import create_capture_manager, RawCaptureConfig
 from .provisioning_client import ProvisioningClient
@@ -266,12 +267,18 @@ class BirthmarkCamera:
                 json.dump(metadata, f, indent=2)
             print(f"✓ Saved: {output_file.name}")
 
-            # TODO: If saving processed image to disk (JPEG/PNG), write EXIF:
-            # if capture_result.processed_image is not None:
-            #     image_file = self.output_dir / f"IMG_{capture_result.timestamp}.jpg"
-            #     # Save processed image...
-            #     if owner_metadata:
-            #         write_owner_exif(str(image_file), owner_metadata)
+            # Save processed image to disk
+            if capture_result.processed_image is not None:
+                image_file = self.output_dir / f"IMG_{capture_result.timestamp}.jpg"
+
+                # Convert numpy array to PIL Image and save as JPEG
+                img = Image.fromarray(capture_result.processed_image)
+                img.save(str(image_file), 'JPEG', quality=95)
+                print(f"✓ Saved image: {image_file.name}")
+
+                # Write owner attribution to EXIF if present
+                if owner_metadata:
+                    write_owner_exif(str(image_file), owner_metadata)
 
         total_time = time.time() - start_time
         self.capture_count += 1
