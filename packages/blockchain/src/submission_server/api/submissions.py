@@ -343,7 +343,7 @@ async def validate_submission_inline(
                 modification_level=submission.modification_level,
                 parent_image_hash=submission.parent_image_hash,
                 manufacturer_authority_id=submission.manufacturer_authority_id,
-                owner_hash=submission.gps_hash,
+                gps_hash=submission.gps_hash,
             )
 
             if blockchain_result.success:
