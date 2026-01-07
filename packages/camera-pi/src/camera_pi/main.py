@@ -219,8 +219,8 @@ class BirthmarkCamera:
             print(f"✓ Camera token: table={camera_token.table_id}, "
                   f"key_index={camera_token.key_index} ({token_time:.3f}s)")
 
-            # Step 3: Create authentication bundle with ISP validation and owner hash
-            bundle = AuthenticationBundle(
+            # Step 3: Create RAW authentication bundle (modification_level=0)
+            raw_bundle = AuthenticationBundle(
                 image_hash=capture_result.image_hash,
                 camera_token=camera_token.to_dict(),
                 timestamp=capture_result.timestamp,
@@ -228,31 +228,60 @@ class BirthmarkCamera:
                 gps_hash=None,  # TODO: GPS integration
                 owner_hash=owner_hash,
                 device_signature=None,  # Sign below
-                isp_validation=isp_validation_data
+                isp_validation=isp_validation_data,
+                modification_level=0,  # Raw Bayer data
+                parent_image_hash=None  # No parent
             )
 
-            # Step 4: Sign bundle
+            # Step 4: Sign raw bundle
             sign_start = time.time()
-            signature = sign_bundle(bundle.to_json(), self.tpm._private_key)
-            bundle.device_signature = signature.hex()
+            signature = sign_bundle(raw_bundle.to_json(), self.tpm._private_key)
+            raw_bundle.device_signature = signature.hex()
             sign_time = time.time() - sign_start
-            print(f"✓ Bundle signed (variance: {capture_result.isp_variance:.4f}, {sign_time:.3f}s)"
-                  if capture_result.isp_variance else f"✓ Bundle signed ({sign_time:.3f}s)")
+            print(f"✓ Raw bundle signed (variance: {capture_result.isp_variance:.4f}, {sign_time:.3f}s)"
+                  if capture_result.isp_variance else f"✓ Raw bundle signed ({sign_time:.3f}s)")
 
-        # Step 5: Queue for submission (non-blocking)
-        self.submission_queue.enqueue(bundle)
+            # Step 5: Create PROCESSED authentication bundle (modification_level=1)
+            # Only create if processed image exists
+            processed_bundle = None
+            if capture_result.processed_hash:
+                processed_bundle = AuthenticationBundle(
+                    image_hash=capture_result.processed_hash,
+                    camera_token=camera_token.to_dict(),  # Same token
+                    timestamp=capture_result.timestamp,
+                    table_assignments=self.provisioning_data.table_assignments,
+                    gps_hash=None,
+                    owner_hash=owner_hash,
+                    device_signature=None,  # Sign below
+                    isp_validation=None,  # ISP validation only on raw
+                    modification_level=1,  # Processed through ISP
+                    parent_image_hash=capture_result.image_hash  # Raw hash is parent
+                )
 
-        # Step 6: Save image metadata
+                # Sign processed bundle
+                signature = sign_bundle(processed_bundle.to_json(), self.tpm._private_key)
+                processed_bundle.device_signature = signature.hex()
+                print(f"✓ Processed bundle signed ({time.time() - sign_start - sign_time:.3f}s)")
+
+        # Step 6: Queue for submission (non-blocking)
+        # Submit raw bundle first
+        self.submission_queue.enqueue(raw_bundle)
+
+        # Then submit processed bundle (if exists)
+        if processed_bundle:
+            self.submission_queue.enqueue(processed_bundle)
+
+        # Step 7: Save image metadata
         if save_image:
             output_file = self.output_dir / f"IMG_{capture_result.timestamp}.json"
 
-            # Prepare metadata
+            # Prepare metadata with both raw and processed hashes
             metadata = {
-                'image_hash': capture_result.image_hash,
+                'raw_hash': capture_result.image_hash,
+                'processed_hash': capture_result.processed_hash,
                 'timestamp': capture_result.timestamp,
                 'device_serial': self.provisioning_data.device_serial,
-                'bundle': bundle.to_json(self.tpm._private_key) if self.use_certificates
-                         else (bundle.to_json() if hasattr(bundle, 'to_json') else {})
+                'submission_id': raw_bundle.to_json().get('submission_id') if hasattr(raw_bundle, 'to_json') else None
             }
 
             # Add owner attribution metadata if present

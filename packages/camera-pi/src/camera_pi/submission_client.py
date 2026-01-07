@@ -29,6 +29,8 @@ class AuthenticationBundle:
     owner_hash: Optional[str] = None  # SHA-256 of (owner_name + owner_salt)
     device_signature: Optional[str] = None  # ECDSA signature (hex)
     isp_validation: Optional[dict] = None  # ISP validation data (variance-from-expected)
+    modification_level: int = 0  # 0=raw, 1=processed, 2+=further modifications
+    parent_image_hash: Optional[str] = None  # Parent hash for provenance chain
 
     def to_json(self) -> dict:
         """
@@ -70,9 +72,13 @@ class AuthenticationBundle:
             "table_references": self.table_assignments,  # All 3 assigned tables
             "key_indices": key_indices,  # Actual + 2 random
             "timestamp": self.timestamp,
+            "modification_level": self.modification_level,
         }
 
         # Add optional fields
+        if self.parent_image_hash:
+            payload["parent_image_hash"] = self.parent_image_hash
+
         if self.gps_hash:
             payload["gps_hash"] = self.gps_hash
 
