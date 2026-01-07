@@ -29,7 +29,7 @@ services:
     environment:
       - NODE_ID=validator_001
       - DATABASE_URL=postgresql://birthmark:birthmark@postgres:5432/birthmark_chain
-      - SMA_VALIDATION_ENDPOINT=http://host.docker.internal:8001/validate
+      - SMA_VALIDATION_ENDPOINT=http://host.docker.internal:8001/validate-legacy
       - API_HOST=0.0.0.0
       - API_PORT=8545
     ports:
