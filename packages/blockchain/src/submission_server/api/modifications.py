@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2024-2026 The Birthmark Standard Foundation
+
 """
 Modification tracking API endpoints for Birthmark blockchain submission server.
 
