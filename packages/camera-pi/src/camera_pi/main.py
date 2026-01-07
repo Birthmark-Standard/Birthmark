@@ -228,7 +228,7 @@ class BirthmarkCamera:
                 gps_hash=None,  # TODO: GPS integration
                 owner_hash=owner_hash,
                 device_signature=None,  # Sign below
-                isp_validation=isp_validation_data,
+                isp_validation=None,  # No ISP data for raw
                 modification_level=0,  # Raw Bayer data
                 parent_image_hash=None  # No parent
             )
@@ -238,8 +238,7 @@ class BirthmarkCamera:
             signature = sign_bundle(raw_bundle.to_json(), self.tpm._private_key)
             raw_bundle.device_signature = signature.hex()
             sign_time = time.time() - sign_start
-            print(f"✓ Raw bundle signed (variance: {capture_result.isp_variance:.4f}, {sign_time:.3f}s)"
-                  if capture_result.isp_variance else f"✓ Raw bundle signed ({sign_time:.3f}s)")
+            print(f"✓ Raw bundle signed ({sign_time:.3f}s)")
 
             # Step 5: Create PROCESSED authentication bundle (modification_level=1)
             # Only create if processed image exists
@@ -253,7 +252,7 @@ class BirthmarkCamera:
                     gps_hash=None,
                     owner_hash=owner_hash,
                     device_signature=None,  # Sign below
-                    isp_validation=None,  # ISP validation only on raw
+                    isp_validation=isp_validation_data,  # ISP validation on processed
                     modification_level=1,  # Processed through ISP
                     parent_image_hash=capture_result.image_hash  # Raw hash is parent
                 )
@@ -261,7 +260,8 @@ class BirthmarkCamera:
                 # Sign processed bundle
                 signature = sign_bundle(processed_bundle.to_json(), self.tpm._private_key)
                 processed_bundle.device_signature = signature.hex()
-                print(f"✓ Processed bundle signed ({time.time() - sign_start - sign_time:.3f}s)")
+                print(f"✓ Processed bundle signed (variance: {capture_result.isp_variance:.4f}, {time.time() - sign_start - sign_time:.3f}s)"
+                      if capture_result.isp_variance else f"✓ Processed bundle signed ({time.time() - sign_start - sign_time:.3f}s)")
 
         # Step 6: Queue for submission (non-blocking)
         # Submit raw bundle first
@@ -326,7 +326,50 @@ class BirthmarkCamera:
         }
 
         print(f"✓ Total time: {total_time:.3f}s\n")
+
+        # Prompt to upload processed image to laptop
+        if save_image and capture_result.processed_image is not None:
+            self._prompt_upload_image(image_file)
+
         return result
+
+    def _prompt_upload_image(self, image_path: Path) -> None:
+        """
+        Prompt user to upload processed image to laptop via SCP.
+
+        Args:
+            image_path: Path to the processed JPEG image
+        """
+        try:
+            response = input(f"Upload {image_path.name} to laptop? (y/N): ").strip().lower()
+
+            if response == 'y':
+                import subprocess
+
+                # Get laptop IP from environment or prompt
+                laptop_ip = os.environ.get('LAPTOP_IP', '192.168.50.161')
+
+                # Target path on laptop (Windows Downloads folder)
+                remote_path = f"samry@{laptop_ip}:C:/Users/samry/Downloads/"
+
+                print(f"Uploading to {remote_path}...")
+
+                # Use scp to transfer file
+                result = subprocess.run(
+                    ['scp', str(image_path), remote_path],
+                    capture_output=True,
+                    text=True
+                )
+
+                if result.returncode == 0:
+                    print(f"✓ Upload successful!")
+                else:
+                    print(f"✗ Upload failed: {result.stderr}")
+
+        except KeyboardInterrupt:
+            print("\n✗ Upload cancelled")
+        except Exception as e:
+            print(f"✗ Upload error: {e}")
 
     def capture_timelapse(
         self,
