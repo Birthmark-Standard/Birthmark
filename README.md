@@ -105,7 +105,7 @@ The system consists of five main components:
 
 **Simulated Manufacturer Authority (SMA)** - Maintains key tables and NUC records, validates encrypted tokens without seeing image content, returns PASS/FAIL.
 
-**Birthmark Media Registry** - Independent Substrate blockchain operated by trusted institutions (target: 20 nodes, 3 minimum for operation), Byzantine fault tolerant consensus, stores SHA-256 hashes on-chain (~140 bytes per record, optimized for scale), direct hash lookup queries, zero gas fees, rate-limited submissions (500 per 10 minutes per IP) to prevent spam.
+**Birthmark Media Registry** - Independent Substrate blockchain (selected for forkless runtime upgrade capability) operated by trusted institutions (target: 20 nodes, 3 minimum for operation), Byzantine fault tolerant consensus, stores SHA-256 hashes on-chain (<1KB per record, 1 billion records per terabyte), direct hash lookup queries, zero gas fees, rate-limited submissions (500 per 10 minutes per IP) to prevent spam. Verification is non-time-sensitive; images become verifiable within minutes of capture with no user-facing delay.
 
 **Verification Client** - Hashes image, queries blockchain for direct hash match, displays authentication result.
 

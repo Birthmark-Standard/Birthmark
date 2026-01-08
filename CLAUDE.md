@@ -210,7 +210,7 @@ birthmark/
 
 ## Data Structures
 
-### Camera Submission (GPS Disabled - Default)
+### Camera Submission
 ```python
 {
     "submission_type": "camera",
@@ -432,10 +432,9 @@ CREATE TABLE validation_log (
 **Camera Manufacturer (via SMA):**
 - ✅ "One of my cameras authenticated a photo"
 - ✅ Authentication frequency per camera (usage statistics)
-- ❌ Which specific camera (table shared by ~12,000 devices)
+- ❌ Which specific camera (table shared by thousands of devices)
 - ❌ Image content or hashes
 - ❌ Precise capture timestamp
-- ❌ GPS location
 
 **Submission Server:**
 - ✅ Image hashes (to post to Registry)
@@ -457,17 +456,17 @@ CREATE TABLE validation_log (
 **Public Verifier:**
 - ✅ "This hash was authenticated by this manufacturer on this date"
 - ❌ Who took the photo
-- ❌ Where (unless GPS-enabled version and they have that image)
+- ❌ Where the photo was taken
 - ❌ Which specific camera unit
 
 ### Privacy Mechanisms
 
-1. **Key Table Anonymity:** Camera randomly selects from 3 tables shared by ~12,000 devices
+1. **Key Table Anonymity:** Camera randomly selects from 3 tables shared by thousands of devices
 2. **Encrypted Tokens:** NUC hash encrypted, never transmitted in plaintext
 3. **Hash-Only Storage:** Image content never transmitted or stored anywhere
 4. **Separated Concerns:** No single entity has complete information
 5. **Timestamp Obfuscation:** Registry timestamps reflect server processing, not photo capture
-6. **GPS Opt-In:** Location hashing disabled by default, user must explicitly enable
+6. **Metadata Hashing:** Location and timestamp metadata are hashed, proving authenticity without revealing content
 
 ---
 
@@ -558,7 +557,6 @@ pytest tests/integration/ -v
 
 ### Hardware
 - ❌ TPM hardware issue (using simulated SE)
-- ❌ No GPS module installed
 - ⚠️ Single camera system (no fleet management)
 
 ### Software
