@@ -120,7 +120,7 @@ We've optimized the Substrate blockchain to achieve **69% storage reduction** (f
 - Removed 8 unnecessary pallets while preserving forkless upgrades
 
 **Economics at 1M images/day:**
-- Storage: 47 GB/year (vs 151 GB unoptimized)
+- Storage: 47 GB/year
 - Node cost: $200-350/year
 - Scales to 10M images/day at $500-800/year
 
