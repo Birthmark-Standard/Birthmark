@@ -36,19 +36,19 @@ frame-system-benchmarking = { workspace = true, optional = true }
 frame-system-rpc-runtime-api = { workspace = true }
 frame-try-runtime = { workspace = true, optional = true }
 
-# FRAME pallets
+# FRAME pallets - MINIMAL CONFIGURATION
 pallet-aura = { workspace = true }
-pallet-balances = { workspace = true }
 pallet-grandpa = { workspace = true }
-pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
-pallet-transaction-payment = { workspace = true }
-pallet-transaction-payment-rpc-runtime-api = { workspace = true }
-pallet-democracy = { workspace = true }
-pallet-collective = { workspace = true }
-pallet-treasury = { workspace = true }
-pallet-scheduler = { workspace = true }
-pallet-preimage = { workspace = true }
+# Removed for optimization:
+# - pallet-balances (no token economy needed)
+# - pallet-transaction-payment (feeless for submission server)
+# - pallet-sudo (using off-chain governance)
+# - pallet-democracy (using off-chain governance)
+# - pallet-collective (using off-chain governance)
+# - pallet-treasury (not needed)
+# - pallet-scheduler (not needed)
+# - pallet-preimage (not needed)
 
 # Local pallets
 pallet-birthmark = { path = "../pallets/birthmark", default-features = false }
@@ -83,17 +83,8 @@ std = [
     "frame-system-rpc-runtime-api/std",
     "frame-try-runtime?/std",
     "pallet-aura/std",
-    "pallet-balances/std",
     "pallet-grandpa/std",
-    "pallet-sudo/std",
     "pallet-timestamp/std",
-    "pallet-transaction-payment/std",
-    "pallet-transaction-payment-rpc-runtime-api/std",
-    "pallet-democracy/std",
-    "pallet-collective/std",
-    "pallet-treasury/std",
-    "pallet-scheduler/std",
-    "pallet-preimage/std",
     "pallet-birthmark/std",
     "substrate-wasm-builder",
 ]
@@ -102,15 +93,8 @@ runtime-benchmarks = [
     "frame-support/runtime-benchmarks",
     "frame-system/runtime-benchmarks",
     "frame-system-benchmarking/runtime-benchmarks",
-    "pallet-balances/runtime-benchmarks",
     "pallet-grandpa/runtime-benchmarks",
-    "pallet-sudo/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
-    "pallet-democracy/runtime-benchmarks",
-    "pallet-collective/runtime-benchmarks",
-    "pallet-treasury/runtime-benchmarks",
-    "pallet-scheduler/runtime-benchmarks",
-    "pallet-preimage/runtime-benchmarks",
 ]
 try-runtime = [
     "frame-executive/try-runtime",
@@ -118,15 +102,7 @@ try-runtime = [
     "frame-system/try-runtime",
     "frame-try-runtime/try-runtime",
     "pallet-aura/try-runtime",
-    "pallet-balances/try-runtime",
     "pallet-grandpa/try-runtime",
-    "pallet-sudo/try-runtime",
     "pallet-timestamp/try-runtime",
-    "pallet-transaction-payment/try-runtime",
-    "pallet-democracy/try-runtime",
-    "pallet-collective/try-runtime",
-    "pallet-treasury/try-runtime",
-    "pallet-scheduler/try-runtime",
-    "pallet-preimage/try-runtime",
     "pallet-birthmark/try-runtime",
 ]
