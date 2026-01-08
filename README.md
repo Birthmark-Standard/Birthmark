@@ -67,7 +67,7 @@ The complete system architecture showing how all components interact: from camer
 
 We're building a Raspberry Pi-based camera prototype that demonstrates the complete authentication pipeline. This proves the architecture works before seeking manufacturer partnerships.
 
-- Raspberry Pi 4 + HQ Camera + TPM secure element
+- Raspberry Pi 4 + HQ Camera + Simulated Secure Element (TPM deferred)
 - Submission server with SMA validation
 - Custom blockchain nodes operated by institutions
 - Photography club user validation
@@ -113,19 +113,20 @@ For detailed technical specifications, see [CLAUDE.md](./CLAUDE.md) and the docu
 ```
 birthmark/
 ├── packages/
-│   ├── camera-pi/        # Raspberry Pi prototype
-│   ├── aggregator/       # Submission server
+│   ├── blockchain/       # Merged submission server + blockchain node
+│   ├── camera-pi/        # Raspberry Pi camera prototype
+│   ├── registry/         # Substrate blockchain (Birthmark Media Registry)
 │   ├── sma/              # Simulated Manufacturer Authority
-│   ├── blockchain/       # Custom Birthmark blockchain
-│   ├── mobile-app/       # Android app (Phase 2)
 │   └── verifier/         # Verification client
 ├── shared/
-│   ├── types/            # Common data structures
+│   ├── certificates/     # Certificate handling utilities
 │   ├── crypto/           # Cryptographic utilities
-│   └── protocols/        # API specifications
+│   ├── protocols/        # API specifications
+│   └── types/            # Common data structures
 └── docs/
-    ├── architecture/     # System diagrams
-    └── phase-plans/      # Development roadmaps
+    ├── architecture/     # Architecture documents and design updates
+    ├── phase-plans/      # Phase implementation plans
+    └── testing/          # Testing guides and reports
 ```
 
 ---
@@ -197,10 +198,11 @@ Our goal is to establish trustworthy media authentication infrastructure that he
 
 ## Documentation
 
-- [Technical Architecture](./docs/architecture/) - System diagrams and component specifications
-- [Phase Plans](./docs/phase-plans/) - Detailed implementation roadmaps
-- [CLAUDE.md](./CLAUDE.md) - Development context for use with Claude Code
-- [C2PA Comparison](./docs/birthmark-vs-c2pa-comparison.md) - How standards complement each other
+- [CLAUDE.md](./CLAUDE.md) - Development context and technical specifications for Phase 1
+- [Phase Plans](./docs/phase-plans/) - Detailed implementation roadmaps for each phase
+- [Architecture Docs](./docs/architecture/) - Architecture updates and design documents
+- [LICENSING.md](./LICENSING.md) - Complete licensing guide with use cases and compliance
+- [Phase 1 Deployment Guide](./docs/PHASE_1_DEPLOYMENT_GUIDE.md) - Production deployment instructions
 
 ---
 
