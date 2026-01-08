@@ -14,7 +14,7 @@ Current solutions like C2PA embed authentication in image metadata, but this met
 
 ## Our Solution
 
-The Birthmark Standard authenticates images at the hardware level using each camera's unique sensor fingerprint. When a photo is taken, the camera's secure element cryptographically signs the image hash using rotating keys that only the manufacturer can validate. These hashes are stored on a custom Birthmark blockchain operated by like-minded institutions (universities, archives, journalism organizations).
+The Birthmark Standard authenticates images at the hardware level using each camera's unique sensor fingerprint. When a photo is taken, the camera's secure element cryptographically signs the image hash using rotating keys that only the manufacturer can validate. These hashes are stored on an independent Birthmark blockchain operated by trusted institutions (universities, archives, journalism organizations).
 
 **The result:** Anyone can verify that an image originated from a legitimate camera at a specific time. The blockchain stores authentication independently of image metadata, so verification works even if the image is converted to different formats or has metadata stripped. Editing operations that want to maintain authentication must declare their transformations and pass deviation validation. No accounts required. No gas fees. No centralized gatekeepers. Just cryptographic proof.
 
@@ -43,8 +43,8 @@ The Birthmark Standard authenticates images at the hardware level using each cam
    Image hash submitted to blockchain
 
 3. STORE
-   Full SHA-256 hash stored directly on-chain
-   Birthmark blockchain nodes (operated by institutions)
+   SHA-256 hash stored on independent blockchain
+   Byzantine fault tolerant network (20 nodes, 3 minimum)
    Immutable timestamp with zero gas fees
 
 4. VERIFY
@@ -104,7 +104,7 @@ The system consists of five main components:
 
 **Simulated Manufacturer Authority (SMA)** - Maintains key tables and NUC records, validates encrypted tokens without seeing image content, returns PASS/FAIL.
 
-**Birthmark Blockchain** - Custom blockchain operated by trusted institutions, stores full SHA-256 hashes directly on-chain, provides direct hash lookup queries, zero gas fees.
+**Birthmark Media Registry** - Independent Substrate blockchain operated by trusted institutions (target: 20 nodes, 3 minimum for operation), Byzantine fault tolerant consensus, stores SHA-256 hashes on-chain (<1KB per record, 1 billion records per terabyte), direct hash lookup queries, zero gas fees, rate-limited submissions (500 per 10 minutes per IP) to prevent spam.
 
 **Verification Client** - Hashes image, queries blockchain for direct hash match, displays authentication result.
 
@@ -203,7 +203,7 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 
 **Phase 3: Production Network**
 - Camera manufacturer partnerships and integrations
-- Multi-institution blockchain network deployment
+- Multi-institution blockchain network (target: 20 nodes across journalism organizations and universities)
 - Public verification tools and browser extensions
 - Standards body engagement (W3C, IETF)
 
