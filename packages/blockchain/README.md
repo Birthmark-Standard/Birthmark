@@ -567,7 +567,10 @@ This is Phase 1 development. Architecture is still evolving. Feedback welcome!
 
 ## License
 
-TBD - The Birthmark Standard Foundation
+AGPL-3.0-or-later - See LICENSE file in this directory.
+
+This component is part of the core trust infrastructure and must remain
+transparent. Any modifications to this server must be made publicly available.
 
 ---
 

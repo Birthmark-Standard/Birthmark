@@ -339,7 +339,10 @@ camera = BirthmarkCamera(use_mock_camera=True)
 
 ## License
 
-TBD - See LICENSE file in repository root
+Apache-2.0 - See LICENSE file in this directory.
+
+This is a reference implementation licensed permissively to encourage
+manufacturer adoption without licensing friction.
 
 ## Status
 

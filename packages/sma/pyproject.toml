@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [
     {name = "The Birthmark Standard Foundation", email = "contact@birthmark.org"}
 ]
-license = {text = "TBD"}  # TODO: Specify license
+license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
 keywords = ["birthmark", "photo-authentication", "manufacturer", "validation"]
 classifiers = [

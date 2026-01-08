@@ -552,7 +552,10 @@ High-level steps:
 
 ## License
 
-Apache License 2.0 - See LICENSE file in repository root.
+AGPL-3.0-or-later - See LICENSE file in this directory.
+
+This component is part of the core trust infrastructure (Birthmark Media Registry)
+and must remain transparent. Any modifications must be made publicly available.
 
 ---
 
