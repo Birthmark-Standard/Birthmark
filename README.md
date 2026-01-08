@@ -63,14 +63,18 @@ The complete system architecture showing how all components interact: from camer
 
 ## Current Status
 
-**Phase 1: Hardware Prototype** (In Progress)
+**Phase 1: Hardware Prototype** (Complete)
 
-We're building a Raspberry Pi-based camera prototype that demonstrates the complete authentication pipeline. This proves the architecture works before seeking manufacturer partnerships.
+We've built and deployed a working Raspberry Pi-based camera prototype that demonstrates the complete authentication pipeline from capture through blockchain verification.
 
-- Raspberry Pi 4 + HQ Camera + Simulated Secure Element (TPM deferred)
-- Submission server with SMA validation
-- Custom blockchain nodes operated by institutions
-- Photography club user validation
+**Completed:**
+- ✅ Raspberry Pi 4 HQ Camera with hardware authentication
+- ✅ Submission server with manufacturer validation
+- ✅ Substrate blockchain (Birthmark Media Registry)
+- ✅ End-to-end authentication pipeline validated
+
+**Current Work:**
+- 🎥 Producing demonstration video showing complete workflow
 
 ---
 
@@ -79,14 +83,14 @@ We're building a Raspberry Pi-based camera prototype that demonstrates the compl
 ### For Photojournalists
 Prove your images are authentic when covering conflict zones, protests, or breaking news. Your credibility travels with the image, not with your employer's reputation.
 
-### For Competition Photographers  
-Enforce "no AI" rules with cryptographic certainty. Judges can verify entries came from real cameras.
-
 ### For Fact-Checkers
-Quickly determine if an image could have been captured by a legitimate camera at the claimed time.
+Quickly determine if viral images could have been captured by legitimate cameras at the claimed time, or were AI-generated.
+
+### For E-Commerce
+Prevent product listing fraud with verified photos. Buyers can trust that product images came from real cameras, not generative AI.
 
 ### For the Public
-Evaluate media trustworthiness without relying on platform judgments or institutional gatekeepers.
+Evaluate media trustworthiness without relying on platform judgments or institutional gatekeepers. Anyone can verify any image.
 
 ---
 
@@ -186,11 +190,22 @@ This project is developed by The Birthmark Standard Foundation, a 501(c)(3) nonp
 
 ## Roadmap
 
-**Phase 1** (Current) - Hardware prototype with Raspberry Pi, photography club validation, initial blockchain deployment
+**Phase 1: Proof of Concept** (Complete)
+- Built working Raspberry Pi camera prototype
+- Deployed submission server and Substrate blockchain
+- Validated complete authentication pipeline
 
-**Phase 2** - Android mobile app, broader user testing (50-100 photographers), performance benchmarking
+**Phase 2: Mobile Implementation** (Next)
+- Android camera app with native authentication
+- User testing with journalists and photographers (50-100 users)
+- Performance optimization and benchmarking
+- Developer tools and SDKs
 
-**Phase 3** - Manufacturer partnerships, production blockchain network with institutional nodes, public verification tools
+**Phase 3: Production Network**
+- Camera manufacturer partnerships and integrations
+- Multi-institution blockchain network deployment
+- Public verification tools and browser extensions
+- Standards body engagement (W3C, IETF)
 
 Our goal is to establish trustworthy media authentication infrastructure that helps restore confidence in online information and supports our shared ability to distinguish reality from fabrication.
 
@@ -203,19 +218,6 @@ Our goal is to establish trustworthy media authentication infrastructure that he
 - [Architecture Docs](./docs/architecture/) - Architecture updates and design documents
 - [LICENSING.md](./LICENSING.md) - Complete licensing guide with use cases and compliance
 - [Phase 1 Deployment Guide](./docs/PHASE_1_DEPLOYMENT_GUIDE.md) - Production deployment instructions
-
----
-
-## Contact
-
-**The Birthmark Standard Foundation** | 
-Website: [birthmarkstandard.org](https://birthmarkstandard.org) | 
-Email: [contact@birthmarkstandard.org](mailto:contact@birthmarkstandard.org) | 
-Discord: [Join our community](https://discord.gg/9Ts7dM9pb5)
-
-**Samuel C. Ryan** | 
-Founder & Executive Director | 
-LinkedIn: [linkedin.com/in/samuelcryan](https://www.linkedin.com/in/samuelcryan)
 
 ---
 
@@ -237,6 +239,19 @@ For detailed information, see:
 - [LICENSE](./LICENSE) - Overview of dual-licensing structure
 - [LICENSING.md](./LICENSING.md) - Complete guide with use cases and compliance requirements
 - Individual LICENSE files in each package directory
+
+---
+
+## Contact
+
+**The Birthmark Standard Foundation** |
+Website: [birthmarkstandard.org](https://birthmarkstandard.org) |
+Email: [contact@birthmarkstandard.org](mailto:contact@birthmarkstandard.org) |
+Discord: [Join our community](https://discord.gg/9Ts7dM9pb5)
+
+**Samuel C. Ryan** |
+Founder & Executive Director |
+LinkedIn: [linkedin.com/in/samuelcryan](https://www.linkedin.com/in/samuelcryan)
 
 ---
 
