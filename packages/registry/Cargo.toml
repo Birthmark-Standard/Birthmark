@@ -10,7 +10,7 @@ resolver = "2"
 authors = ["Birthmark Standard Foundation"]
 edition = "2021"
 repository = "https://github.com/Birthmark-Standard/Birthmark"
-license = "Apache-2.0"
+license = "AGPL-3.0-or-later"
 
 [workspace.dependencies]
 # Use Polkadot SDK stable2409 release for guaranteed version compatibility
