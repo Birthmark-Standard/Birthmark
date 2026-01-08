@@ -72,6 +72,7 @@ We've built and deployed a working Raspberry Pi-based camera prototype that demo
 - ✅ Submission server with manufacturer validation
 - ✅ Substrate blockchain (Birthmark Media Registry)
 - ✅ End-to-end authentication pipeline validated
+- ✅ **Storage optimization: 69% reduction** (450 → 140 bytes/record)
 
 **Current Work:**
 - 🎥 Producing demonstration video showing complete workflow
@@ -104,9 +105,26 @@ The system consists of five main components:
 
 **Simulated Manufacturer Authority (SMA)** - Maintains key tables and NUC records, validates encrypted tokens without seeing image content, returns PASS/FAIL.
 
-**Birthmark Media Registry** - Independent Substrate blockchain operated by trusted institutions (target: 20 nodes, 3 minimum for operation), Byzantine fault tolerant consensus, stores SHA-256 hashes on-chain (<1KB per record, 1 billion records per terabyte), direct hash lookup queries, zero gas fees, rate-limited submissions (500 per 10 minutes per IP) to prevent spam.
+**Birthmark Media Registry** - Independent Substrate blockchain operated by trusted institutions (target: 20 nodes, 3 minimum for operation), Byzantine fault tolerant consensus, stores SHA-256 hashes on-chain (~140 bytes per record, optimized for scale), direct hash lookup queries, zero gas fees, rate-limited submissions (500 per 10 minutes per IP) to prevent spam.
 
 **Verification Client** - Hashes image, queries blockchain for direct hash match, displays authentication result.
+
+### Blockchain Storage Optimization
+
+We've optimized the Substrate blockchain to achieve **69% storage reduction** (from ~450 bytes to ~140 bytes per record). This makes operating a registry node sustainable at **$200-350/year** for journalism institutions, even at millions of images per day.
+
+**Key optimizations:**
+- Binary hash storage (32 bytes vs 64 bytes hex)
+- Authority lookup tables (2 bytes vs 20-100 bytes strings)
+- Compact encoding for timestamps and block numbers
+- Removed 8 unnecessary pallets while preserving forkless upgrades
+
+**Economics at 1M images/day:**
+- Storage: 47 GB/year (vs 151 GB unoptimized)
+- Node cost: $200-350/year (vs $500-800 unoptimized)
+- Scales to 10M images/day at $500-800/year
+
+For detailed analysis, see [docs/OPTIMIZATION_RESULTS.md](./docs/OPTIMIZATION_RESULTS.md).
 
 For detailed technical specifications, see [CLAUDE.md](./CLAUDE.md) and the documentation in `/docs`.
 
@@ -216,6 +234,7 @@ Our goal is to establish trustworthy media authentication infrastructure that he
 - [CLAUDE.md](./CLAUDE.md) - Development context and technical specifications for Phase 1
 - [Phase Plans](./docs/phase-plans/) - Detailed implementation roadmaps for each phase
 - [Architecture Docs](./docs/architecture/) - Architecture updates and design documents
+- [Storage Optimization](./docs/OPTIMIZATION_RESULTS.md) - 69% storage reduction analysis and implementation
 - [LICENSING.md](./LICENSING.md) - Complete licensing guide with use cases and compliance
 - [Phase 1 Deployment Guide](./docs/PHASE_1_DEPLOYMENT_GUIDE.md) - Production deployment instructions
 
