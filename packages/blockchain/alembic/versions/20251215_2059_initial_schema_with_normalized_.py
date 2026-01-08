@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2024-2026 The Birthmark Standard Foundation
+
 """Initial schema with normalized submission_server_id
 
 Revision ID: 79d5e2ca3acd

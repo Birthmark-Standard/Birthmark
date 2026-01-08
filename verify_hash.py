@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2024-2026 The Birthmark Standard Foundation
+
 """
 Quick script to verify a hash on the Birthmark blockchain.
 Usage: python verify_hash.py <hash>

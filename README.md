@@ -219,7 +219,22 @@ LinkedIn: [linkedin.com/in/samuelcryan](https://www.linkedin.com/in/samuelcryan)
 
 ## License
 
-Apache 2.0
+The Birthmark Standard uses a dual-licensing structure:
+
+- **AGPL-3.0-or-later** for core trust infrastructure (blockchain/registry)
+- **Apache-2.0** for reference implementations and tools (camera, verifier, shared utilities)
+
+This approach protects the verification infrastructure as public goods while enabling commercial adoption by camera manufacturers and developers.
+
+**Quick Summary:**
+- Using Birthmark authentication in your camera/app? → Apache-2.0 (permissive, commercial-friendly)
+- Operating a registry node? → AGPL-3.0 (modifications must be published)
+- Building verification tools? → Apache-2.0 (permissive, commercial-friendly)
+
+For detailed information, see:
+- [LICENSE](./LICENSE) - Overview of dual-licensing structure
+- [LICENSING.md](./LICENSING.md) - Complete guide with use cases and compliance requirements
+- Individual LICENSE files in each package directory
 
 ---
 

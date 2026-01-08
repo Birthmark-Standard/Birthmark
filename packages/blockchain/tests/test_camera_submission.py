@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2024-2026 The Birthmark Standard Foundation
+
 """Tests for camera submission with 2-hash array format."""
 
 import pytest

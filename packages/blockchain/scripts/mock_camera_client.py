@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2024-2026 The Birthmark Standard Foundation
+
 """
 Mock Camera Client - Simulates Raspberry Pi camera submissions for testing
 

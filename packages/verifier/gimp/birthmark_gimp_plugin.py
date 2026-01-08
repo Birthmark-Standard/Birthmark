@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2024-2026 The Birthmark Standard Foundation
+
 # -*- coding: utf-8 -*-
 """
 Birthmark GIMP Plugin - Manual Modification Level Tracker
