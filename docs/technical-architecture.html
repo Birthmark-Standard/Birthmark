@@ -373,13 +373,28 @@ Camera Token:
             </div>
 
             <div class="content-block">
-                <h3>Scalability Estimates</h3>
+                <h3>Scalability & Storage Optimization</h3>
+                <p><strong>Achievement: 69% Storage Reduction</strong></p>
+                <p>We've optimized the Substrate blockchain to achieve a reduction from ~450 bytes to ~140 bytes per record, making node operation sustainable for journalism institutions.</p>
+
+                <h4 style="margin-top: 1.5rem;">Key Optimizations:</h4>
                 <ul class="technical-list">
+                    <li><strong>Binary hash storage:</strong> 32 bytes vs 64 bytes hex encoding</li>
+                    <li><strong>Authority lookup tables:</strong> 2 bytes vs 20-100 bytes strings</li>
+                    <li><strong>Compact encoding:</strong> Efficient timestamp and block number storage</li>
+                    <li><strong>Removed unnecessary pallets:</strong> 8 pallets removed while preserving forkless upgrades</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">Economics at Scale:</h4>
+                <ul class="technical-list">
+                    <li><strong>1M images/day:</strong> 47 GB/year storage, $200-350/year node cost</li>
+                    <li><strong>10M images/day:</strong> Scales to $500-800/year per node</li>
                     <li><strong>Target Volume:</strong> 1 million images/day at scale</li>
-                    <li><strong>Blockchain Storage:</strong> ~150 bytes per image record</li>
-                    <li><strong>Node Storage Growth:</strong> ~55 GB/year at 1M images/day</li>
+                    <li><strong>Blockchain Storage:</strong> ~140 bytes per image record</li>
                     <li><strong>Network Bandwidth:</strong> Minimal (small transaction data)</li>
                 </ul>
+
+                <p style="margin-top: 1rem;"><strong>Result:</strong> Operating a registry node is financially sustainable for journalism institutions, universities, and archives as a public service.</p>
             </div>
         </div>
     </section>
@@ -472,12 +487,13 @@ Camera Token:
                 <div class="footer-section">
                     <h3>Contact</h3>
                     <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
+                    <a href="https://discord.gg/9Ts7dM9pb5">Join our Discord</a>
                     <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
                     <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 The Birthmark Standard Foundation. Open source under Apache License 2.0.</p>
+                <p>&copy; 2025 The Birthmark Standard Foundation. Dual license: AGPL-3.0 (blockchain) / Apache-2.0 (tools).</p>
             </div>
         </div>
     </footer>
