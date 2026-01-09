@@ -531,19 +531,21 @@ Camera Token:
             z-index: 1000;
             top: 100%;
             left: 0;
-            margin-top: 0.5rem;
+            margin-top: 0;
+            padding-top: 0.5rem;
         }
 
         .dropdown-menu a {
             display: block;
             padding: 0.75rem 1rem;
             text-decoration: none;
-            color: var(--text-color);
+            color: #333;
             transition: background-color 0.2s;
         }
 
         .dropdown-menu a:hover {
             background-color: var(--light-blue);
+            color: #333;
         }
 
         .dropdown:hover .dropdown-menu {
@@ -556,6 +558,7 @@ Camera Token:
                 position: static;
                 box-shadow: none;
                 margin-top: 0;
+                padding-top: 0;
             }
 
             .dropdown:hover .dropdown-menu {
