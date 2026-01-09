@@ -164,6 +164,37 @@
         </div>
     </section>
 
+    <section class="technical-section" style="background: var(--light-gray);">
+        <div class="container">
+            <h2>Current Status</h2>
+            <div class="content-block" style="max-width: 900px; margin: 0 auto;">
+                <h3>Phase 1: Hardware Prototype (Complete)</h3>
+                <p>We've built and deployed a working Raspberry Pi-based camera prototype that demonstrates the complete authentication pipeline from capture through blockchain verification.</p>
+
+                <h4 style="margin-top: 1.5rem;">Completed:</h4>
+                <ul class="technical-list">
+                    <li>✅ Raspberry Pi 4 HQ Camera with hardware authentication</li>
+                    <li>✅ Submission server with manufacturer validation</li>
+                    <li>✅ Substrate blockchain (Birthmark Media Registry)</li>
+                    <li>✅ End-to-end authentication pipeline validated</li>
+                    <li>✅ <strong>Storage optimization: 69% reduction</strong> (450 → 140 bytes/record)</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">Storage Economics:</h4>
+                <p>Our blockchain optimization makes operating a registry node sustainable at <strong>$200-350/year</strong> for journalism institutions, even at millions of images per day:</p>
+                <ul class="technical-list">
+                    <li>1M images/day: 47 GB/year storage, $200-350/year node cost</li>
+                    <li>10M images/day: Scales to $500-800/year</li>
+                    <li>Binary hash storage (32 bytes vs 64 bytes hex)</li>
+                    <li>Compact encoding for all metadata fields</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">Current Work:</h4>
+                <p>🎥 Producing demonstration video showing complete workflow</p>
+            </div>
+        </div>
+    </section>
+
     <section class="problem-section">
         <div class="container">
             <h2>Learn More</h2>
@@ -180,7 +211,7 @@
                 </div>
                 <div class="problem-card">
                     <h3>💻 Source Code</h3>
-                    <p>All code is open source under Apache License 2.0. Explore the implementation, contribute, or deploy your own node.</p>
+                    <p>All code is open source under dual license: AGPL-3.0 for blockchain infrastructure, Apache-2.0 for camera and verification tools.</p>
                     <p style="margin-top: 1rem;"><a href="https://github.com/Birthmark-Standard/Birthmark" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">View on GitHub →</a></p>
                 </div>
             </div>
@@ -248,13 +279,14 @@
                 <div class="footer-section">
                     <h3>Contact</h3>
                     <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
+                    <a href="https://discord.gg/9Ts7dM9pb5">Join our Discord</a>
                     <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
                     <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
                     <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.8;">Complementary to C2PA: Provides backup authentication when metadata gets stripped through social media sharing.</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 The Birthmark Standard Foundation. Open source under Apache License 2.0.</p>
+                <p>&copy; 2025 The Birthmark Standard Foundation. Dual license: AGPL-3.0 (blockchain) / Apache-2.0 (tools).</p>
             </div>
         </div>
     </footer>
