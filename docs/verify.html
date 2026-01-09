@@ -20,12 +20,24 @@
                     <h1>The Birthmark Standard Foundation</h1>
                 </div>
                 <nav>
+                    <a href="verify.html" style="background: var(--accent-blue); padding: 0.5rem 1rem; border-radius: 4px;">Verify Image</a>
                     <a href="index.html">Home</a>
-                    <a href="index.html#how-it-works">How It Works</a>
-                    <a href="technical-architecture.html">Technical</a>
-                    <a href="governance.html">Governance</a>
-                    <a href="contact.html">Contact</a>
-                    <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle">How It Works ▾</a>
+                        <div class="dropdown-menu">
+                            <a href="technical-architecture.html">Technical Architecture</a>
+                            <a href="privacy-design.html">Privacy Design</a>
+                            <a href="governance.html">Governance Plan</a>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle">The People ▾</a>
+                        <div class="dropdown-menu">
+                            <a href="contact.html">Contact</a>
+                            <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
+                            <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
+                        </div>
+                    </div>
                 </nav>
             </div>
         </div>
@@ -181,5 +193,59 @@
     </footer>
 
     <script src="assets/js/verifier.js"></script>
+
+    <style>
+        /* Dropdown menu styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            z-index: 1000;
+            top: 100%;
+            left: 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--light-blue);
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* Responsive dropdown */
+        @media (max-width: 768px) {
+            .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                margin-top: 0;
+            }
+
+            .dropdown:hover .dropdown-menu {
+                display: none;
+            }
+        }
+    </style>
 </body>
 </html>

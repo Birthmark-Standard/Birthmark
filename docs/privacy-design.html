@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Design - The Birthmark Standard Foundation</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <img src="./Birthmark_logo_trimmed.svg" alt="Birthmark Standard Foundation Logo">
+                    </div>
+                    <h1>The Birthmark Standard Foundation</h1>
+                </div>
+                <nav>
+                    <a href="verify.html" style="background: var(--accent-blue); padding: 0.5rem 1rem; border-radius: 4px;">Verify Image</a>
+                    <a href="index.html">Home</a>
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle">How It Works ▾</a>
+                        <div class="dropdown-menu">
+                            <a href="technical-architecture.html">Technical Architecture</a>
+                            <a href="privacy-design.html">Privacy Design</a>
+                            <a href="governance.html">Governance Plan</a>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle">The People ▾</a>
+                        <div class="dropdown-menu">
+                            <a href="contact.html">Contact</a>
+                            <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
+                            <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero" style="padding: 3rem 0;">
+        <div class="container">
+            <h2>Privacy Design</h2>
+            <p style="max-width: 800px; margin: 0 auto;">How the Birthmark Standard protects photographer privacy while enabling verification</p>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Camera Submission Packet</h2>
+            <div class="content-block">
+                <p>When a camera authenticates an image, it creates two separate data structures that serve different purposes and go to different recipients:</p>
+
+                <div style="max-width: 600px; margin: 2rem auto;">
+                    <img src="./camera_submission_packet.png" alt="Camera Submission Packet showing Birthmark Record and Manufacturer Certificate" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
+                    <p style="text-align: center; margin-top: 0.5rem; color: var(--gray-text); font-size: 0.9rem;">The two components of every camera authentication</p>
+                </div>
+
+                <div class="diagram-box" style="background: #e8f5e9; margin-top: 2rem;">
+                    <h3>Birthmark Record (Public Ledger)</h3>
+                    <p style="margin-bottom: 1rem;">This is what gets uploaded to the blockchain for public verification:</p>
+                    <ul class="technical-list">
+                        <li><strong>Image Hash:</strong> SHA-256 of the processed image (62d9876258...)</li>
+                        <li><strong>Modification Level:</strong> 1 (Validated - processed from raw)</li>
+                        <li><strong>Parent Image Hash:</strong> Raw image hash (a684b5f981...)</li>
+                        <li><strong>Metadata Hashes:</strong>
+                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                                <li>Timestamp Hash: 05a5a1f8c8...</li>
+                                <li>Geotag Hash: 4379a785da... (optional)</li>
+                                <li>Lens UID Hash: 81a376543b...</li>
+                            </ul>
+                        </li>
+                        <li><strong>Owner Validation:</strong>
+                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                                <li>Owner ID Hash: 7b2r4s91f3...</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p style="margin-top: 1rem; font-style: italic;">✓ Anyone can query this data to verify an image</p>
+                </div>
+
+                <div class="diagram-box" style="background: #e3f2fd; margin-top: 2rem;">
+                    <h3>Manufacturer Certificate (Private Validation)</h3>
+                    <p style="margin-bottom: 1rem;">This is sent to the manufacturer to prove the camera is legitimate:</p>
+                    <ul class="technical-list">
+                        <li><strong>Authority ID:</strong> CANON_001</li>
+                        <li><strong>Encrypted Camera Token:</strong> 8F3B2A19C7... (NUC hash encrypted)</li>
+                        <li><strong>Encryption Key Lookup:</strong>
+                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                                <li>Key Table: 831</li>
+                                <li>Key Index: 96</li>
+                            </ul>
+                        </li>
+                        <li><strong>Deviation Test Data:</strong>
+                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                                <li>Operations: ["white_balance", ...]</li>
+                                <li>Adjustment Values: [5, ...]</li>
+                                <li>Deviation Value: 0.23</li>
+                                <li>Calculation Code Hash: 5feceb66ff...</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p style="margin-top: 1rem; font-style: italic;">✓ Only the manufacturer can decrypt this</p>
+                    <p style="margin-top: 0.5rem; font-style: italic;">✗ Manufacturer never sees image hashes</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>What Different Parties See</h2>
+
+            <div class="content-block">
+                <h3>🏭 Camera Manufacturer</h3>
+                <div class="diagram-box">
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ "One of my cameras authenticated a photo"</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Certificate table/key reference (shared by ~12,000 cameras)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Deviation test parameters (to validate editing operations)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Which specific camera (table shared by thousands)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content or hash</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ When photo was taken</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Where photo was taken</p>
+                    <p style="color: red;">✗ Who owns the camera</p>
+                </div>
+            </div>
+
+            <div class="content-block">
+                <h3>🖥️ Submission Server</h3>
+                <div class="diagram-box">
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Image hashes (to submit to blockchain)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Metadata hashes (timestamp, geotag, lens, owner)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Manufacturer validation result (PASS/FAIL)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Which specific camera</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ NUC hash (encrypted, cannot decrypt)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content</p>
+                    <p style="color: red;">✗ Actual timestamp, location, or owner (only hashes)</p>
+                </div>
+            </div>
+
+            <div class="content-block">
+                <h3>⛓️ Blockchain Nodes</h3>
+                <div class="diagram-box">
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Image hashes (SHA-256, irreversible)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Modification levels</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Metadata hashes (irreversible)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Authority IDs (e.g., "CANON_001")</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Timestamps (when server processed, not capture time)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Actual timestamp, location, or owner</p>
+                    <p style="color: red;">✗ Specific camera identity or photographer identity</p>
+                </div>
+            </div>
+
+            <div class="content-block">
+                <h3>👥 Public Verifier</h3>
+                <div class="diagram-box">
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ "This hash was authenticated by this manufacturer on this date"</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Modification level and parent relationships</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Who took the photo</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ Where it was taken (unless they have the original metadata)</p>
+                    <p style="color: red; margin-bottom: 0.3rem;">✗ When it was taken (unless they have the original metadata)</p>
+                    <p style="color: red;">✗ Which specific camera unit</p>
+
+                    <p style="margin-top: 1rem; font-style: italic; background: white; padding: 1rem; border-radius: 4px;">
+                        <strong>Important:</strong> If you possess both the image file AND its original metadata (timestamp, GPS, owner ID), you can hash those values and compare them to the blockchain record to verify they match. But without the original metadata, you cannot reverse-engineer these values from the hashes alone.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Privacy Mechanisms</h2>
+
+            <div class="content-block">
+                <h3>Key Table Anonymity</h3>
+                <p>Each camera is randomly assigned 3 key tables (out of 2,500 total). Each table is shared by approximately 12,000 cameras. When authenticating, the camera randomly selects one of its 3 assigned tables.</p>
+                <p style="margin-top: 1rem;"><strong>Result:</strong> Even the manufacturer cannot identify which specific camera authenticated an image—only that it was one of ~12,000 devices sharing that table.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Transaction Spacing</h3>
+                <p>Camera token table/index combinations are not reused until at least 3,000 intervening transactions have occurred.</p>
+                <p style="margin-top: 1rem;"><strong>Result:</strong> Statistical correlation attacks require possession of thousands of images from the same camera before patterns emerge.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Hash-Only Storage</h3>
+                <p>Image content is never transmitted to any server or stored anywhere. Only SHA-256 hashes are submitted to the blockchain.</p>
+                <p style="margin-top: 1rem;"><strong>Result:</strong> Complete privacy of image content. Hash collisions are computationally infeasible (2^256 possibilities).</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Metadata Hashing (Optional)</h3>
+                <p>Timestamp, GPS coordinates, lens ID, and owner ID are hashed before being included in the Birthmark Record. These features are opt-in and disabled by default.</p>
+                <p style="margin-top: 1rem;"><strong>Result:</strong> Photographers can prove metadata authenticity without revealing location or identity unless they choose to share the original metadata alongside the image.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Separated Concerns</h3>
+                <p>No single entity has complete information:</p>
+                <ul class="technical-list">
+                    <li>Manufacturer validates camera but never sees images</li>
+                    <li>Submission server sees hashes but cannot identify cameras</li>
+                    <li>Blockchain stores permanent records but only of irreversible hashes</li>
+                    <li>Public verifiers can check authenticity but learn nothing about the photographer</li>
+                </ul>
+            </div>
+
+            <div class="content-block">
+                <h3>Source Protection</h3>
+                <p>The system is designed to protect journalistic sources by design. Certificate references stored in the blockchain require manufacturer cooperation to trace to specific devices, and even then require possession of the original image to identify relevant records.</p>
+                <p style="margin-top: 1rem;"><strong>Result:</strong> Fishing expeditions are prevented. Authorities cannot browse the blockchain to identify photographers without specific images and manufacturer cooperation.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-gray);">
+        <div class="container">
+            <h2>What This System Does NOT Protect Against</h2>
+
+            <div class="content-block">
+                <ul class="technical-list">
+                    <li><strong>Staged scenes:</strong> A real camera can photograph a fake scene</li>
+                    <li><strong>Screen photos:</strong> A camera can authenticate a photo of a screen showing an AI-generated image</li>
+                    <li><strong>Metadata leakage:</strong> If you share your image with original EXIF data, that data is no longer private</li>
+                    <li><strong>Stolen cameras:</strong> If a camera is stolen, the thief can use it to authenticate images</li>
+                    <li><strong>Coerced disclosure:</strong> Legal compulsion can force manufacturers or node operators to reveal information they possess</li>
+                </ul>
+
+                <p style="margin-top: 2rem; padding: 1rem; background: white; border-left: 4px solid var(--accent-blue);">
+                    <strong>Design Philosophy:</strong> The Birthmark Standard proves an image came from a legitimate camera sensor, not AI generation. It does not prove the scene is real, only that a physical camera captured it. Truth verification still requires journalistic judgment and context.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer id="about">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>The Birthmark Standard Foundation</h3>
+                    <p>Creating hardware-backed photo authentication infrastructure on a custom blockchain operated by trusted institutions as a public good.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <a href="index.html">Home</a>
+                    <a href="technical-architecture.html">Technical Architecture</a>
+                    <a href="privacy-design.html">Privacy Design</a>
+                    <a href="governance.html">Governance</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
+                    <a href="https://discord.gg/9Ts7dM9pb5">Join our Discord</a>
+                    <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
+                    <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 The Birthmark Standard Foundation. Dual license: AGPL-3.0 (blockchain) / Apache-2.0 (tools).</p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        /* Dropdown menu styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            z-index: 1000;
+            top: 100%;
+            left: 0;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--light-blue);
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* Responsive dropdown */
+        @media (max-width: 768px) {
+            .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                margin-top: 0;
+            }
+
+            .dropdown:hover .dropdown-menu {
+                display: none;
+            }
+        }
+    </style>
+</body>
+</html>
