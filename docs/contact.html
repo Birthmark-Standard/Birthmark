@@ -69,12 +69,28 @@
                     <p style="margin-bottom: 1rem;">Join our community to discuss the project, ask questions, and collaborate:</p>
                     <p><a href="https://discord.gg/9Ts7dM9pb5" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Join our Discord →</a></p>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="problem-card">
-                    <h3>🔗 Connect</h3>
-                    <p style="margin-bottom: 1rem;">Follow the project's development:</p>
-                    <p><a href="https://www.linkedin.com/company/birthmarkstandard/" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Birthmark Standard on LinkedIn →</a></p>
-                    <p style="margin-top: 0.5rem;"><a href="https://www.linkedin.com/in/samuelcryan" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Samuel C. Ryan (Founder) →</a></p>
+    <section class="technical-section" style="background: var(--light-gray);">
+        <div class="container">
+            <h2>Founder</h2>
+            <div class="content-block" style="max-width: 600px; margin: 0 auto;">
+                <div class="founder-card">
+                    <a href="https://www.linkedin.com/in/samuelcryan" target="_blank" style="text-decoration: none; color: inherit;">
+                        <div style="display: flex; align-items: center; gap: 2rem; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;">
+                            <img src="PXL_20240808_190500125.PORTRAIT.jpg" alt="Samuel C. Ryan" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent-blue);">
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0 0 0.5rem 0; color: var(--text-color);">Samuel C. Ryan</h3>
+                                <p style="margin: 0 0 1rem 0; color: var(--accent-blue); font-weight: 600;">Founder & Executive Director</p>
+                                <p style="margin: 0; color: var(--gray-text); line-height: 1.6;">Building open-source infrastructure for media authentication. Former photographer and technologist committed to restoring trust in digital media.</p>
+                                <div style="margin-top: 1rem;">
+                                    <span style="display: inline-block; padding: 0.5rem 1rem; background: var(--accent-blue); color: white; border-radius: 4px; font-size: 0.9rem;">View LinkedIn Profile →</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -212,6 +228,19 @@
 
             .dropdown:hover .dropdown-menu {
                 display: none;
+            }
+        }
+
+        /* Founder card styles */
+        .founder-card a > div:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .founder-card a > div {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
