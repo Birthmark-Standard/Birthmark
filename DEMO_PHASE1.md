@@ -1,12 +1,38 @@
 # Birthmark Phase 1 Demo Guide
 
-Complete end-to-end demonstration of the Birthmark authentication pipeline.
+**Status:** Phase 1 Complete ✅
+**Last Updated:** January 10, 2026
+
+Complete end-to-end demonstration of the Birthmark authentication pipeline using the current Phase 1 architecture.
 
 ## System Components
 
-1. **SMA (Simulated Manufacturer Authority)** - Validates camera tokens
-2. **Blockchain Node** - Combined submission server + blockchain storage
-3. **Demo Script** - Simulates camera and runs end-to-end test
+The Phase 1 build consists of three operational packages:
+
+1. **SMA (Simulated Manufacturer Authority)** - `packages/sma/`
+   - Validates camera tokens using encrypted NUC hashes
+   - Maintains key table database (10 tables in Phase 1)
+   - Returns PASS/FAIL without seeing image hashes
+   - Provisions cameras with table assignments
+
+2. **Blockchain Node** - `packages/blockchain/`
+   - Merged aggregator + blockchain validator architecture
+   - Receives camera submissions via FastAPI
+   - Routes validation to SMA
+   - Stores authenticated hashes in PostgreSQL
+   - Single-node consensus for Phase 1
+
+3. **Camera (Raspberry Pi)** - `packages/camera-pi/`
+   - Sony IMX477 HQ Camera (12.3 MP)
+   - Raw Bayer + ISP-processed image capture
+   - Simulated Secure Element (AES-256-GCM encryption)
+   - SHA-256 hashing and certificate generation
+   - Submits to blockchain node
+
+4. **Demo Script** - `scripts/demo_phase1_pipeline.py`
+   - Simulates camera capture without hardware
+   - Runs complete end-to-end test
+   - Demonstrates all system components
 
 ## Prerequisites
 
@@ -280,39 +306,157 @@ python scripts/provision_device.py --serial CAMERA_002
 
 ## Architecture Summary
 
+### Current Phase 1 Architecture
+
 ```
-┌─────────────┐
-│   Camera    │  Captures image + generates token
-│  (Demo)     │
-└──────┬──────┘
-       │ POST /api/v1/submit
-       ▼
-┌─────────────────┐
-│  Blockchain     │  Receives submission
-│  Node           │
-│  (Port 8545)    │
-└──────┬──────────┘
-       │ POST /validate
-       ▼
-┌─────────────────┐
-│  SMA            │  Validates camera token
-│  (Port 8001)    │  Returns PASS/FAIL
-└─────────────────┘
-       │
-       ▼ (if PASS)
-┌─────────────────┐
-│  Blockchain     │  Stores hash + metadata
-│  Database       │  (PostgreSQL)
-└─────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│  Camera Package (packages/camera-pi/)                      │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ 1. Capture raw Bayer data (Sony IMX477)             │  │
+│  │ 2. Hash raw data (SHA-256)                           │  │
+│  │ 3. Process through ISP → hash processed image       │  │
+│  │ 4. Generate NUC hash (simulated sensor calibration) │  │
+│  │ 5. Encrypt NUC hash with AES-256-GCM                │  │
+│  │ 6. Create manufacturer certificate                   │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────────┬───────────────────────────────────────────┘
+                 │ POST /api/v1/submit
+                 │ (image_hashes + manufacturer_cert)
+                 ▼
+┌────────────────────────────────────────────────────────────┐
+│  Blockchain Node (packages/blockchain/)                    │
+│  Merged Aggregator + Validator                            │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ FastAPI Server (Port 8545)                           │  │
+│  │ - Receives camera submissions                         │  │
+│  │ - Extracts manufacturer certificate                   │  │
+│  │ - Routes to appropriate SMA                           │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────────┬───────────────────────────────────────────┘
+                 │ POST /validate
+                 │ (camera_token + key_reference)
+                 │ ❌ NO IMAGE HASHES SENT
+                 ▼
+┌────────────────────────────────────────────────────────────┐
+│  SMA (packages/sma/)                                       │
+│  Simulated Manufacturer Authority                          │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ 1. Decrypt camera token using key table             │  │
+│  │ 2. Verify NUC hash matches provisioned camera        │  │
+│  │ 3. Return PASS/FAIL (never sees image hashes)       │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────────┬───────────────────────────────────────────┘
+                 │ Response: {"valid": true, "authority_validation": "PASS"}
+                 ▼
+┌────────────────────────────────────────────────────────────┐
+│  Blockchain Storage (PostgreSQL)                           │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ If PASS: Store image hashes + metadata              │  │
+│  │ - image_hash (SHA-256, 64 hex chars)                 │  │
+│  │ - modification_level (0=raw, 1=processed)            │  │
+│  │ - parent_image_hash (provenance chain)               │  │
+│  │ - authority_id (SIMULATED_CAMERA_001)                │  │
+│  │ - timestamp, block_height, tx_id                     │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────┘
+                 │
+                 ▼
+┌────────────────────────────────────────────────────────────┐
+│  Public Verification (GET /api/v1/verify/{hash})           │
+│  Anyone can query blockchain to verify image authenticity  │
+└────────────────────────────────────────────────────────────┘
 ```
 
-## Phase 1 Complete ✅
+### Key Architecture Decisions
 
-You now have a working end-to-end Birthmark authentication system demonstrating:
-- Camera token generation and encryption
-- Submission server intake
-- SMA validation without seeing image hashes
-- Blockchain storage with provenance tracking
-- Public verification queries
+**Direct Hash Submission (No Batching):**
+- Removed Merkle tree batching (see `ARCHITECTURE_CHANGE_NO_BATCHING.md`)
+- Each hash submitted individually to custom blockchain
+- Simpler verification: hash image → query blockchain directly
+- No gas fees on custom blockchain operated by coalition
 
-**Ready for Phase 2:** Real camera integration on Raspberry Pi
+**Merged Aggregator + Validator:**
+- Single deployable node per institution
+- Trust alignment: aggregators ARE validators
+- Operational simplicity: fewer moving parts
+- Natural scaling: each institution adds capacity + redundancy
+
+**Privacy by Design:**
+- SMA never sees image hashes (only encrypted camera token)
+- Blockchain stores hashes only (irreversible, no image content)
+- Table anonymity: thousands of cameras share same table IDs
+- Timestamp obfuscation: server processing time, not capture time
+
+## Phase 1 Status ✅
+
+### What's Working (January 10, 2026)
+
+You now have a **complete, operational** end-to-end Birthmark authentication system:
+
+**✅ Camera Authentication Pipeline:**
+- Raw Bayer capture and hashing (Sony IMX477)
+- ISP-processed image capture and hashing
+- Simulated Secure Element with AES-256-GCM encryption
+- HKDF key derivation from 3 master keys
+- Manufacturer certificate generation
+- Complete submission to blockchain node
+
+**✅ Blockchain Node (Merged Architecture):**
+- FastAPI server accepting camera submissions
+- SMA validation routing (never exposes image hashes)
+- Direct blockchain storage (no batching)
+- PostgreSQL persistence with provenance tracking
+- Single-node consensus for Phase 1
+
+**✅ SMA Validation:**
+- 10 key tables operational (Phase 1 subset)
+- Camera provisioning and token validation
+- PASS/FAIL responses without seeing image content
+- Audit logging of all validation attempts
+
+**✅ Verification Tools:**
+- Public API for hash verification
+- Provenance chain queries
+- Blockchain status and statistics
+- Web verification interface (`packages/verifier/`)
+
+**✅ Testing & Documentation:**
+- End-to-end integration testing
+- Demo script for system demonstration
+- Comprehensive deployment guide
+- Architecture documentation updated
+
+### Phase 1 Limitations
+
+**Hardware:**
+- TPM hardware issue (using simulated SE in software)
+- Single Raspberry Pi camera (no fleet management)
+
+**Software:**
+- Simulated SE keys stored in files (no physical tamper resistance)
+- Local network only (no internet connectivity)
+- Single-node blockchain (Phase 1 testnet)
+- Mock provisioning (simulated manufacturing process)
+
+**Scope:**
+- Proves concept with prototype hardware
+- Validates architecture and privacy design
+- Ready for Phase 2 production deployment
+
+### Ready for Phase 2
+
+**Production Deployment:**
+- Real TPM integration (hardware secure element)
+- Multi-node blockchain with PoA consensus
+- Internet-connected submission nodes
+- Real manufacturer provisioning workflow
+
+**Mobile Apps:**
+- Android app with hardware SE
+- iOS app with Secure Enclave
+- Mobile-first user experience
+
+**Production Blockchain:**
+- Coalition-operated validator nodes
+- Geographic distribution
+- Production-grade consensus and fault tolerance

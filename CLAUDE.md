@@ -170,8 +170,7 @@ birthmark/
 │   ├── org/                            # Organization documents (Word docs)
 │   │   ├── Birthmark Standard Technical Architecture.docx
 │   │   └── Birthmark Media Registry Governance Charter.docx
-│   ├── testing/                        # Testing documentation
-│   │   └── GIMP_WRAPPER_TESTING.md
+│   ├── testing/                        # Testing documentation (currently empty)
 │   ├── phase-plans/                    # Phase planning (minimal)
 │   │   └── Overview.md
 │   ├── architecture/                   # Reserved for future architecture docs
