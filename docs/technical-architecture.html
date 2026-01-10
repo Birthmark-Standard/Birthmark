@@ -27,14 +27,15 @@
                             <a href="technical-architecture.html">Technical Architecture</a>
                             <a href="privacy-design.html">Privacy Design</a>
                             <a href="governance.html">Governance Plan</a>
+                            <a href="investigation-framework.html">Investigation Framework</a>
                         </div>
                     </div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle">The People ▾</a>
                         <div class="dropdown-menu">
                             <a href="contact.html">Contact</a>
-                            <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
-                            <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
+                            <a href="https://www.linkedin.com/company/birthmarkstandard/" class="external-link">LinkedIn ↗</a>
+                            <a href="https://github.com/Birthmark-Standard/Birthmark" class="external-link">GitHub ↗</a>
                         </div>
                     </div>
                 </nav>
@@ -844,6 +845,16 @@ Display result to user
 
         .dropdown:hover .dropdown-menu {
             display: block;
+        }
+
+        /* External link styling */
+        .dropdown-menu a.external-link {
+            color: var(--accent-blue);
+        }
+
+        .dropdown-menu a.external-link:hover {
+            color: var(--accent-blue);
+            background-color: var(--light-blue);
         }
 
         /* Section intro style */

@@ -34,8 +34,8 @@
                         <a href="#" class="dropdown-toggle">The People ▾</a>
                         <div class="dropdown-menu">
                             <a href="contact.html">Contact</a>
-                            <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
-                            <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
+                            <a href="https://www.linkedin.com/company/birthmarkstandard/" class="external-link">LinkedIn ↗</a>
+                            <a href="https://github.com/Birthmark-Standard/Birthmark" class="external-link">GitHub ↗</a>
                         </div>
                     </div>
                 </nav>
@@ -219,9 +219,9 @@
                     <p>Only image fingerprints are stored, never the images themselves. Photographers stay anonymous.</p>
                 </div>
                 <div class="why-card">
-                    <div class="why-icon">⛓️</div>
-                    <h3>Survives Metadata Loss</h3>
-                    <p>Works even when images are shared on social media, converted to different formats, or cropped.</p>
+                    <div class="why-icon">🌐</div>
+                    <h3>Decentralized</h3>
+                    <p>No single company controls the network. Multiple institutions operate blockchain nodes.</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon">💰</div>
@@ -230,13 +230,13 @@
                 </div>
                 <div class="why-card">
                     <div class="why-icon">🤝</div>
-                    <h3>Works With C2PA</h3>
+                    <h3>C2PA Compatible</h3>
                     <p>C2PA provides rich metadata. Birthmark provides backup when metadata gets stripped.</p>
                 </div>
                 <div class="why-card">
-                    <div class="why-icon">🌐</div>
-                    <h3>Decentralized</h3>
-                    <p>No single company controls the network. Multiple institutions operate blockchain nodes.</p>
+                    <div class="why-icon">⛓️</div>
+                    <h3>Survives Metadata Loss</h3>
+                    <p>Works even when images are shared on social media, converted to different formats, or cropped.</p>
                 </div>
             </div>
         </div>
@@ -336,6 +336,16 @@
 
         .dropdown:hover .dropdown-menu {
             display: block;
+        }
+
+        /* External link styling */
+        .dropdown-menu a.external-link {
+            color: var(--accent-blue);
+        }
+
+        .dropdown-menu a.external-link:hover {
+            color: var(--accent-blue);
+            background-color: var(--light-blue);
         }
 
         /* Responsive dropdown */
