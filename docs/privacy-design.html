@@ -326,18 +326,29 @@
             background-color: var(--light-blue);
         }
 
-        /* Responsive dropdown */
-        @media (max-width: 768px) {
+        /* Responsive dropdown - make clickable on mobile */
+         (max-width: 768px) {
+            .dropdown-toggle {
+                pointer-events: auto;
+            }
+
             .dropdown-menu {
                 position: static;
                 box-shadow: none;
-                margin-top: 0;
+                margin-top: 0.5rem;
                 padding-top: 0;
+                background-color: rgba(255, 255, 255, 0.95);
+            }
+
+            /* On mobile, toggle dropdown with click instead of hover */
+            .dropdown.active .dropdown-menu {
+                display: block;
             }
 
             .dropdown:hover .dropdown-menu {
                 display: none;
             }
+        }
 
         /* External link styling */
         .dropdown-menu a.external-link {
@@ -350,5 +361,41 @@
         }
         }
     </style>
+
+    <script>
+        // Mobile dropdown toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth <= 768) {
+                const dropdowns = document.querySelectorAll('.dropdown');
+
+                dropdowns.forEach(dropdown => {
+                    const toggle = dropdown.querySelector('.dropdown-toggle');
+
+                    toggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+
+                        // Close other dropdowns
+                        dropdowns.forEach(other => {
+                            if (other !== dropdown) {
+                                other.classList.remove('active');
+                            }
+                        });
+
+                        // Toggle this dropdown
+                        dropdown.classList.toggle('active');
+                    });
+                });
+
+                // Close dropdowns when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.dropdown')) {
+                        dropdowns.forEach(dropdown => {
+                            dropdown.classList.remove('active');
+                        });
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
