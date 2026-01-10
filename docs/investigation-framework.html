@@ -43,496 +43,173 @@
         </div>
     </header>
 
-    <section class="hero" style="padding: 3rem 0;">
+    <section class="hero" style="padding: 2rem 0;">
         <div class="container">
             <h2>Investigation and Accountability Framework</h2>
-            <p style="max-width: 800px; margin: 0 auto;">How the system maintains integrity while preserving photographer privacy and safety.</p>
+            <p style="max-width: 800px; margin: 0 auto;">Contingency plan for maintaining system integrity while preserving photographer privacy.</p>
         </div>
     </section>
 
-    <section class="technical-section">
+    <section class="technical-section compact">
         <div class="container">
-            <h2>Why This Page Exists</h2>
-
             <div class="content-block">
-                <p><strong>The Birthmark Standard is designed to never need investigations.</strong> The system's security model assumes cameras are trustworthy—encrypted in secure elements, validated by manufacturers, with ~$100K-$1M attack costs making individual camera compromise economically irrational.</p>
+                <p><strong>The Birthmark Standard is designed to never need investigations.</strong> Camera compromise requires ~$100K-$1M per device. But we need a response plan for state-level attacks and credibility challenges. This documents our contingency—transparent safeguards for Coalition members, privacy advocates, and journalists evaluating the system.</p>
 
-                <p style="margin-top: 1rem;">But we need a response plan for two scenarios:</p>
-                <ul class="technical-list">
-                    <li><strong>State-level attacks:</strong> Nation-states with resources to compromise cameras at scale</li>
-                    <li><strong>Credibility attacks:</strong> Bad actors claiming "the system can't detect fakes" to undermine trust</li>
-                </ul>
-
-                <p style="margin-top: 1rem;">This page documents our contingency plan—showing how we'd respond IF cameras were compromised while preserving photographer privacy and safety. Transparency about this capability is essential for Coalition members evaluating governance, privacy advocates assessing safeguards, and journalists deciding whether to trust the system.</p>
-
-                <div class="diagram-box" style="margin-top: 1.5rem; background: #f0f8ff; border-left: 4px solid var(--accent-blue);">
-                    <p><strong>Key point:</strong> Investigations don't change photographer threat models. Anyone can submit images to forensic analysis services today. We're documenting how the system maintains integrity while preserving privacy protections stronger than any existing authentication system.</p>
+                <div class="diagram-box" style="margin-top: 1rem; background: #f0f8ff; border-left: 4px solid var(--accent-blue);">
+                    <p><strong>Key point:</strong> Investigations don't create new risks. Anyone can submit images to forensic services today—we're formalizing it with oversight and stronger protections.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="technical-section" style="background: var(--light-blue);">
+    <section class="technical-section compact" style="background: var(--light-blue);">
         <div class="container">
-            <h2>Investigation Scope and Limitations</h2>
+            <h2>Scope and Limitations</h2>
 
             <div class="content-block">
                 <div class="diagram-box" style="background: white;">
                     <h3 style="margin-top: 0;">What Investigations CAN Reveal:</h3>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Camera serial number (for blacklisting)</p>
-                    <p style="color: green;">✓ Technical forensic evidence (noise patterns, compression artifacts)</p>
+                    <p style="color: green;">✓ Camera serial number (for blacklisting only)</p>
 
-                    <h3 style="margin-top: 1.5rem;">What Investigations CANNOT Reveal:</h3>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Photographer identity</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Capture locations or times</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Who you shared images with</p>
-                    <p style="color: red;">✗ Your other photographs</p>
+                    <h3 style="margin-top: 1rem;">What Investigations CANNOT Reveal:</h3>
+                    <p style="color: red; margin-bottom: 0.2rem;">✗ Photographer identity</p>
+                    <p style="color: red; margin-bottom: 0.2rem;">✗ Image content</p>
+                    <p style="color: red; margin-bottom: 0.2rem;">✗ Capture locations or times</p>
+                    <p style="color: red;">✗ Who you shared images with</p>
 
-                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #ddd;">
-                        <p><strong>Cost to trigger investigation:</strong> $500 (non-refundable if rejected)</p>
-                        <p><strong>Required evidence:</strong> Professional forensic analysis showing specific technical anomalies</p>
-                        <p><strong>Governance:</strong> 3-member committee from journalism organizations (rotating 6-month terms)</p>
+                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #ddd;">
+                        <p style="margin-bottom: 0.3rem;"><strong>Trigger cost:</strong> $500 (forfeited if rejected)</p>
+                        <p style="margin-bottom: 0.3rem;"><strong>Evidence required:</strong> Professional forensic analysis</p>
+                        <p><strong>Governance:</strong> 3-member committee (journalism orgs, 6-month rotation)</p>
                     </div>
                 </div>
             </div>
-
-            <div class="content-block">
-                <h3>The Credibility Challenge</h3>
-                <p>If compromised cameras could authenticate AI-generated images indefinitely, critics could credibly claim "your system is worthless—you can't detect fakes." This isn't about likely attacks (camera compromise is expensive and technically difficult), but about maintaining system credibility in the face of determined adversaries.</p>
-
-                <p style="margin-top: 1rem;">Without a documented response plan, every suspicious image becomes ammunition for "the system doesn't work." With transparent safeguards, we can say: "We've thought through this scenario, here are the protections, and here's how we'd respond while preserving privacy."</p>
-            </div>
         </div>
     </section>
 
-    <section class="technical-section">
-        <div class="container">
-            <h2>How This Compares to Today</h2>
-
-            <div class="content-block">
-                <div class="diagram-box">
-                    <h3 style="margin-top: 0;">Forensic Analysis Today (Without Birthmark)</h3>
-                    <ul class="technical-list">
-                        <li>Anyone can submit your images to forensic services (FotoForensics, Hive Moderation, etc.)</li>
-                        <li>No cost barriers against frivolous submissions</li>
-                        <li>No oversight or governance</li>
-                        <li>No appeal process</li>
-                        <li>No consequences for false accusations</li>
-                        <li>Results can be shared publicly without your knowledge</li>
-                    </ul>
-                </div>
-
-                <div class="diagram-box" style="margin-top: 1.5rem;">
-                    <h3 style="margin-top: 0;">With Birthmark Investigation Framework</h3>
-                    <ul class="technical-list">
-                        <li><strong>$500 cost barrier</strong> against frivolous claims (forfeited if rejected)</li>
-                        <li><strong>Professional forensic analysts</strong> (not random internet users)</li>
-                        <li><strong>Investigation Committee oversight</strong> (journalism organizations)</li>
-                        <li><strong>Formal appeal process</strong> with independent review</li>
-                        <li><strong>Enhanced protections</strong> for high-risk contexts (conflict zones, CPJ Index regions)</li>
-                        <li><strong>Limited consequences</strong> (camera serial number only, never photographer identity)</li>
-                        <li><strong>Sunset clause</strong> (Coalition can vote to end investigations if harmful)</li>
-                    </ul>
-                </div>
-
-                <p style="margin-top: 1.5rem;"><strong>Bottom line:</strong> Investigation doesn't create photographer vulnerability—it formalizes existing forensic processes with stronger safeguards and oversight by journalism organizations whose mission is protecting press freedom.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="technical-section" style="background: var(--light-blue);">
+    <section class="technical-section compact">
         <div class="container">
             <h2>Core Safeguards</h2>
 
             <div class="content-block">
-                <h3>1. Investigation Committee Structure</h3>
-                <ul class="technical-list">
-                    <li><strong>3 rotating Coalition Members</strong> handle all investigations (6-month terms, staggered rotation)</li>
-                    <li>Prevents overwhelming all Coalition Members with investigation responsibilities</li>
-                    <li>Organizations can plan staffing around predictable rotation schedules</li>
-                    <li><strong>Full Coalition override:</strong> Any Coalition Member can escalate decisions to full vote (67% supermajority required)</li>
+                <h3>Financial Barriers</h3>
+                <p>$500 claim fee, forfeited if rejected. $1,000 total return if camera blacklisted ($500 refund + $500 bounty). Makes frivolous claims expensive while rewarding legitimate concerns. Any Coalition Member can waive fees for credible cases.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Technical Evidence Required</h3>
+                <p>Foundation contracts professional forensic analysts (e.g., Bellingcat). Claims need specific measurable anomalies: noise pattern inconsistencies, impossible lighting geometry, metadata violations. "This looks suspicious" gets rejected immediately.</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Enhanced Protections for High-Risk Contexts</h3>
+                <p>Regions on CPJ's Global Impunity Index or active conflict zones require:</p>
+                <ul class="technical-list compact">
+                    <li><strong>Unanimous vote</strong> (3 of 3, not 2 of 3)</li>
+                    <li><strong>Mandatory consultation</strong> with press freedom organizations (RSF, CPJ)</li>
+                    <li><strong>Higher evidence threshold</strong> (multiple independent anomalies)</li>
+                    <li><strong>Expedited appeals</strong> (7 days vs. 14 days)</li>
+                    <li><strong>Escalation rights</strong> to full Coalition vote if consultation ignored</li>
                 </ul>
             </div>
 
             <div class="content-block">
-                <h3>2. Financial Barriers Against Abuse</h3>
-                <ul class="technical-list">
-                    <li><strong>$500 claim fee</strong> to submit investigation request</li>
-                    <li><strong>Non-refundable</strong> if rejected at preliminary review or committee vote</li>
-                    <li><strong>Refunded if investigation proceeds</strong> ($500 back)</li>
-                    <li><strong>$500 bounty</strong> if camera blacklisted ($1,000 total return)</li>
-                    <li>Makes frivolous claims expensive while rewarding legitimate concerns</li>
-                    <li><strong>Fee waiver:</strong> Any Coalition Member or Foundation board member can waive fee for legitimate concerns</li>
-                </ul>
+                <h3>Distributed Control</h3>
+                <p>Transaction log decryption requires 3 of 5 geographically distributed key holders. Keys stored cross-jurisdiction (US node's key in Europe). Sequential compromise needed: attacker must compromise first node to identify second target, within key rotation windows.</p>
             </div>
 
             <div class="content-block">
-                <h3>3. Technical Evidence Required</h3>
-                <p>Foundation contracts professional forensic analysts (organizations like Bellingcat and credentialed photographic forensics experts).</p>
-
-                <p style="margin-top: 1rem;"><strong>Claims must show specific technical indicators:</strong></p>
-                <ul class="technical-list">
-                    <li>Inconsistent noise patterns measurable against sensor model specifications</li>
-                    <li>Impossible lighting geometry (shadow directions, physics violations)</li>
-                    <li>Metadata anomalies (timestamps, EXIF inconsistencies)</li>
-                    <li>Compression artifacts inconsistent with claimed processing pipeline</li>
-                </ul>
-
-                <div class="diagram-box" style="margin-top: 1rem;">
-                    <p><strong>Rejected immediately:</strong> "This looks suspicious," "lighting seems weird," "this makes our government look bad," or subjective assessments without measurable technical evidence.</p>
-                </div>
-
-                <p style="margin-top: 1rem;"><strong>Quality control:</strong> Periodic independent audits where second analyst organizations review the first analyst's work for quality and bias detection.</p>
+                <h3>Limited Consequences</h3>
+                <p>Only camera serial number revealed. Historical images remain authenticated—blacklist blocks future submissions only. Successful appeals completely remove blacklist (no "reversed" notation).</p>
             </div>
 
             <div class="content-block">
-                <h3>4. Enhanced Protections for High-Risk Contexts</h3>
-                <p>Investigations involving regions on CPJ's Global Impunity Index (countries where journalists are murdered and killers go free) or active conflict zones receive:</p>
-
-                <ul class="technical-list">
-                    <li><strong>Unanimous committee vote required</strong> (3 of 3, not 2 of 3)</li>
-                    <li><strong>Mandatory consultation</strong> with press freedom organizations (RSF, CPJ, regional groups)</li>
-                    <li><strong>Higher evidence threshold:</strong> Extraordinarily strong forensic indicators (multiple independent anomalies)</li>
-                    <li><strong>Expedited appeals:</strong> 7 days maximum (not 14 days)</li>
-                    <li><strong>Escalation rights:</strong> Any Coalition Member can force full Coalition vote if consultation ignored</li>
-                </ul>
-
-                <div class="diagram-box" style="margin-top: 1rem; background: #fff8dc; border-left: 4px solid #ffa500;">
-                    <p><strong>Important:</strong> Investigation never reveals photographer identity, image content, or location—only camera serial number. If activists strip geotag metadata before sharing (which we recommend for dangerous documentation), there's no location information to investigate. The system investigates blatant fabrication (claiming false location), not omission (no location data provided).</p>
-                </div>
-            </div>
-
-            <div class="content-block">
-                <h3>5. Distributed Control</h3>
-                <p>Transaction log decryption requires multiple parties cooperating:</p>
-
-                <ul class="technical-list">
-                    <li><strong>3 of 5 geographically distributed key holders</strong> must cooperate</li>
-                    <li>Validator nodes rotate through key holder roles</li>
-                    <li><strong>Cross-jurisdiction storage:</strong> Private keys stored outside node's operating jurisdiction (US node's key in Europe, etc.)</li>
-                    <li>Compromising one jurisdiction or organization is insufficient</li>
-                    <li><strong>Sequential compromise required:</strong> Must compromise first node to identify second target</li>
-                    <li>Key rotation means attackers must succeed within limited time windows</li>
-                </ul>
-            </div>
-
-            <div class="content-block">
-                <h3>6. Limited Consequences</h3>
-                <ul class="technical-list">
-                    <li>Investigation reveals <strong>only camera serial number</strong> for blacklisting</li>
-                    <li><strong>Never reveals:</strong> Photographer identity, image content, capture locations</li>
-                    <li><strong>Historical images remain authenticated:</strong> Blacklist only blocks future submissions</li>
-                    <li><strong>Clean appeal records:</strong> Successful appeals completely remove blacklist with no public "reversed" notation</li>
-                </ul>
-            </div>
-
-            <div class="content-block">
-                <h3>7. Transparency Commitment</h3>
-                <p><strong>Annual public reports</strong> with aggregate statistics:</p>
-                <ul class="technical-list">
-                    <li>Claims submitted, rejected, investigations authorized</li>
-                    <li>Cameras blacklisted, appeals filed, appeals granted</li>
-                    <li>Geographic distribution (by region, not specific countries)</li>
-                    <li>Committee rotation schedules</li>
-                    <li>Claim fee revenue and bounty payouts</li>
-                </ul>
-
-                <p style="margin-top: 1rem;"><strong>Coalition oversight:</strong> Any Coalition Member can access investigation materials (prevents hidden bias)</p>
-
-                <p style="margin-top: 1rem;"><strong>Sunset review:</strong> Five-year recurring review with option to discontinue investigations if no longer necessary or if Coalition determines capability has become harmful</p>
+                <h3>Transparency & Sunset</h3>
+                <p>Annual public reports (claims, blacklists, appeals, geographic distribution). Any Coalition Member can access investigation materials. <strong>Five-year recurring review with option to sunset investigations</strong> if Coalition determines capability has become harmful or unnecessary.</p>
             </div>
         </div>
     </section>
 
-    <section class="technical-section">
+    <section class="technical-section compact" style="background: var(--light-blue);">
         <div class="container">
-            <h2>How Investigations Work</h2>
+            <h2>Investigation Process</h2>
 
             <div class="content-block">
-                <h3>1. Claim Submission</h3>
-                <p>Someone possesses an authenticated image showing signs of AI generation (impossible lighting, inconsistent noise patterns, etc.). They submit $500 claim fee with the image.</p>
-            </div>
-
-            <div class="content-block">
-                <h3>2. Foundation Preliminary Review</h3>
-                <p>Professional forensic analysts contracted by Foundation conduct initial assessment using industry-standard tools. Claims without specific technical indicators get rejected immediately (fee forfeited).</p>
-            </div>
-
-            <div class="content-block">
-                <h3>3. Investigation Committee Review</h3>
-                <p>Committee reviews forensic analyst findings and votes whether to proceed:</p>
-                <ul class="technical-list">
-                    <li><strong>Standard investigations:</strong> 2 of 3 committee members required</li>
-                    <li><strong>High-risk contexts</strong> (CPJ Index regions, conflict zones): 3 of 3 required</li>
-                    <li>If approved, investigation proceeds. If rejected, claimant notified and fee forfeited.</li>
-                </ul>
-            </div>
-
-            <div class="content-block">
-                <h3>4. Transaction Log Decryption</h3>
-                <ul class="technical-list">
-                    <li>Committee authorizes distributed key reconstruction</li>
-                    <li>Requires 3 of 5 geographically distributed key holders to cooperate</li>
-                    <li>Decrypted logs reveal encrypted camera certificate submitted to manufacturer</li>
-                </ul>
-            </div>
-
-            <div class="content-block">
-                <h3>5. Manufacturer Identification</h3>
-                <ul class="technical-list">
-                    <li>Manufacturer receives NUC hash from decrypted certificate</li>
-                    <li>Looks up camera serial number in production database</li>
-                    <li>Returns serial number to Investigation Committee</li>
-                    <li><strong>Privacy preserved:</strong> Manufacturer never sees image content, capture time, or location</li>
-                </ul>
-            </div>
-
-            <div class="content-block">
-                <h3>6. Blacklist Decision</h3>
-                <ul class="technical-list">
-                    <li>Committee votes to blacklist (2 of 3 required; 3 of 3 for high-risk contexts)</li>
-                    <li><strong>Public blacklist shows:</strong> Serial number, manufacturer, model, technical justification</li>
-                    <li>Owner receives notification with appeal instructions (if contact info on file)</li>
-                    <li>Future submissions from blacklisted camera automatically rejected</li>
-                </ul>
-            </div>
-
-            <div class="content-block">
-                <h3>7. Appeal Process</h3>
-                <ul class="technical-list">
-                    <li>Owner submits actual image files from blacklist period</li>
-                    <li>Provides technical explanation for flagged artifacts</li>
-                    <li><strong>Independent review:</strong> Technical expert (not committee members who voted to blacklist) reviews evidence</li>
-                    <li>Committee votes on appeal (2 of 3 to reverse)</li>
-                    <li><strong>During appeal:</strong> Owner can submit hashes of critical images for immediate authentication (coverage continues while appeal proceeds)</li>
-                </ul>
-            </div>
-
-            <div class="content-block">
-                <h3>8. If Appeal Succeeds</h3>
-                <ul class="technical-list">
-                    <li>Blacklist entry <strong>completely removed</strong> (no "reversed" notation)</li>
-                    <li>Images from blacklist period authenticated with current timestamp</li>
-                    <li>Future verifiers see clean authentication records</li>
-                    <li>Internal database tracks claim history to prevent repeated frivolous reports</li>
-                </ul>
+                <ol class="technical-list compact" style="padding-left: 1.5rem;">
+                    <li><strong>Claim Submission:</strong> $500 fee + suspicious image</li>
+                    <li><strong>Preliminary Review:</strong> Professional forensic analysts assess. Rejected if no specific technical indicators.</li>
+                    <li><strong>Committee Vote:</strong> 2 of 3 (standard) or 3 of 3 (high-risk contexts)</li>
+                    <li><strong>Log Decryption:</strong> 3 of 5 distributed key holders cooperate</li>
+                    <li><strong>Manufacturer Query:</strong> NUC hash → camera serial number (manufacturer never sees image content)</li>
+                    <li><strong>Blacklist Decision:</strong> Public record with technical justification. Owner notified.</li>
+                    <li><strong>Appeal:</strong> Independent expert review. During appeal, owner can submit hashes of critical images for immediate authentication.</li>
+                    <li><strong>If Appeal Succeeds:</strong> Blacklist completely removed, no public notation.</li>
+                </ol>
             </div>
         </div>
     </section>
 
-    <section class="technical-section" style="background: var(--light-blue);">
+    <section class="technical-section compact">
         <div class="container">
-            <h2>Frequently Asked Questions</h2>
+            <h2>Key Questions</h2>
 
             <div class="content-block">
                 <h3>Can investigations identify photographers?</h3>
-                <p><strong>No.</strong> Investigation reveals only camera serial number. Manufacturers may or may not have purchaser records—cameras are sold secondhand, gifted, stolen. Even with serial number and purchaser name, you cannot link specific images to specific people without already possessing those images.</p>
-
-                <p style="margin-top: 1rem;">The system is designed so no entity can correlate "this person took this photo" without outside information:</p>
-                <ul class="technical-list">
-                    <li><strong>Manufacturers</strong> know camera serial numbers but not what those cameras captured</li>
-                    <li><strong>Coalition</strong> knows authentication records but not which cameras they came from</li>
-                    <li><strong>Submission Servers</strong> see image hashes but not camera identities</li>
-                    <li><strong>Investigation</strong> requires all three cooperating, authorized by distributed key holders, governed by journalism organizations whose mission is protecting press freedom</li>
-                </ul>
+                <p><strong>No.</strong> Only camera serial number. Manufacturers may not have purchaser records (secondhand sales, gifts). Even with serial + purchaser name, cannot link specific images to people without already possessing those images. System designed so no entity correlates "this person took this photo" without outside information.</p>
             </div>
 
             <div class="content-block">
                 <h3>What protects photographers in dangerous regions?</h3>
-                <p>Regions on CPJ's Global Impunity Index or active conflict zones receive enhanced protections:</p>
-
-                <ul class="technical-list">
-                    <li><strong>Unanimous committee vote required</strong> (3 of 3) instead of 2 of 3</li>
-                    <li><strong>Mandatory consultation</strong> with press freedom organizations (RSF, CPJ, regional groups) before proceeding</li>
-                    <li><strong>Higher evidence threshold:</strong> Multiple independent technical anomalies required</li>
-                    <li><strong>Escalation rights:</strong> If consultation org objects and committee proceeds anyway, any Coalition Member can force full Coalition vote (67% required)</li>
-                    <li><strong>Expedited appeals:</strong> 7 days maximum instead of 14</li>
-                </ul>
-
-                <p style="margin-top: 1rem;"><strong>Importantly,</strong> investigation never reveals photographer identity, image content, or location—only camera serial number. If activists strip geotag metadata before sharing (which we recommend for dangerous documentation), there's no location information to investigate.</p>
+                <p>CPJ Index regions and conflict zones get unanimous vote requirement, mandatory press freedom org consultation, higher evidence threshold, expedited appeals, and escalation rights. Investigation never reveals identity, content, or location—only serial number. If activists strip geotags before sharing (recommended), there's no location to investigate.</p>
             </div>
 
             <div class="content-block">
-                <h3>Investigation and Editorial Freedom</h3>
-                <p>Images can only be investigated if you've shared them with someone else. At that point, the risk is identical to existing forensic analysis—anyone can submit suspicious images to forensic services today. The investigation pathway doesn't change this calculus.</p>
-
-                <p style="margin-top: 1rem;">If you're documenting sensitive material, you already control who sees it before sharing. Investigation doesn't reveal photographer identity—it only determines whether a specific camera serial number should be blacklisted from future authentication.</p>
-
-                <p style="margin-top: 1rem;">If you're concerned about unusual compositions being misinterpreted, don't share those images until you're comfortable with scrutiny—exactly as you would today with existing forensic analysis capabilities.</p>
+                <h3>Investigation and editorial freedom</h3>
+                <p>Images can only be investigated if shared. At that point, risk equals existing forensic analysis (anyone can submit to services like FotoForensics today). Investigation doesn't reveal photographer identity—only determines if camera serial number should be blacklisted.</p>
             </div>
 
             <div class="content-block">
-                <h3>How do you distinguish AI-generated images from unusual legitimate photography?</h3>
-                <p>We use the same forensic tools professional fact-checkers use today: Hive Moderation, FotoForensics, metadata analysis, noise pattern analysis, compression artifact detection. We're not claiming special detection capability.</p>
-
-                <p style="margin-top: 1rem;">The difference is we only apply these tools to reported images (with cost barrier preventing spam) rather than every image. Foundation contracts professional forensic analysts who do this work for journalism organizations and fact-checking groups already. Claims must identify specific measurable anomalies, not subjective assessments like "lighting looks weird."</p>
-
-                <div class="diagram-box" style="margin-top: 1rem;">
-                    <h4>Examples of rejected claims:</h4>
-                    <ul class="technical-list">
-                        <li>"This protest makes our government look bad, must be fake" - political motivation, no technical evidence</li>
-                        <li>"Unusual lighting" - insufficient without specific physics violations</li>
-                        <li>"Subject didn't authorize this photo" - copyright issue, not authentication issue</li>
-                    </ul>
-                </div>
-
-                <div class="diagram-box" style="margin-top: 1rem;">
-                    <h4>Examples of accepted claims:</h4>
-                    <ul class="technical-list">
-                        <li>"Shadow directions inconsistent with reported sun position at documented time/location"</li>
-                        <li>"Noise pattern inconsistent with sensor model specifications"</li>
-                        <li>"Multiple re-encoding artifacts despite claim this is first-generation JPEG"</li>
-                    </ul>
-                </div>
+                <h3>What prevents governments flooding with false claims?</h3>
+                <p>$500 non-refundable fee per rejected claim. Claims need professional forensic evidence before reaching committee. "This makes us look bad" gets rejected at preliminary review, fee forfeited.</p>
             </div>
 
             <div class="content-block">
-                <h3>What prevents governments from flooding the system with false claims?</h3>
-                <p>The <strong>$500 non-refundable claim fee.</strong> Claims rejected at Foundation preliminary review or Investigation Committee forfeit the fee. This makes frivolous claims expensive ($500 per rejected claim) while ensuring legitimate concerns aren't blocked (any Coalition Member or Foundation board member can waive the fee).</p>
-
-                <p style="margin-top: 1rem;">Additionally, claims must survive professional forensic analysis showing specific technical evidence before reaching the Investigation Committee. "This makes us look bad" gets rejected immediately at preliminary review, and the fee is forfeited.</p>
+                <h3>Camera blacklist appeals</h3>
+                <p>Submit hashes of critical images immediately (authenticated while appeal proceeds). Provide technical explanation. Independent expert reviews. Committee votes (2 of 3, max 14 days; 7 days for high-risk). If successful, blacklist completely removed with clean records. Coalition Members can expedite for photographers in high-risk contexts.</p>
             </div>
 
             <div class="content-block">
-                <h3>Camera Blacklist Appeals</h3>
-                <p>If your camera is blacklisted, you receive notification with appeal instructions. You can:</p>
-
-                <ul class="technical-list">
-                    <li><strong>Submit hashes of critical images immediately:</strong> During appeal, submit hashes of images from the blacklist period and they'll be authenticated immediately while the full appeal proceeds. Your documentation coverage continues uninterrupted.</li>
-                    <li><strong>Provide technical explanation:</strong> Explain the artifacts that triggered investigation (e.g., "unusual lighting was from reflector at specific angle, not AI generation")</li>
-                    <li><strong>Submit actual image files:</strong> Foundation processes images from blacklist period as new submissions with current timestamp</li>
-                    <li><strong>Independent expert review:</strong> Technical expert (not the committee members who voted to blacklist) reviews your evidence</li>
-                    <li><strong>Committee vote on reversal:</strong> 2 of 3 required (maximum 14 days; 7 days for high-risk contexts)</li>
-                </ul>
-
-                <p style="margin-top: 1rem;">If appeal succeeds, the blacklist is <strong>completely removed</strong> with no public "reversed" notation. Your images appear as normal authenticated images with clean records. Only internal database tracks claim history to prevent repeated frivolous reports on the same image.</p>
-
-                <p style="margin-top: 1rem;"><strong>Expedited appeals:</strong> Coalition Members can expedite appeals for photographers working in high-risk contexts. If you have relationships with organizations like WITNESS, RSF, or CPJ, they can request immediate expedited review.</p>
+                <h3>What prevents scope creep?</h3>
+                <p>Coalition consists of journalism/press freedom orgs (NPPA, CPJ, RSF, IFCN) whose mission is protecting against surveillance expansions. Using investigations for non-technical purposes is explicit grounds for removal per Governance Charter. Annual public reports enable external monitoring. Five-year sunset reviews acknowledge this may not always be necessary.</p>
             </div>
 
             <div class="content-block">
-                <h3>Who conducts forensic analysis and investigates?</h3>
-                <p>Foundation contracts professional forensic analysts (organizations like Bellingcat and credentialed experts in photographic forensics). We don't staff in-house experts. Investigation Committee members are representatives from journalism organizations—they vote on whether contracted analyst findings justify action, but they don't conduct analysis themselves.</p>
-
-                <p style="margin-top: 1rem;">Depending on claim throughput, we implement periodic audits where a second independent analyst organization reviews the first analyst's work for quality control and bias detection. Any Coalition Member can request access to investigation materials, ensuring transparency within Coalition.</p>
+                <h3>Can governments compel cooperation?</h3>
+                <p>Manufacturers alone are insufficient—they identify serial numbers but don't know what cameras captured. Coalition cooperation requires compromising multiple nodes across jurisdictions within key rotation windows. Government requests trigger node removal, not compliance (per Governance Charter).</p>
             </div>
 
             <div class="content-block">
-                <h3>What prevents "scope creep" - using investigations for censorship or political purposes?</h3>
-                <p>The Coalition consists of journalism organizations, fact-checking groups, and press freedom advocates (NPPA, CPJ, Reporters Without Borders, IFCN, etc.) whose entire mission is protecting against those expansions. If a Coalition Member attempts to use investigations for purposes beyond technical authentication, that is explicit grounds for removal under the Governance Charter.</p>
-
-                <p style="margin-top: 1rem;"><strong>Additionally:</strong></p>
-                <ul class="technical-list">
-                    <li>Claims must survive professional forensic analysis showing specific technical evidence</li>
-                    <li>$500 fee makes politically motivated claims expensive</li>
-                    <li>Any Coalition Member can escalate questionable committee decisions to full Coalition vote</li>
-                    <li>Annual public reports enable external researchers to monitor for abuse patterns</li>
-                    <li>Five-year recurring review with option to sunset investigations if Coalition determines the capability has become harmful or is no longer necessary</li>
-                </ul>
-
-                <div class="diagram-box" style="margin-top: 1rem; background: #f0f8ff; border-left: 4px solid var(--accent-blue);">
-                    <p><strong>At some point you need to trust people.</strong> We're identifying the most trustworthy organizations possible—groups that fight surveillance and censorship for a living.</p>
-                </div>
-            </div>
-
-            <div class="content-block">
-                <h3>What if my camera is stolen and used to create fakes?</h3>
-                <p>Blacklist cannot retroactively remove images already posted to blockchain. We can only blacklist future submissions. This means:</p>
-
-                <ul class="technical-list">
-                    <li><strong>Historical documentation remains intact:</strong> Images authenticated before theft stay authenticated</li>
-                    <li><strong>Future submissions blocked:</strong> Prevents stolen camera from authenticating new fakes</li>
-                    <li><strong>Appeal available:</strong> Explain theft, prove previous legitimate use</li>
-                    <li><strong>Committee can note in blacklist:</strong> "Camera compromised via theft, photographer not at fault"</li>
-                    <li><strong>Obtain new camera:</strong> Continue documentation work with different hardware</li>
-                </ul>
-
-                <p style="margin-top: 1rem;">This protects your historical work while preventing the stolen camera from causing further damage.</p>
-            </div>
-
-            <div class="content-block">
-                <h3>Can governments compel manufacturer or Coalition Members to cooperate with investigations?</h3>
-                <p><strong>Manufacturers alone are insufficient.</strong> They can identify camera serial numbers from NUC hashes, but they don't know what those cameras have captured, when, where, or by whom. You cannot link photos to people without Coalition cooperation to decrypt transaction logs.</p>
-
-                <p style="margin-top: 1rem;"><strong>Coalition cooperation requires compromising multiple nodes:</strong></p>
-                <ul class="technical-list">
-                    <li>Compromise first node to identify which Submission Server received the hash</li>
-                    <li>Compromise second node holding decryption keys for that server's logs during the time window</li>
-                    <li>Second target is only revealed after compromising first node</li>
-                    <li>Must succeed before key rotation moves keys to different nodes</li>
-                </ul>
-
-                <p style="margin-top: 1rem;"><strong>Cross-jurisdiction protection:</strong> Private keys are stored outside node's operating jurisdiction (US node's key in Europe, European node's key in Asia), preventing single-jurisdiction government compulsion. Compromising two Coalition Members sequentially, across multiple jurisdictions, within key rotation windows, without detection is exponentially harder than single-point compromise.</p>
-
-                <p style="margin-top: 1rem;"><strong>Additionally,</strong> government requests trigger node removal per Governance Charter, not compliance. Governments can remove nodes from the network but cannot compel them to cooperate.</p>
-            </div>
-
-            <div class="content-block">
-                <h3>Why is this investigation capability necessary?</h3>
-                <p>If compromised cameras can mint valid authentication certificates for AI-generated images, the entire system becomes worthless. Without the ability to identify and blacklist compromised cameras, a single breach could authenticate thousands of fakes before detection.</p>
-
-                <p style="margin-top: 1rem;">The alternative is accepting that once a camera is compromised, it can authenticate unlimited AI-generated images forever. That makes the authentication system meaningless.</p>
-
-                <p style="margin-top: 1rem;">We've designed the investigation pathway with maximum safeguards:</p>
-                <ul class="technical-list">
-                    <li>Distributed control (no single entity can investigate unilaterally)</li>
-                    <li>Professional forensic analysis (not subjective determinations)</li>
-                    <li>Financial barriers against abuse ($500 per rejected claim)</li>
-                    <li>Enhanced protections for high-risk contexts (unanimous votes, mandatory consultation)</li>
-                    <li>Limited consequences (only camera serial number, never photographer identity)</li>
-                    <li>Transparency (annual public reports, Coalition oversight)</li>
-                    <li>Sunset review (five-year recurring evaluation with option to deprecate)</li>
-                </ul>
-
-                <p style="margin-top: 1rem;">The question isn't "should investigations exist?" but rather "how do we make them as safe as possible while maintaining system integrity?" This framework is our answer.</p>
-            </div>
-
-            <div class="content-block">
-                <h3>Can I observe investigations to ensure the process works as intended?</h3>
-                <p>Coalition Members can observe Investigation Committee deliberations, request access to all investigation materials, and participate in post-action reviews of completed investigations.</p>
-
-                <p style="margin-top: 1rem;">We're committed to treating the first 3-5 investigations as pilot cases with extensive documentation and public reporting (without revealing photographer identities or image content). This allows Coalition Members and external researchers to evaluate whether "extraordinarily strong forensic evidence" is being interpreted consistently and whether mandatory consultation is functioning as intended.</p>
-
-                <p style="margin-top: 1rem;">If the process doesn't work as designed, Coalition Members will raise concerns and vote to adjust procedures or sunset the capability entirely.</p>
+                <h3>Why is this necessary?</h3>
+                <p>If compromised cameras can mint valid certificates for AI-generated images indefinitely, the system becomes worthless. The alternative is accepting a single breach authenticates unlimited fakes forever. Question isn't "should investigations exist?" but "how do we make them as safe as possible while maintaining integrity?" This framework balances system credibility with photographer protection.</p>
             </div>
         </div>
     </section>
 
-    <section class="technical-section">
+    <section class="technical-section compact" style="background: var(--light-blue);">
         <div class="container">
             <h2>Our Commitment</h2>
 
             <div class="content-block">
-                <p>This investigation framework exists to protect system integrity while preserving photographer privacy and safety. We've designed it with input from journalism organizations, privacy advocates, and human rights documentation groups to ensure the safeguards are meaningful.</p>
+                <p><strong>Transparency:</strong> Annual public reports enable external monitoring.</p>
+                <p><strong>Accountability:</strong> Any Coalition Member can access materials and escalate decisions.</p>
+                <p><strong>Adaptability:</strong> Five-year reviews with sunset option as threats evolve.</p>
+                <p><strong>Trust:</strong> Journalism orgs govern this system. If they determine investigations have become surveillance tools, they can vote to sunset the capability.</p>
 
-                <div class="diagram-box" style="margin-top: 1.5rem;">
-                    <h4 style="margin-top: 0;">Transparency</h4>
-                    <p>Annual public reports with detailed aggregate statistics enable external monitoring for abuse patterns.</p>
+                <div class="diagram-box" style="margin-top: 1rem; background: white; border-left: 4px solid var(--accent-blue);">
+                    <p><strong>Coalition members can vote to sunset investigations entirely</strong> if they determine the capability has become harmful or is no longer necessary. This isn't permanent infrastructure—it's a contingency plan subject to ongoing evaluation by organizations whose mission is protecting press freedom.</p>
                 </div>
 
-                <div class="diagram-box">
-                    <h4 style="margin-top: 0;">Accountability</h4>
-                    <p>Any Coalition Member can access investigation materials and escalate questionable decisions to full Coalition vote.</p>
-                </div>
-
-                <div class="diagram-box">
-                    <h4 style="margin-top: 0;">Adaptability</h4>
-                    <p>Five-year recurring review with sunset option acknowledges this capability might not always be necessary as technology and threats evolve.</p>
-                </div>
-
-                <div class="diagram-box">
-                    <h4 style="margin-top: 0;">Trust</h4>
-                    <p>We're asking journalism organizations, fact-checking groups, and press freedom advocates to govern this system—organizations whose mission is protecting press freedom and resisting surveillance. If they determine investigations have become tools of censorship or surveillance, they can vote to sunset the capability.</p>
-                </div>
-
-                <div class="diagram-box" style="margin-top: 1.5rem; background: #f0f8ff; border-left: 4px solid var(--accent-blue);">
-                    <p><strong>Important:</strong> Coalition members can vote to sunset investigations entirely if they determine the capability has become harmful or is no longer necessary. This isn't permanent infrastructure—it's a contingency plan subject to ongoing evaluation by journalism organizations whose mission is protecting press freedom.</p>
-                </div>
-            </div>
-
-            <div class="content-block">
-                <p style="margin-top: 2rem;"><strong>For questions about this framework or Coalition participation, contact:</strong> <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a></p>
+                <p style="margin-top: 1.5rem;"><strong>Questions?</strong> <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a></p>
             </div>
         </div>
     </section>
@@ -562,7 +239,7 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 The Birthmark Standard Foundation. Dual license: AGPL-3.0 (blockchain) / Apache-2.0 (tools).</p>
-                <p style="margin-top: 0.5rem;">Last Updated: January 2026 | Next Scheduled Review: January 2031</p>
+                <p style="margin-top: 0.5rem;">Last Updated: January 2026 | Next Review: January 2031</p>
             </div>
         </div>
     </footer>
@@ -609,6 +286,45 @@
 
         .dropdown:hover .dropdown-menu {
             display: block;
+        }
+
+        /* Compact styling for investigation page */
+        .technical-section.compact {
+            padding: 1.5rem 0;
+        }
+
+        .technical-section.compact h2 {
+            margin-bottom: 1rem;
+        }
+
+        .technical-section.compact h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .technical-section.compact .content-block {
+            margin-bottom: 1.25rem;
+        }
+
+        .technical-section.compact .content-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .technical-section.compact p {
+            margin-bottom: 0.5rem;
+        }
+
+        .technical-section.compact p:last-child {
+            margin-bottom: 0;
+        }
+
+        .technical-list.compact {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .technical-list.compact li {
+            margin-bottom: 0.3rem;
         }
 
         /* Responsive dropdown */
