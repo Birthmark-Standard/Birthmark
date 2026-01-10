@@ -100,48 +100,6 @@
         </div>
     </section>
 
-    <section class="technical-section">
-        <div class="container">
-            <h2>Understanding Modification Levels</h2>
-            <p style="text-align: center; max-width: 700px; margin: 0 auto 2rem;">Not all changes to an image are the same. The Birthmark Standard tracks three levels of modification:</p>
-
-            <div class="problem-grid">
-                <div class="problem-card" style="border-left: 4px solid #4CAF50;">
-                    <h3>Level 0: Validated Raw</h3>
-                    <p><strong>What it means:</strong> Direct from camera sensor, no processing</p>
-                    <p style="margin-top: 1rem;"><strong>Example:</strong> Raw .DNG file straight from camera</p>
-                    <p style="margin-top: 1rem; color: #4CAF50; font-weight: bold;">✓ Highest authentication level</p>
-                </div>
-
-                <div class="problem-card" style="border-left: 4px solid #2196F3;">
-                    <h3>Level 1: Validated</h3>
-                    <p><strong>What it means:</strong> Camera processed the raw file (JPEG conversion, white balance, etc.)</p>
-                    <p style="margin-top: 1rem;"><strong>Example:</strong> Standard JPEG from your camera</p>
-                    <p style="margin-top: 1rem; color: #2196F3; font-weight: bold;">✓ Standard authentication level</p>
-                </div>
-
-                <div class="problem-card" style="border-left: 4px solid #FF9800;">
-                    <h3>Level 2: Modified</h3>
-                    <p><strong>What it means:</strong> Edited in approved software (Lightroom, Photoshop, etc.)</p>
-                    <p style="margin-top: 1rem;"><strong>Example:</strong> Cropped, color-corrected, exposure adjusted</p>
-                    <p style="margin-top: 1rem; color: #FF9800; font-weight: bold;">⚠ Modified but traceable to original</p>
-                </div>
-            </div>
-
-            <div class="content-block" style="max-width: 800px; margin: 2rem auto 0; padding: 1.5rem; background: var(--light-gray); border-radius: 8px;">
-                <h3>How Editor Reauthentication Works</h3>
-                <p>When you edit a photo in Photoshop or Lightroom, the software can create a new authentication record:</p>
-                <ol class="technical-list" style="margin-top: 1rem;">
-                    <li>Software reads the original image's Birthmark record from blockchain</li>
-                    <li>Applies your edits and creates a new hash of the modified image</li>
-                    <li>Submits the new hash with a link to the parent (original) hash</li>
-                    <li>Software developer validates that only acceptable operations were performed</li>
-                </ol>
-                <p style="margin-top: 1rem; font-style: italic;">Result: Anyone can see this image was edited from an authenticated original, and the edit chain is transparent.</p>
-            </div>
-        </div>
-    </section>
-
     <section class="technical-section" style="background: var(--light-gray);">
         <div class="container">
             <h2>Current Status</h2>
