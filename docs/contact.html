@@ -34,8 +34,8 @@
                         <a href="#" class="dropdown-toggle">The People ▾</a>
                         <div class="dropdown-menu">
                             <a href="contact.html">Contact</a>
-                            <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
-                            <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub</a>
+                            <a href="https://www.linkedin.com/company/birthmarkstandard/" class="external-link">LinkedIn ↗</a>
+                            <a href="https://github.com/Birthmark-Standard/Birthmark" class="external-link">GitHub ↗</a>
                         </div>
                     </div>
                 </nav>
@@ -164,7 +164,7 @@
                     <h3>Contact</h3>
                     <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
                     <a href="https://discord.gg/9Ts7dM9pb5">Join our Discord</a>
-                    <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
+                    <a href="https://www.linkedin.com/company/birthmarkstandard/" class="external-link">LinkedIn ↗</a>
                     <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
                 </div>
             </div>
@@ -218,6 +218,16 @@
             display: block;
         }
 
+        /* External link styling */
+        .dropdown-menu a.external-link {
+            color: var(--accent-blue);
+        }
+
+        .dropdown-menu a.external-link:hover {
+            color: var(--accent-blue);
+            background-color: var(--light-blue);
+        }
+
         /* Responsive dropdown */
         @media (max-width: 768px) {
             .dropdown-menu {
@@ -230,6 +240,16 @@
             .dropdown:hover .dropdown-menu {
                 display: none;
             }
+
+        /* External link styling */
+        .dropdown-menu a.external-link {
+            color: var(--accent-blue);
+        }
+
+        .dropdown-menu a.external-link:hover {
+            color: var(--accent-blue);
+            background-color: var(--light-blue);
+        }
         }
 
         /* Founder card styles */
