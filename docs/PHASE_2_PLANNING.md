@@ -240,35 +240,296 @@ Under Attack:
 
 ---
 
+---
+
+## ✅ ADDITIONAL DECISIONS (January 10, 2026)
+
+### 4. Blockchain Implementation: Substrate
+
+**Decision:** Use Substrate for Phase 2 blockchain
+- Leverage Substrate's built-in GRANDPA finality for consensus
+- Rust-based, production-grade blockchain framework
+- Custom pallets for Birthmark-specific logic
+- P2P networking built-in
+
+**Migration from Phase 1:**
+- Phase 1 used Python + PostgreSQL (custom implementation)
+- Phase 2 migrates to Substrate (no backward compatibility needed)
+- Phase 1 Raspberry Pi camera being returned - no legacy support required
+
+**Technical Stack:**
+- Runtime: Substrate FRAME
+- Consensus: GRANDPA + BABE (or Aura for simpler PoA)
+- Database: RocksDB (Substrate default) per node
+- Network: libp2p (Substrate built-in)
+
+---
+
+### 5. Database Strategy: Local DB per Node (Option C)
+
+**Decision:** Each institution runs their own database
+- No centralized/managed database service
+- Blockchain consensus ensures data consistency across nodes
+- Substrate's RocksDB handles blockchain state per node
+- No single point of failure
+
+**Benefits:**
+- Aligns with decentralized trust model
+- Each institution owns their data
+- No vendor lock-in
+- Reduced operational costs (no managed DB fees)
+
+---
+
+### 6. Deployment Infrastructure: Docker Compose
+
+**Decision:** Start with Docker Compose for Phase 2
+- Simple deployment for institutions
+- User wants to learn and build expertise (hands-on approach)
+- Can evolve to Kubernetes in Phase 3 if needed
+
+**Deployment Package:**
+```yaml
+# docker-compose.yml for Birthmark Node
+services:
+  substrate-node:
+    image: birthmark/substrate-node:latest
+    ports:
+      - "443:9933"   # RPC (HTTPS)
+      - "30333:30333"  # P2P networking
+    volumes:
+      - ./chain-data:/chain-data
+    environment:
+      - NODE_NAME=institution_node_01
+      - VALIDATOR=true
+```
+
+**Institution Setup:**
+1. Receive Docker Compose file from Foundation
+2. Configure environment variables (node name, keys)
+3. Run `docker-compose up -d`
+4. Monitor via Prometheus/Grafana dashboard
+
+---
+
+### 7. Monitoring: Self-Hosted Prometheus + Grafana (Option A)
+
+**Decision:** Avoid managed services, build internal expertise
+- Prometheus for metrics collection
+- Grafana for visualization dashboards
+- Self-hosted on each validator node or centralized Foundation monitoring
+
+**Rationale:**
+- Hands-on learning builds expertise
+- No vendor lock-in or recurring service fees
+- Full control over metrics and alerting
+- Open-source, battle-tested stack
+
+**Metrics to Track:**
+- Substrate-specific: Block height, finalized blocks, peer count
+- API: Request rate, error rate, latency
+- System: CPU, memory, disk I/O, network
+- MA validation: PASS/FAIL rates, response times
+
+---
+
+### 8. Node Discovery: Passive Table at submission.birthmarkstandard.org
+
+**Decision:** Static table serving node registry
+- Foundation-hosted service at `submission.birthmarkstandard.org`
+- Returns list of validator nodes with metadata
+- Cameras/phones query this table to find submission endpoints
+- Nodes query to discover peers for P2P networking
+
+**Table Schema:**
+```json
+{
+  "updated_at": "2026-01-10T12:00:00Z",
+  "validator_nodes": [
+    {
+      "id": "node_1",
+      "url": "https://birthmark.nppa.org",
+      "location": "US-East",
+      "capacity": "high",
+      "status": "active",
+      "p2p_address": "/ip4/1.2.3.4/tcp/30333/p2p/12D3..."
+    }
+  ]
+}
+```
+
+**Usage:**
+- Cameras: Query for nearest node based on location
+- Nodes: Query for peer list during startup
+- Foundation: Manual updates when nodes added/removed
+
+---
+
+### 9. Geographic Distribution: Not Required for Phase 2
+
+**Decision:** Focus on multi-node consensus, not geographic diversity
+- Goal: Prove 3 nodes can reach consensus
+- All nodes can be in same cloud region for Phase 2
+- Geographic distribution deferred to Phase 3 (when selling nodes to institutions)
+
+**Phase 2 Testing Goal:**
+- Validate Substrate multi-node consensus works
+- Test node communication and sync
+- Prove fault tolerance (1 node can go down, 2 continue)
+
+---
+
+### 10. Phase 1 Compatibility: None Required
+
+**Decision:** No backward compatibility with Phase 1
+- Phase 1 Raspberry Pi camera being returned after testing
+- No need to support Phase 1 API endpoints
+- Clean migration: Phase 2 is fresh start
+- Substrate blockchain replaces Python + PostgreSQL
+
+**Impact:**
+- Can redesign APIs without legacy constraints
+- Simplifies codebase (no v1/v2 dual support)
+- Documentation focuses only on Phase 2 architecture
+
+---
+
+### 11. Cloud Hosting: All Nodes Cloud-Hosted
+
+**Decision:** Minimize load on node owners by using cloud infrastructure
+- All 3 Phase 2 validator nodes hosted in cloud (AWS, GCP, DigitalOcean, etc.)
+- Foundation manages hosting for initial deployment
+- Institutions may self-host in Phase 3 if desired
+
+**Benefits:**
+- Reliable uptime (cloud SLAs)
+- Easy scaling and monitoring
+- Foundation maintains control during Phase 2 testing
+- Lower barrier to entry for institutions
+
+---
+
 ## Open Questions / To Be Determined
 
-### 1. Blockchain Implementation Clarification
-**Question:** Is Phase 1 blockchain Substrate or Python + PostgreSQL?
-- `packages/registry/` suggests Substrate
-- `packages/blockchain/` uses PostgreSQL
-- **Need to confirm actual implementation**
+### 1. Substrate Pallet Design
+**Question:** What custom pallets do we need for Birthmark?
+- Pallet for image hash storage?
+- Pallet for MA validation tracking?
+- Pallet for provenance chains?
+- Integration with Substrate's existing pallets (balances, timestamp, etc.)
 
-### 2. Consensus Mechanism
-**Depends on:** Blockchain implementation answer
-- If Substrate: Use built-in GRANDPA finality
-- If Python: Build custom PoA consensus protocol
+**Action:** Design pallet architecture before development starts
 
-### 3. Node Deployment Timeline
-- When to launch first production node?
-- Stress testing duration/criteria?
-- Onboarding timeline for institutions?
+---
 
-### 4. Foundation MA Scope
-**For Birthmark Standard Foundation MA:**
-- Android app (definite)
-- iOS app (future)
-- Reference camera implementation (Raspberry Pi)?
-- Third-party app certification service?
+### 2. API Key Management System
+**Question:** How to implement API key issuance, tracking, and revocation?
+- Database for API keys (separate from blockchain)?
+- How to sync API keys across all 3 nodes?
+- Web dashboard for Foundation to manage keys?
+- Self-service portal for manufacturers to request keys?
 
-### 5. Cost Model
-- Free for all (Foundation-funded)?
-- Tiered pricing for commercial manufacturers?
-- Coalition members contribute infrastructure?
+**Action:** Design API key management workflow
+
+---
+
+### 3. Rate Limiting Values
+**Question:** What are the actual rate limits per API key?
+**Status:** Marked as TBD - need real usage data
+
+**Proposed Framework:**
+- Camera manufacturers: 1000 submissions/day
+- Mobile app (Foundation): 500 submissions/day per device
+- Verification queries: 10,000/hour (public, read-only)
+
+**Action:** Implement conservative limits, monitor Phase 2 usage, adjust
+
+---
+
+### 4. Stress Testing Criteria
+**Question:** What defines "passing" stress test for first node?
+- Submissions per second target?
+- Concurrent connections?
+- Database size limits?
+- Uptime requirements?
+
+**Action:** Define stress testing plan with success metrics
+
+---
+
+### 5. Cloud Provider Selection
+**Question:** Which cloud provider(s) for Phase 2 nodes?
+- AWS (most features, higher cost)
+- DigitalOcean (simpler, lower cost, good for startups)
+- GCP (middle ground)
+- Hetzner (EU-friendly, cost-effective)
+
+**Considerations:**
+- Cost per node per month
+- Global availability (for Phase 3 geographic distribution)
+- Docker/container support
+- Monitoring integrations
+
+**Action:** Evaluate cost and features, select provider
+
+---
+
+### 6. Phase 2 Timeline & Milestones
+**Question:** When to launch each phase?
+- Phase 2.0: Single node stress testing
+- Phase 2.1: 3-node deployment
+- Phase 2.2: Production hardening
+
+**Depends on:**
+- Funding availability
+- Android app development timeline
+- Substrate development resources
+
+**Action:** Create project timeline with milestones
+
+---
+
+### 7. Foundation MA Scope
+**Question:** What devices will Foundation MA provision?
+- ✅ Android app (confirmed)
+- iOS app (future, Phase 3?)
+- Reference implementations for manufacturers?
+- Third-party certification service?
+
+**Action:** Define Foundation MA service scope
+
+---
+
+### 8. Android App Development Status
+**Question:** What is the current state of Android app development?
+- Design complete?
+- Development started?
+- Integration with MA ready?
+- Timeline to beta/production?
+
+**Action:** Sync with Android app development team (if exists) or plan development
+
+---
+
+### 9. MA Provisioning Workflow
+**Question:** How does Foundation MA provision Android devices?
+- Bulk provisioning during app download?
+- Per-device unique credentials?
+- How to handle key rotation?
+- Backup/recovery for lost devices?
+
+**Action:** Design Android app provisioning workflow
+
+---
+
+### 10. Cost Budget per Node
+**Question:** What is acceptable monthly cost per validator node?
+- VPS sizing (CPU, RAM, storage)?
+- Bandwidth limits?
+- Monitoring costs?
+- Total budget: $50/month? $100/month? $200/month?
+
+**Action:** Define budget constraints for cloud hosting
 
 ---
 
