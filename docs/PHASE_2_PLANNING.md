@@ -409,127 +409,175 @@ services:
 
 ---
 
-## Open Questions / To Be Determined
+## ✅ ADDITIONAL ANSWERS (January 10, 2026 - Session 2)
 
 ### 1. Substrate Pallet Design
-**Question:** What custom pallets do we need for Birthmark?
-- Pallet for image hash storage?
-- Pallet for MA validation tracking?
-- Pallet for provenance chains?
-- Integration with Substrate's existing pallets (balances, timestamp, etc.)
+**Answer:** Refer to record size reduction conversation
+- See `docs/OPTIMIZATION_RESULTS.md` for 69% storage reduction analysis
+- Binary encoding reduces record from 450 bytes → 140 bytes
+- Pallet design should implement this optimized storage format
 
-**Action:** Design pallet architecture before development starts
+**Next Action:** Design pallet schema based on optimized record format
 
 ---
 
 ### 2. API Key Management System
-**Question:** How to implement API key issuance, tracking, and revocation?
-- Database for API keys (separate from blockchain)?
-- How to sync API keys across all 3 nodes?
-- Web dashboard for Foundation to manage keys?
-- Self-service portal for manufacturers to request keys?
+**Answer:** Self-service portal is a Phase 3 goal
+- Phase 2: Manual API key issuance by Foundation staff
+- Phase 3: Self-service portal for manufacturers to request keys
+- Keeps Phase 2 scope focused on core blockchain functionality
 
-**Action:** Design API key management workflow
-
----
-
-### 3. Rate Limiting Values
-**Question:** What are the actual rate limits per API key?
-**Status:** Marked as TBD - need real usage data
-
-**Proposed Framework:**
-- Camera manufacturers: 1000 submissions/day
-- Mobile app (Foundation): 500 submissions/day per device
-- Verification queries: 10,000/hour (public, read-only)
-
-**Action:** Implement conservative limits, monitor Phase 2 usage, adjust
+**Next Action:** Design simple manual key issuance workflow for Phase 2
 
 ---
 
-### 4. Stress Testing Criteria
-**Question:** What defines "passing" stress test for first node?
-- Submissions per second target?
-- Concurrent connections?
-- Database size limits?
-- Uptime requirements?
+### 3. Stress Testing Criteria
+**Answer:** Develop criteria as we develop the node code
+- Don't set pass conditions before building
+- Set pass conditions before testing (after implementation)
+- Iterative approach: build → define metrics → test → adjust
 
-**Action:** Define stress testing plan with success metrics
+**Next Action:** Define stress testing criteria during Phase 2.0 development
 
 ---
 
-### 5. Cloud Provider Selection
-**Question:** Which cloud provider(s) for Phase 2 nodes?
-- AWS (most features, higher cost)
-- DigitalOcean (simpler, lower cost, good for startups)
-- GCP (middle ground)
-- Hetzner (EU-friendly, cost-effective)
+### 4. Cloud Provider Selection
+**Answer:** Insufficient knowledge to choose yet
+- May resort to local hosting if funding isn't sufficient
+- Decision deferred pending cost analysis (see question #5 below)
 
-**Considerations:**
-- Cost per node per month
-- Global availability (for Phase 3 geographic distribution)
-- Docker/container support
-- Monitoring integrations
-
-**Action:** Evaluate cost and features, select provider
+**Next Action:** Evaluate specs/costs, then decide provider OR local hosting
 
 ---
 
 ### 6. Phase 2 Timeline & Milestones
-**Question:** When to launch each phase?
-- Phase 2.0: Single node stress testing
-- Phase 2.1: 3-node deployment
-- Phase 2.2: Production hardening
+**Answer:** Depends on funding availability
+- Timeline blocked until funding secured
+- Cannot commit to specific dates without budget clarity
 
-**Depends on:**
-- Funding availability
-- Android app development timeline
-- Substrate development resources
-
-**Action:** Create project timeline with milestones
+**Next Action:** Secure funding, then create timeline
 
 ---
 
 ### 7. Foundation MA Scope
-**Question:** What devices will Foundation MA provision?
-- ✅ Android app (confirmed)
-- iOS app (future, Phase 3?)
-- Reference implementations for manufacturers?
-- Third-party certification service?
+**Answer:** Android MA will be distinct entity
+- Separate from any other app MAs developed by Foundation
+- May cohost on same server, but architecturally separate
+- User suspects mixing different app MAs won't be simple
+- Each app has its own MA instance
 
-**Action:** Define Foundation MA service scope
+**Implementation:** One MA instance per app, even if same server
 
 ---
 
 ### 8. Android App Development Status
-**Question:** What is the current state of Android app development?
-- Design complete?
-- Development started?
-- Integration with MA ready?
-- Timeline to beta/production?
+**Answer:** Not started
+- No design, no development
+- Fresh start for Phase 2
 
-**Action:** Sync with Android app development team (if exists) or plan development
+**Next Action:** Begin Android app design and development planning
 
 ---
 
 ### 9. MA Provisioning Workflow
-**Question:** How does Foundation MA provision Android devices?
-- Bulk provisioning during app download?
-- Per-device unique credentials?
-- How to handle key rotation?
-- Backup/recovery for lost devices?
+**Answer:** Provision during install (first launch)
+- User needs to determine method for generating sufficiently random hash for validation
+- Likely: Device-specific entropy + server-side randomness
 
-**Action:** Design Android app provisioning workflow
+**Technical Challenge:** Ensure sufficient randomness for secure device provisioning
 
 ---
 
-### 10. Cost Budget per Node
-**Question:** What is acceptable monthly cost per validator node?
-- VPS sizing (CPU, RAM, storage)?
-- Bandwidth limits?
-- Monitoring costs?
-- Total budget: $50/month? $100/month? $200/month?
+### 10. Rate Limiting - Time Scale
+**Answer:** Rate limits should be on performance-useful time scales
+- Use per-minute or per-hour (not just per-day)
+- Total per-day should be higher to account for usage spikes
+- Example: 100/hour (allows spikes) vs 2400/day (too rigid)
 
-**Action:** Define budget constraints for cloud hosting
+**Implementation:**
+```python
+# Better rate limiting approach
+RATE_LIMITS = {
+    "camera": "50/minute, 1000/day",      # Spike-friendly
+    "mobile_app": "20/minute, 500/day",
+    "verification": "500/minute, 10000/hour"
+}
+```
+
+---
+
+## Open Questions / To Be Determined
+
+### 5. Cloud Provider Selection - Specs & Cost Analysis
+
+**Question:** What specs will we need? What are the real tradeoffs?
+
+**Substrate Node Resource Requirements:**
+
+Based on Substrate's typical resource needs for a validator node:
+
+**Minimum Specs (Development/Testing):**
+- CPU: 2 cores
+- RAM: 4GB
+- Storage: 50GB SSD
+- Bandwidth: 100GB/month
+- **Estimated Cost:** $12-24/month
+
+**Recommended Specs (Production):**
+- CPU: 4 cores
+- RAM: 8GB
+- Storage: 100GB SSD (room for blockchain growth)
+- Bandwidth: 1TB/month
+- **Estimated Cost:** $40-80/month
+
+**High-Performance Specs (Future Scale):**
+- CPU: 8 cores
+- RAM: 16GB
+- Storage: 200GB SSD
+- Bandwidth: 5TB/month
+- **Estimated Cost:** $160-240/month
+
+**Provider Comparison (Production Specs: 4 CPU, 8GB RAM, 100GB SSD):**
+
+| Provider | Monthly Cost | Pros | Cons |
+|----------|-------------|------|------|
+| **DigitalOcean** | $48/month | Simple UI, good docs, startup-friendly | Limited geographic regions |
+| **Hetzner** | $35/month | Cheapest, EU-friendly, great price/performance | Limited to EU + US, less "enterprise" |
+| **Vultr** | $48/month | Good global coverage, competitive pricing | Less popular than AWS/DO |
+| **AWS (Lightsail)** | $40/month | AWS ecosystem, easy upgrade path | More complex, can get expensive |
+| **AWS (EC2)** | $60-80/month | Most features, global, enterprise-grade | Most expensive, complex pricing |
+| **GCP** | $55/month | Google infrastructure, global | Complex pricing, overkill for Phase 2 |
+| **Self-Hosted** | $50-70/month | Full control, no vendor lock-in | Requires maintenance, no SLA, uptime risk |
+
+**Key Tradeoffs:**
+
+1. **Cost vs Features:**
+   - Cheapest: Hetzner ($35/mo) - Great if EU OK
+   - Best value: DigitalOcean ($48/mo) - Simplicity + reliability
+   - Most features: AWS EC2 ($60-80/mo) - Future-proof, complex
+
+2. **Simplicity vs Control:**
+   - Simplest: DigitalOcean (straightforward pricing/UI)
+   - Most control: AWS (every feature imaginable, but complexity)
+   - Middle ground: Hetzner or Vultr
+
+3. **Phase 2 vs Phase 3:**
+   - Phase 2: Can use cheaper options (single region, 3 nodes)
+   - Phase 3: May need global providers (AWS, GCP) for geographic distribution
+
+**Recommendation for Phase 2:**
+- **If budget constrained:** Hetzner ($35/mo × 3 nodes = $105/mo total)
+- **If learning focus:** DigitalOcean ($48/mo × 3 nodes = $144/mo total)
+- **If planning Phase 3 scale:** AWS Lightsail ($40/mo × 3 nodes = $120/mo total)
+
+**Local Hosting Alternative:**
+- Buy 3× used servers (~$300-600 upfront)
+- Internet: $50/mo, Power: $20/mo → ~$70/mo ongoing
+- **Total first year:** $600 hardware + $840 hosting = $1,440
+- **Cloud equivalent (DO):** $144/mo × 12 = $1,728
+- **Breakeven:** ~10 months
+
+**Next Decision:** What's your budget constraint? <$100/mo? <$200/mo? Or self-host?
 
 ---
 
