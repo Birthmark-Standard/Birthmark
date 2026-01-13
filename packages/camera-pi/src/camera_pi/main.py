@@ -273,7 +273,12 @@ class BirthmarkCamera:
 
         # Step 7: Save image metadata
         if save_image:
-            output_file = self.output_dir / f"IMG_{capture_result.timestamp}.json"
+            # Convert timestamp to readable format for filename
+            from datetime import datetime
+            dt = datetime.fromtimestamp(capture_result.timestamp)
+            filename_base = dt.strftime("IMG_%Y-%m-%d_%H-%M-%S")
+
+            output_file = self.output_dir / f"{filename_base}.json"
 
             # Prepare metadata with both raw and processed hashes
             metadata = {
@@ -299,7 +304,7 @@ class BirthmarkCamera:
 
             # Save processed image to disk
             if capture_result.processed_image is not None:
-                image_file = self.output_dir / f"IMG_{capture_result.timestamp}.jpg"
+                image_file = self.output_dir / f"{filename_base}.jpg"
 
                 # Convert numpy array to PIL Image and save as JPEG
                 img = Image.fromarray(capture_result.processed_image)
