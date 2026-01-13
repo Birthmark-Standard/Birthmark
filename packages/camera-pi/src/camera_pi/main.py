@@ -310,6 +310,9 @@ class BirthmarkCamera:
                 if owner_metadata:
                     write_owner_exif(str(image_file), owner_metadata)
 
+                # Prompt to upload processed image to laptop
+                self._prompt_upload_image(image_file)
+
         total_time = time.time() - start_time
         self.capture_count += 1
 
@@ -326,11 +329,6 @@ class BirthmarkCamera:
         }
 
         print(f"✓ Total time: {total_time:.3f}s\n")
-
-        # Prompt to upload processed image to laptop
-        if save_image and capture_result.processed_image is not None:
-            self._prompt_upload_image(image_file)
-
         return result
 
     def _prompt_upload_image(self, image_path: Path) -> None:
