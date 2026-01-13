@@ -333,7 +333,7 @@ class BirthmarkCamera:
 
     def _prompt_upload_image(self, image_path: Path) -> None:
         """
-        Prompt user to upload processed image to laptop via SCP.
+        Prompt user to upload processed image to laptop via HTTP.
 
         Args:
             image_path: Path to the processed JPEG image
@@ -342,28 +342,31 @@ class BirthmarkCamera:
             response = input(f"Upload {image_path.name} to laptop? (y/N): ").strip().lower()
 
             if response == 'y':
-                import subprocess
+                import requests
 
-                # Get laptop IP from environment or prompt
+                # Get laptop IP from environment or use default
                 laptop_ip = os.environ.get('LAPTOP_IP', '192.168.50.161')
+                upload_url = f"http://{laptop_ip}:8888/upload"
 
-                # Target path on laptop (Windows Downloads folder)
-                remote_path = f"samry@{laptop_ip}:C:/Users/samry/Downloads/"
+                print(f"Uploading to {upload_url}...")
 
-                print(f"Uploading to {remote_path}...")
+                # Upload file via HTTP POST
+                with open(image_path, 'rb') as f:
+                    files = {'file': (image_path.name, f, 'image/jpeg')}
+                    result = requests.post(upload_url, files=files, timeout=10)
 
-                # Use scp to transfer file
-                result = subprocess.run(
-                    ['scp', str(image_path), remote_path],
-                    capture_output=True,
-                    text=True
-                )
-
-                if result.returncode == 0:
-                    print(f"✓ Upload successful!")
+                if result.status_code == 200:
+                    data = result.json()
+                    print(f"✓ Upload successful! -> {data.get('path', 'Downloads')}")
                 else:
-                    print(f"✗ Upload failed: {result.stderr}")
+                    print(f"✗ Upload failed: HTTP {result.status_code}")
 
+        except requests.exceptions.Timeout:
+            print("✗ Upload timeout - is upload server running on laptop?")
+            print("  Run: python upload_server.py")
+        except requests.exceptions.ConnectionError:
+            print(f"✗ Cannot connect to laptop at {laptop_ip}:8888")
+            print("  Make sure upload server is running: python upload_server.py")
         except KeyboardInterrupt:
             print("\n✗ Upload cancelled")
         except Exception as e:
