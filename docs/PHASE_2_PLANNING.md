@@ -417,7 +417,14 @@ services:
 - Binary encoding reduces record from 450 bytes → 140 bytes
 - Pallet design should implement this optimized storage format
 
-**Next Action:** Design pallet schema based on optimized record format
+**CRITICAL SECURITY IMPROVEMENT:** Remove MA/DA ID from blockchain records
+- See `docs/SECURITY_IMPROVEMENT_MA_ID_REMOVAL.md` for complete analysis
+- `authority_id` MUST NOT be stored on blockchain (security/privacy risk)
+- Keep `authority_id` in certificate for routing, discard after validation
+- Store in private node audit logs only (not blockchain state)
+- Rationale: Reduces attack surface, improves privacy, maintains auditability
+
+**Next Action:** Design pallet schema based on optimized record format WITHOUT authority_id
 
 ---
 
