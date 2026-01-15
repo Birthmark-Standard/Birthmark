@@ -285,9 +285,7 @@ birthmark/
     "modification_level": 0 | 1 | 2,  # Raw | Validated | Modified
     "modification_display": "Validated Raw" | "Validated" | "Modified",
     "parent_image_hash": "sha256_hex_64_chars" | None,
-    "authority_id": "SIMULATED_CAMERA_001",
-    "submission_server_id": "server_public_key",
-    "timestamp": 1699564800,  # When server processed, not capture time
+    "timestamp": 1699564800,  # Server processing time, rounded to nearest minute
     "block_number": 12345
 }
 ```
@@ -359,7 +357,6 @@ birthmark/
             "hash": "sha256_hex",
             "modification_level": 0,
             "parent_hash": null,
-            "authority_id": "SIMULATED_CAMERA_001",
             "timestamp": 1699564800
         }
     ]
@@ -372,7 +369,6 @@ birthmark/
     "verified": true,
     "modification_level": 1,
     "modification_display": "Validated",
-    "authority_id": "SIMULATED_CAMERA_001",
     "timestamp": 1699564800,
     "block_number": 12345,
     "provenance_chain": [...]
