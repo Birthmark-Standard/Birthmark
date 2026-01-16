@@ -261,8 +261,7 @@ class ValidationWorker:
                 submission_server_id="submission_server_phase1_001",
                 modification_level=submission.modification_level or 0,
                 parent_image_hash=submission.parent_image_hash,
-                manufacturer_authority_id=submission.manufacturer_authority_id or "UNKNOWN",
-                owner_hash=submission.gps_hash,  # Phase 1: Using gps_hash for owner_hash
+                gps_hash=submission.gps_hash,
             )
 
             submission.blockchain_posted = True

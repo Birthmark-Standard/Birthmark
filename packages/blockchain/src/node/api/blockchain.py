@@ -36,7 +36,6 @@ class HashSubmission(BaseModel):
     submission_server_id: str  # Renamed from aggregator_id
     modification_level: int = 0  # 0=raw, 1=processed
     parent_image_hash: Optional[str] = None  # For provenance chain
-    manufacturer_authority_id: Optional[str] = None
     gps_hash: Optional[str] = None  # Optional GPS location proof
 
 

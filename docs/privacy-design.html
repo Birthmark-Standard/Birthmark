@@ -158,7 +158,7 @@
                     <p style="color: green; margin-bottom: 0.5rem;">✓ Modification levels (raw/validated/modified)</p>
                     <p style="color: green; margin-bottom: 0.5rem;">✓ Parent image hashes (for edited images)</p>
                     <p style="color: green; margin-bottom: 0.5rem;">✓ Metadata hashes (timestamp_hash, geolocation_hash, owner_hash - irreversible)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Posting timestamp (when server processed, not capture time)</p>
+                    <p style="color: green; margin-bottom: 0.5rem;">✓ Posting timestamp (server processing time rounded to nearest minute)</p>
                     <p style="color: red; margin-bottom: 0.3rem;">✗ Image content</p>
                     <p style="color: red; margin-bottom: 0.3rem;">✗ Actual metadata (timestamp, location, owner)</p>
                     <p style="color: red; margin-bottom: 0.3rem;">✗ Device manufacturer identity</p>
@@ -213,6 +213,12 @@
                 <h3>Hash-Only Storage</h3>
                 <p>Image content is never transmitted to any server or stored anywhere. Only SHA-256 hashes are submitted to the blockchain.</p>
                 <p style="margin-top: 1rem;"><strong>Result:</strong> Complete privacy of image content. Hash collisions are computationally infeasible (2^256 possibilities).</p>
+            </div>
+
+            <div class="content-block">
+                <h3>Timestamp Rounding</h3>
+                <p>All timestamps recorded on the blockchain are rounded up to the nearest minute. This creates anonymity sets where all submissions within the same minute receive identical timestamps.</p>
+                <p style="margin-top: 1rem;"><strong>Result:</strong> Even if an adversary observes submission timing patterns, they cannot distinguish individual images authenticated within the same 60-second window. This prevents timing-based correlation attacks and protects photographers who authenticate multiple images in quick succession.</p>
             </div>
 
             <div class="content-block">
