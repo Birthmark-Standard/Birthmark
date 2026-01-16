@@ -60,54 +60,6 @@
                     <img src="./camera_submission_packet.png" alt="Camera Submission Packet showing Birthmark Record and Manufacturer Certificate" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
                     <p style="text-align: center; margin-top: 0.5rem; color: var(--gray-text); font-size: 0.9rem;">The two components of every camera authentication</p>
                 </div>
-
-                <div class="diagram-box" style="background: #e8f5e9; margin-top: 2rem;">
-                    <h3>Birthmark Record (Public Ledger)</h3>
-                    <p style="margin-bottom: 1rem;">This is what gets uploaded to the blockchain for public verification:</p>
-                    <ul class="technical-list">
-                        <li><strong>Image Hash:</strong> SHA-256 of the processed image (62d9876258...)</li>
-                        <li><strong>Modification Level:</strong> 1 (Validated - processed from raw)</li>
-                        <li><strong>Parent Image Hash:</strong> Raw image hash (a684b5f981...)</li>
-                        <li><strong>Metadata Hashes:</strong>
-                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                                <li>Timestamp Hash: 05a5a1f8c8...</li>
-                                <li>Geotag Hash: 4379a785da... (optional)</li>
-                                <li>Lens UID Hash: 81a376543b...</li>
-                            </ul>
-                        </li>
-                        <li><strong>Owner Validation:</strong>
-                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                                <li>Owner ID Hash: 7b2r4s91f3...</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <p style="margin-top: 1rem; font-style: italic;">✓ Anyone can query this data to verify an image</p>
-                </div>
-
-                <div class="diagram-box" style="background: #e3f2fd; margin-top: 2rem;">
-                    <h3>Manufacturer Certificate (Private Validation)</h3>
-                    <p style="margin-bottom: 1rem;">This is sent to the manufacturer to prove the camera is legitimate:</p>
-                    <ul class="technical-list">
-                        <li><strong>Authority ID:</strong> CANON_001</li>
-                        <li><strong>Encrypted Camera Token:</strong> 8F3B2A19C7... (NUC hash encrypted)</li>
-                        <li><strong>Encryption Key Lookup:</strong>
-                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                                <li>Key Table: 831</li>
-                                <li>Key Index: 96</li>
-                            </ul>
-                        </li>
-                        <li><strong>Deviation Test Data:</strong>
-                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                                <li>Operations: ["white_balance", ...]</li>
-                                <li>Adjustment Values: [5, ...]</li>
-                                <li>Deviation Value: 0.23</li>
-                                <li>Calculation Code Hash: 5feceb66ff...</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <p style="margin-top: 1rem; font-style: italic;">✓ Only the manufacturer can decrypt this</p>
-                    <p style="margin-top: 0.5rem; font-style: italic;">✗ Manufacturer never sees image hashes</p>
-                </div>
             </div>
         </div>
     </section>
@@ -230,9 +182,7 @@
                 <ul class="technical-list">
                     <li><strong>Staged scenes:</strong> A real camera can photograph a fake scene</li>
                     <li><strong>Screen photos:</strong> A camera can authenticate a photo of a screen showing an AI-generated image</li>
-                    <li><strong>Metadata leakage:</strong> If you share your image with original EXIF data, that data is no longer private</li>
-                    <li><strong>Stolen cameras:</strong> If a camera is stolen, the thief can use it to authenticate images</li>
-                    <li><strong>Coerced disclosure:</strong> Legal compulsion can force manufacturers or node operators to reveal information they possess</li>
+                    <li><strong>Metadata leakage by the user:</strong> If you share your image with original EXIF data, that data is no longer private</li>
                 </ul>
 
                 <p style="margin-top: 2rem; padding: 1rem; background: white; border-left: 4px solid var(--accent-blue);">
