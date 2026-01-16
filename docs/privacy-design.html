@@ -56,9 +56,19 @@
             <div class="content-block">
                 <p>When a camera authenticates an image, it creates two separate data structures that serve different purposes and go to different recipients:</p>
 
-                <div style="max-width: 600px; margin: 2rem auto;">
-                    <img src="./Camera_Submission_Packet.png" alt="Camera Submission Packet showing Birthmark Record and Manufacturer Certificate" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
-                    <p style="text-align: center; margin-top: 0.5rem; color: var(--gray-text); font-size: 0.9rem;">The two components of every camera authentication</p>
+                <div style="display: flex; gap: 2rem; align-items: flex-start; margin-top: 2rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <img src="./Camera_Submission_Packet.png" alt="Camera Submission Packet showing Birthmark Record and Manufacturer Certificate" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 300px;">
+                        <h3 style="margin-top: 0;">Birthmark Record (Public)</h3>
+                        <p>Uploaded to the blockchain for public verification. Contains image hashes, modification level, parent relationships, and hashed metadata (timestamp, location, lens, owner).</p>
+                        <p style="margin-top: 1rem; padding: 0.75rem; background: #e8f5e9; border-radius: 4px;">✓ Anyone can query this data to verify an image</p>
+
+                        <h3 style="margin-top: 2rem;">Manufacturer Certificate (Private)</h3>
+                        <p>Sent only to the manufacturer to prove the camera is legitimate. Contains encrypted camera token, key lookup information, and deviation test data.</p>
+                        <p style="margin-top: 1rem; padding: 0.75rem; background: #e3f2fd; border-radius: 4px;">✓ Only the manufacturer can decrypt this<br>✗ Manufacturer never sees image hashes</p>
+                    </div>
                 </div>
             </div>
         </div>
