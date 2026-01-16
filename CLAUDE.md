@@ -1,8 +1,8 @@
 Birthmark Standard - Phase 1 Development Context
 
-**Last Updated:** December 11, 2025  
-**Current Status:** Camera authentication pipeline validated ✅  
-**Next:** Building Submission Server and Simulated Manufacturer Authority  
+**Last Updated:** January 10, 2026
+**Current Status:** Phase 1 Complete - Full authentication pipeline operational ✅
+**Next:** Phase 2 planning and production deployment preparation
 **Repository:** github.com/Birthmark-Standard/Birthmark
 
 ---
@@ -122,58 +122,93 @@ Certificate: Table 1203, Key 452, encrypted NUC hash
 ## Repository Structure
 ```
 birthmark/
-├── packages/
-│   ├── camera-pi/              # Raspberry Pi camera implementation
-│   │   ├── src/
-│   │   │   ├── capture.py              # Camera capture & hashing
-│   │   │   ├── secure_element.py       # Simulated SE (Phase 1)
-│   │   │   ├── certificate.py          # Certificate generation
-│   │   │   └── submit.py               # Submission Server client
-│   │   ├── tests/
+├── packages/                           # Core implementation packages
+│   ├── blockchain/                     # Merged aggregator + blockchain node
+│   │   ├── src/                        # FastAPI server & blockchain logic
+│   │   ├── alembic/                    # Database migrations
+│   │   ├── scripts/                    # Deployment & testing scripts
+│   │   ├── tests/                      # Unit & integration tests
 │   │   └── README.md
 │   │
-│   ├── submission-server/      # Entry point for authentications
-│   │   ├── src/
-│   │   │   ├── api.py                  # FastAPI endpoints
-│   │   │   ├── validation.py           # Authority routing
-│   │   │   ├── blockchain.py           # Registry posting
-│   │   │   └── database.py             # PostgreSQL models
-│   │   ├── tests/
+│   ├── camera-pi/                      # Raspberry Pi camera implementation
+│   │   ├── src/                        # Camera capture, hashing, submission
+│   │   ├── data/                       # Camera provisioning data
+│   │   ├── installer/                  # Installation scripts
+│   │   ├── tests/                      # Camera tests
 │   │   └── README.md
 │   │
-│   ├── sma/                    # Simulated Manufacturer Authority
-│   │   ├── src/
-│   │   │   ├── server.py               # Validation API
-│   │   │   ├── keys.py                 # Key table management
-│   │   │   ├── crypto.py               # Decryption & validation
-│   │   │   └── provision.py            # Camera provisioning
-│   │   ├── tests/
+│   ├── sma/                            # Simulated Manufacturer Authority
+│   │   ├── src/                        # Validation API & crypto
+│   │   │   └── key_tables/             # Key table management
+│   │   ├── data/                       # Provisioned cameras database
+│   │   ├── certs/                      # Certificate storage
+│   │   ├── scripts/                    # Provisioning & key generation
+│   │   ├── tests/                      # SMA tests
 │   │   └── README.md
 │   │
-│   ├── registry/               # Birthmark Media Registry
-│   │   ├── node/                       # Cosmos SDK setup
-│   │   ├── contracts/                  # Smart contract logic
+│   ├── registry/                       # Substrate blockchain node (Phase 1)
+│   │   ├── node/                       # Node configuration
+│   │   ├── runtime/                    # Runtime logic
+│   │   ├── pallets/                    # Custom pallets
 │   │   ├── scripts/                    # Deployment scripts
 │   │   └── README.md
 │   │
-│   └── verifier/               # Verification interface
-│       ├── web/                        # React application
-│       ├── api/                        # Query library
+│   └── verifier/                       # Verification tools
+│       ├── src/                        # Verification library
+│       ├── web/                        # Web verification interface
+│       ├── gimp/                       # GIMP plugin for verification
 │       └── README.md
 │
-├── shared/                     # Common code across packages
-│   ├── types/                          # Data structures
+├── shared/                             # Shared utilities across packages
+│   ├── types/                          # Common data structures
 │   ├── crypto/                         # Cryptographic utilities
-│   └── protocols/                      # API specifications
+│   ├── protocols/                      # API specifications
+│   ├── certificates/                   # Certificate handling
+│   └── README.md
 │
-├── docs/
-│   ├── architecture/                   # Technical diagrams
-│   ├── specs/                          # Detailed specifications
-│   └── phase1/                         # Phase 1 documentation
+├── docs/                               # Documentation & website
+│   ├── org/                            # Organization documents (Word docs)
+│   │   ├── Birthmark Standard Technical Architecture.docx
+│   │   └── Birthmark Media Registry Governance Charter.docx
+│   ├── testing/                        # Testing documentation (currently empty)
+│   ├── phase-plans/                    # Phase planning (minimal)
+│   │   └── Overview.md
+│   ├── architecture/                   # Reserved for future architecture docs
+│   ├── assets/                         # Website assets (CSS, JS, images)
+│   ├── PHASE_1_DEPLOYMENT_GUIDE.md     # Complete deployment guide
+│   ├── OPTIMIZATION_RESULTS.md         # Storage optimization analysis
+│   ├── OPTIMIZATION_QUICK_REFERENCE.md # Quick optimization reference
+│   ├── PRIVACY_FAQ.md                  # Privacy design FAQ
+│   ├── OWNER_ATTRIBUTION.md            # Attribution system docs
+│   ├── STORAGE_OPTIMIZATION.md         # Storage reduction details
+│   └── *.html                          # Website pages
 │
-├── CLAUDE.md                   # This file - Phase 1 context
-├── README.md                   # Project overview
-└── PHASE1_SUCCESS.md           # Milestone tracking
+├── Root Documentation (Phase 1 Status)
+│   ├── CLAUDE.md                       # This file - authoritative context
+│   ├── README.md                       # Project overview
+│   ├── LICENSING.md                    # Comprehensive licensing guide
+│   ├── SPDX_LICENSING_SUMMARY.md       # SPDX header implementation
+│   │
+│   ├── Phase 1 Implementation Reports
+│   ├── PHASE1_STARTUP_CHECKLIST.md     # Setup prerequisites
+│   ├── PHASE_1_BLOCKCHAIN_READY.md     # Blockchain completion status
+│   ├── PHASE_1_TEST_REPORT.md          # Code-level test results
+│   ├── WEEK_1_2_VALIDATION_REPORT.md   # Implementation validation
+│   ├── WEEK_3_SUMMARY.md               # Integration testing summary
+│   ├── WEEK_3_INTEGRATION_TESTING_GUIDE.md  # Complete testing guide
+│   │
+│   ├── Architecture & Guides
+│   ├── ARCHITECTURE_CHANGE_NO_BATCHING.md   # Key architecture decision
+│   ├── CAMERA_PI_COMPATIBILITY.md      # Camera-server compatibility
+│   ├── DEMO_PHASE1.md                  # End-to-end demo guide
+│   ├── VERIFICATION_GUIDE.md           # Verification instructions
+│   └── ORGANIZATION_PROFILE_README.md  # Foundation profile
+│
+└── Utility Scripts
+    ├── add_spdx_headers.py             # SPDX header automation
+    ├── check_blockchain.py             # Blockchain status checker
+    ├── test_variance_validation_standalone.py
+    └── verify_hash.py                  # Hash verification utility
 ```
 
 ---
@@ -250,9 +285,7 @@ birthmark/
     "modification_level": 0 | 1 | 2,  # Raw | Validated | Modified
     "modification_display": "Validated Raw" | "Validated" | "Modified",
     "parent_image_hash": "sha256_hex_64_chars" | None,
-    "authority_id": "SIMULATED_CAMERA_001",
-    "submission_server_id": "server_public_key",
-    "timestamp": 1699564800,  # When server processed, not capture time
+    "timestamp": 1699564800,  # Server processing time, rounded to nearest minute
     "block_number": 12345
 }
 ```
@@ -324,7 +357,6 @@ birthmark/
             "hash": "sha256_hex",
             "modification_level": 0,
             "parent_hash": null,
-            "authority_id": "SIMULATED_CAMERA_001",
             "timestamp": 1699564800
         }
     ]
@@ -337,7 +369,6 @@ birthmark/
     "verified": true,
     "modification_level": 1,
     "modification_display": "Validated",
-    "authority_id": "SIMULATED_CAMERA_001",
     "timestamp": 1699564800,
     "block_number": 12345,
     "provenance_chain": [...]
@@ -632,16 +663,57 @@ git checkout main
 
 ## Resources & Documentation
 
-### Technical Specifications
-- Camera Security Architecture: `/mnt/project/Birthmark_Camera_Security_Architecture.docx`
-- Registry Specs: `/mnt/project/Birthmark_Media_Registry_Specs.docx`
-- Simulated Authorities: `/mnt/project/Simulated_Authorities_Specs.docx`
-- Complete Architecture: `/mnt/project/Birthmark_Standard_Technical_Architecture.docx`
+### Authoritative Phase 1 Documents (in priority order)
 
-### Governance & Applications
-- Registry Governance Charter: `/mnt/project/Birthmark_Media_Registry_Governance_Charter.docx`
-- Mozilla Grant Application: `/mnt/project/Mozilla_Grant_Application.docx`
-- Craig Newmark Application: `/mnt/project/Craig_Newmark_Application.docx`
+**Primary Context:**
+- `CLAUDE.md` - This file - Complete Phase 1 development context
+- `README.md` - Project overview and quick start
+
+**Architecture & Key Decisions:**
+- `ARCHITECTURE_CHANGE_NO_BATCHING.md` - Critical: Direct hash submission (no batching)
+- `docs/PHASE_1_DEPLOYMENT_GUIDE.md` - Complete deployment instructions (60KB)
+- `docs/org/Birthmark Standard Technical Architecture.docx` - Detailed architecture
+
+**Status & Testing:**
+- `PHASE_1_BLOCKCHAIN_READY.md` - Blockchain completion status (Dec 3, 2025)
+- `WEEK_3_INTEGRATION_TESTING_GUIDE.md` - Comprehensive testing guide
+- `WEEK_3_SUMMARY.md` - Integration testing results (Dec 3, 2025)
+- `PHASE_1_TEST_REPORT.md` - Code-level test results
+- `WEEK_1_2_VALIDATION_REPORT.md` - Implementation validation
+
+**Component-Specific:**
+- `CAMERA_PI_COMPATIBILITY.md` - Camera-server compatibility guide
+- `packages/blockchain/README.md` - Merged aggregator + blockchain architecture
+- `packages/camera-pi/README.md` - Camera implementation details
+- `packages/sma/README.md` - SMA implementation details
+- `packages/verifier/README.md` - Verification tools
+
+**User Guides:**
+- `DEMO_PHASE1.md` - End-to-end demonstration guide
+- `VERIFICATION_GUIDE.md` - How to verify images
+- `PHASE1_STARTUP_CHECKLIST.md` - Setup prerequisites
+
+**Optimization & Privacy:**
+- `docs/OPTIMIZATION_RESULTS.md` - 69% storage reduction analysis
+- `docs/PRIVACY_FAQ.md` - Privacy design questions & answers
+- `docs/OWNER_ATTRIBUTION.md` - Attribution system documentation
+
+**Governance:**
+- `docs/org/Birthmark Media Registry Governance Charter.docx` - Coalition governance
+- `LICENSING.md` - Comprehensive licensing guide
+- `ORGANIZATION_PROFILE_README.md` - Foundation profile
+
+### Outdated Documents (Removed January 10, 2026)
+
+The following documents described obsolete architecture and have been removed:
+- ❌ `Birthmark_Phase_1_Plan_zkSync_Smart_Contract.md` - Old public blockchain approach
+- ❌ `Birthmark_Phase_1_Plan_Aggregation_Server.md` - Old batching architecture
+- ❌ `Birthmark_Phase_1_Plan_Blockchain_Node.md` - Old separate aggregator design
+- ❌ `PI_CAMERA_INTEGRATION_PLAN.md` - Obsolete integration plan
+- ❌ `RASPBERRY_PI_UPDATE.md` - Stale update procedures
+- ❌ All Phase 2/3 planning documents - Moved to future phase planning
+
+**Current Architecture:** See `ARCHITECTURE_CHANGE_NO_BATCHING.md` (Dec 3, 2025) for the definitive design: direct hash submission on custom blockchain with merged aggregator/validator nodes.
 
 ### Contact
 - Executive Director: Samuel C. Ryan
@@ -651,25 +723,46 @@ git checkout main
 
 ---
 
-## Current Session Context (December 11, 2025)
+## Current Session Context (January 10, 2026)
 
 ### What We Just Accomplished
-- ✅ Camera authentication pipeline fully validated
-- ✅ Raw and processed image hashing working
-- ✅ Simulated Secure Element encryption tested
-- ✅ Certificate generation complete
-- ✅ Test pipeline script created (`test_pipeline.py`)
+- ✅ Documentation audit completed
+- ✅ Removed 14 outdated/irrelevant documents
+- ✅ Updated CLAUDE.md to reflect current Phase 1 state
+- ✅ Cleaned up repository structure
 
-### What We're Building Now
-1. Submission Server (FastAPI + PostgreSQL)
-2. Simulated Manufacturer Authority (validation endpoint)
-3. Integration testing (camera → server → SMA → PASS/FAIL)
+### Removed Outdated Documents (14 files)
+**Critically Outdated (5 files):**
+- zkSync smart contract plan (old public blockchain approach)
+- Aggregation server plan (old batching architecture)
+- Blockchain node plan (old separate aggregator design)
+- PI camera integration plan (obsolete)
+- Raspberry Pi update guide (stale)
 
-### Next Session Goals
-- Complete Submission Server MVP
-- Complete SMA validation logic
-- Test end-to-end flow
-- Begin blockchain testnet setup
+**Phase 2/3 Documents (7 files):**
+- Android app pipeline and plan
+- iOS release readiness and errors
+- Phase 2 architecture updates
+- Certificate migration guide
+- Phase 3 image editor wrapper plan
+
+**Outdated Phase 1 Plans (2 files):**
+- Simulated camera plan
+- SMA Phase 1-2 plan
+
+### Current Phase 1 Status (Complete ✅)
+- ✅ Camera authentication pipeline operational
+- ✅ Blockchain node (custom single-node) operational
+- ✅ SMA validation working
+- ✅ End-to-end flow validated
+- ✅ Verifier tools available
+- ✅ Documentation up to date
+
+### Next Steps
+- Phase 2 planning and production deployment preparation
+- Production hardware integration (real TPM)
+- Multi-node blockchain deployment
+- Mobile app development (Android/iOS)
 
 ---
 

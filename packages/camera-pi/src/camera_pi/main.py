@@ -276,7 +276,12 @@ class BirthmarkCamera:
 
         # Step 7: Save image metadata
         if save_image:
-            output_file = self.output_dir / f"IMG_{capture_result.timestamp}.json"
+            # Convert timestamp to readable format for filename
+            from datetime import datetime
+            dt = datetime.fromtimestamp(capture_result.timestamp)
+            filename_base = dt.strftime("IMG_%Y-%m-%d_%H-%M-%S")
+
+            output_file = self.output_dir / f"{filename_base}.json"
 
             # Prepare metadata with both raw and processed hashes
             metadata = {
@@ -302,7 +307,7 @@ class BirthmarkCamera:
 
             # Save processed image to disk
             if capture_result.processed_image is not None:
-                image_file = self.output_dir / f"IMG_{capture_result.timestamp}.jpg"
+                image_file = self.output_dir / f"{filename_base}.jpg"
 
                 # Convert numpy array to PIL Image and save as JPEG
                 img = Image.fromarray(capture_result.processed_image)
@@ -312,6 +317,9 @@ class BirthmarkCamera:
                 # Write owner attribution to EXIF if present
                 if owner_metadata:
                     write_owner_exif(str(image_file), owner_metadata)
+
+                # Prompt to upload processed image to laptop
+                self._prompt_upload_image(image_file)
 
         total_time = time.time() - start_time
         self.capture_count += 1
@@ -329,16 +337,11 @@ class BirthmarkCamera:
         }
 
         print(f"✓ Total time: {total_time:.3f}s\n")
-
-        # Prompt to upload processed image to laptop
-        if save_image and capture_result.processed_image is not None:
-            self._prompt_upload_image(image_file)
-
         return result
 
     def _prompt_upload_image(self, image_path: Path) -> None:
         """
-        Prompt user to upload processed image to laptop via SCP.
+        Prompt user to upload processed image to laptop via HTTP.
 
         Args:
             image_path: Path to the processed JPEG image
@@ -347,28 +350,31 @@ class BirthmarkCamera:
             response = input(f"Upload {image_path.name} to laptop? (y/N): ").strip().lower()
 
             if response == 'y':
-                import subprocess
+                import requests
 
-                # Get laptop IP from environment or prompt
+                # Get laptop IP from environment or use default
                 laptop_ip = os.environ.get('LAPTOP_IP', '192.168.50.161')
+                upload_url = f"http://{laptop_ip}:8888/upload"
 
-                # Target path on laptop (Windows Downloads folder)
-                remote_path = f"samry@{laptop_ip}:C:/Users/samry/Downloads/"
+                print(f"Uploading to {upload_url}...")
 
-                print(f"Uploading to {remote_path}...")
+                # Upload file via HTTP POST
+                with open(image_path, 'rb') as f:
+                    files = {'file': (image_path.name, f, 'image/jpeg')}
+                    result = requests.post(upload_url, files=files, timeout=10)
 
-                # Use scp to transfer file
-                result = subprocess.run(
-                    ['scp', str(image_path), remote_path],
-                    capture_output=True,
-                    text=True
-                )
-
-                if result.returncode == 0:
-                    print(f"✓ Upload successful!")
+                if result.status_code == 200:
+                    data = result.json()
+                    print(f"✓ Upload successful! -> {data.get('path', 'Downloads')}")
                 else:
-                    print(f"✗ Upload failed: {result.stderr}")
+                    print(f"✗ Upload failed: HTTP {result.status_code}")
 
+        except requests.exceptions.Timeout:
+            print("✗ Upload timeout - is upload server running on laptop?")
+            print("  Run: python upload_server.py")
+        except requests.exceptions.ConnectionError:
+            print(f"✗ Cannot connect to laptop at {laptop_ip}:8888")
+            print("  Make sure upload server is running: python upload_server.py")
         except KeyboardInterrupt:
             print("\n✗ Upload cancelled")
         except Exception as e:

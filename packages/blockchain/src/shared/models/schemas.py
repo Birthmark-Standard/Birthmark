@@ -389,7 +389,6 @@ class ProvenanceItem(BaseModel):
     type: str  # capture, modification
     timestamp: str
     authority_type: str  # manufacturer, software
-    authority_id: Optional[str] = None
     modification_level: Optional[int] = None
     software_version: Optional[str] = None
 
