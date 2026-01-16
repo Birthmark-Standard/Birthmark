@@ -66,55 +66,6 @@
                         <p style="margin-top: 1.5rem;"><strong>The Manufacturer Certificate</strong> is sent only to the manufacturer to prove the camera is legitimate. It contains an encrypted camera token, key lookup information, and deviation test data. Only the manufacturer can decrypt this, and the manufacturer never sees the image hashes.</p>
                     </div>
                 </div>
-
-                <div class="diagram-box" style="background: #e8f5e9; margin-top: 2rem;">
-                    <h3>Birthmark Record (Public Ledger)</h3>
-                    <p style="margin-bottom: 1rem;">This is what gets uploaded to the blockchain for public verification:</p>
-                    <ul class="technical-list">
-                        <li><strong>Image Hash:</strong> SHA-256 of the processed image (62d9876258...)</li>
-                        <li><strong>Modification Level:</strong> 1 (Validated - processed from raw)</li>
-                        <li><strong>Parent Image Hash:</strong> Raw image hash (a684b5f981...)</li>
-                        <li><strong>Metadata Hashes:</strong>
-                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                                <li>Timestamp Hash: 05a5a1f8c8...</li>
-                                <li>Geotag Hash: 4379a785da... (optional)</li>
-                                <li>Lens UID Hash: 81a376543b...</li>
-                            </ul>
-                        </li>
-                        <li><strong>Owner Validation:</strong>
-                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                                <li>Owner ID Hash: 7b2r4s91f3... (uses unique salt per image to prevent correlation)</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <p style="margin-top: 1rem; font-style: italic;">✓ Anyone can query this data to verify an image</p>
-                    <p style="margin-top: 0.5rem; font-style: italic;">✓ No camera or manufacturer identifying information included</p>
-                </div>
-
-                <div class="diagram-box" style="background: #e3f2fd; margin-top: 2rem;">
-                    <h3>Manufacturer Certificate (Private Validation)</h3>
-                    <p style="margin-bottom: 1rem;">This is sent to the manufacturer to prove the camera is legitimate:</p>
-                    <ul class="technical-list">
-                        <li><strong>Authority ID:</strong> CANON_001</li>
-                        <li><strong>Encrypted Camera Token:</strong> 8F3B2A19C7... (NUC hash encrypted)</li>
-                        <li><strong>Encryption Key Lookup:</strong>
-                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                                <li>Key Table: 831</li>
-                                <li>Key Index: 96</li>
-                            </ul>
-                        </li>
-                        <li><strong>Deviation Test Data:</strong>
-                            <ul style="margin-left: 2rem; margin-top: 0.5rem;">
-                                <li>Operations: ["white_balance", ...]</li>
-                                <li>Adjustment Values: [5, ...]</li>
-                                <li>Deviation Value: 0.23</li>
-                                <li>Calculation Code Hash: 5feceb66ff...</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <p style="margin-top: 1rem; font-style: italic;">✓ Only the manufacturer can decrypt this</p>
-                    <p style="margin-top: 0.5rem; font-style: italic;">✗ Manufacturer never sees image hashes</p>
-                </div>
             </div>
         </div>
     </section>
