@@ -43,38 +43,52 @@
         </div>
     </header>
 
-    <section class="hero" style="padding: 3rem 0;">
+    <section class="hero" style="padding: 2rem 0;">
         <div class="container">
             <h2>Privacy Design</h2>
             <p style="max-width: 800px; margin: 0 auto;">How the Birthmark Standard protects photographer privacy while enabling verification</p>
         </div>
     </section>
 
-    <section class="technical-section">
+    <section class="technical-section" style="padding: 2rem 0;">
         <div class="container">
             <h2>Camera Submission Packet</h2>
-            <div class="content-block">
-                <div style="display: flex; gap: 2rem; align-items: flex-start; margin-top: 2rem; flex-wrap: wrap;">
+            <div class="content-block" style="margin-top: 1rem;">
+                <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 300px;">
                         <img src="./Camera_Submission_Packet.png" alt="Camera Submission Packet showing Birthmark Record and Manufacturer Certificate" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
                     </div>
                     <div style="flex: 1; min-width: 300px;">
-                        <p>When a camera authenticates an image, it creates two separate data structures that serve different purposes and go to different recipients.</p>
+                        <p>When a camera authenticates an image, it creates two separate data structures that serve different purposes and go to different recipients. This architectural separation ensures no single party has complete information.</p>
 
-                        <p style="margin-top: 1.5rem;"><strong>The Birthmark Record</strong> is uploaded to the blockchain for public verification. It contains image hashes, modification level, parent relationships, and hashed metadata (timestamp, location, lens, owner). Anyone can query this data to verify an image.</p>
+                        <p style="margin-top: 1rem;"><strong>The Birthmark Record</strong> goes to the blockchain for public verification. It contains:</p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li><strong>Image hashes</strong> - SHA-256 of raw and processed images</li>
+                            <li><strong>Modification level</strong> - Raw (0), Validated (1), or Modified (2)</li>
+                            <li><strong>Parent image hash</strong> - Links edited images to their originals</li>
+                            <li><strong>Metadata hashes</strong> (optional) - Irreversible hashes of timestamp, GPS location, lens ID, and owner ID</li>
+                            <li><strong>Processing timestamp</strong> - Server processing time, rounded to nearest minute</li>
+                        </ul>
 
-                        <p style="margin-top: 1.5rem;"><strong>The Manufacturer Certificate</strong> is sent only to the manufacturer to prove the camera is legitimate. It contains an encrypted camera token, key lookup information, and deviation test data. Only the manufacturer can decrypt this, and the manufacturer never sees the image hashes.</p>
+                        <p style="margin-top: 1rem;"><strong>The Manufacturer Certificate</strong> goes only to the camera manufacturer for validation. It contains:</p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li><strong>Encrypted camera token</strong> - Contains the camera's device fingerprint (NUC hash), encrypted with AES-256-GCM</li>
+                            <li><strong>Table/Key reference</strong> - Specifies which key table and index to use for decryption</li>
+                            <li><strong>Authority ID</strong> - Identifies which manufacturer should validate this camera</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem; font-style: italic; color: #555;">The manufacturer can identify which specific camera authenticated but never sees the image hashes or content. The blockchain stores image hashes but never receives camera identification data.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="technical-section" style="background: var(--light-blue);">
+    <section class="technical-section" style="background: var(--light-blue); padding: 2rem 0;">
         <div class="container">
             <h2>What Different Parties See</h2>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1rem;">
                 <div style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <thead>
@@ -189,7 +203,7 @@
                     </table>
                 </div>
 
-                <div style="margin-top: 2rem; padding: 1.5rem; background: white; border-radius: 8px; border-left: 4px solid var(--accent-blue);">
+                <div style="margin-top: 1.5rem; padding: 1.5rem; background: white; border-radius: 8px; border-left: 4px solid var(--accent-blue);">
                     <h3 style="margin-top: 0; margin-bottom: 1rem;">Key Privacy Protections</h3>
                     <ul style="list-style: none; padding: 0; margin: 0;">
                         <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
@@ -214,11 +228,11 @@
         </div>
     </section>
 
-    <section class="technical-section">
+    <section class="technical-section" style="padding: 2rem 0;">
         <div class="container">
             <h2>Privacy Mechanisms</h2>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1rem;">
                 <h3>Two-Packet Separation</h3>
                 <p>The core privacy mechanism: authentication creates two separate data structures sent to different parties that are never combined in any public record.</p>
                 <ul class="technical-list" style="margin-top: 1rem;">
@@ -228,68 +242,68 @@
                 <p style="margin-top: 1rem;"><strong>Result:</strong> To connect a specific camera to a specific image requires compromising multiple independent systems with opposing incentives. The manufacturer can identify the camera but never sees image hashes. The submission server sees image hashes but cannot identify which specific camera without manufacturer keys.</p>
             </div>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1.5rem;">
                 <h3>Key Table Anonymity</h3>
                 <p>Each camera is randomly assigned 3 key tables (out of 2,500 total). Each table is shared by thousands of cameras. When authenticating, the camera randomly selects one of its 3 assigned tables.</p>
-                <p style="margin-top: 1rem;"><strong>Result:</strong> Submission servers and public verifiers cannot identify which specific camera authenticated an image—only the manufacturer can potentially identify the device through their private validation process, but they never see what was authenticated.</p>
+                <p style="margin-top: 0.75rem;"><strong>Result:</strong> Submission servers and public verifiers cannot identify which specific camera authenticated an image—only the manufacturer can potentially identify the device through their private validation process, but they never see what was authenticated.</p>
             </div>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1.5rem;">
                 <h3>Hash-Only Storage</h3>
                 <p>Image content is never transmitted to any server or stored anywhere. Only SHA-256 hashes are submitted to the blockchain.</p>
-                <p style="margin-top: 1rem;"><strong>Result:</strong> Complete privacy of image content. Hash collisions are computationally infeasible (2^256 possibilities).</p>
+                <p style="margin-top: 0.75rem;"><strong>Result:</strong> Complete privacy of image content. Hash collisions are computationally infeasible (2^256 possibilities).</p>
             </div>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1.5rem;">
                 <h3>Timestamp Rounding</h3>
                 <p>All timestamps recorded on the blockchain are rounded up to the nearest minute. This creates anonymity sets where all submissions within the same minute receive identical timestamps.</p>
-                <p style="margin-top: 1rem;"><strong>Result:</strong> Even if an adversary observes submission timing patterns, they cannot distinguish individual images authenticated within the same 60-second window. This prevents timing-based correlation attacks and protects photographers who authenticate multiple images in quick succession.</p>
+                <p style="margin-top: 0.75rem;"><strong>Result:</strong> Even if an adversary observes submission timing patterns, they cannot distinguish individual images authenticated within the same 60-second window. This prevents timing-based correlation attacks and protects photographers who authenticate multiple images in quick succession.</p>
             </div>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1.5rem;">
                 <h3>Metadata Hashing (Optional)</h3>
                 <p>Timestamp, GPS coordinates, lens ID, and owner ID are hashed before being included in the Birthmark Record. These features are opt-in and disabled by default.</p>
                 <p style="margin-top: 1rem;"><strong>Owner ID Hash Salt:</strong> The owner_hash uses a unique random salt stored in the image's EXIF metadata. This prevents correlation attacks across multiple images—each image from the same photographer produces a different owner_hash, making it impossible to link images by owner ID alone.</p>
                 <p style="margin-top: 1rem;"><strong>Result:</strong> Photographers can prove metadata authenticity without revealing location or identity unless they choose to share the original metadata alongside the image. Hashes confirm information you already have but never reveal information you don't possess.</p>
             </div>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1.5rem;">
                 <h3>Separated Concerns</h3>
                 <p>Information is distributed across multiple independent parties so each sees only non-identifying fragments:</p>
-                <ul class="technical-list">
+                <ul class="technical-list" style="margin-top: 0.5rem;">
                     <li>Manufacturer validates cameras but never sees image hashes or content</li>
                     <li>Submission server sees image hashes but cannot identify specific cameras without manufacturer keys</li>
                     <li>Public blockchain stores permanent records but contains no camera or manufacturer identifying information</li>
                     <li>Public verifiers can check authenticity but learn nothing about the photographer, camera, or manufacturer</li>
                 </ul>
-                <p style="margin-top: 1rem;"><strong>Result:</strong> Combining the fragments requires cooperation from entities with opposing incentives. No single point of failure or control.</p>
+                <p style="margin-top: 0.75rem;"><strong>Result:</strong> Combining the fragments requires cooperation from entities with opposing incentives. No single point of failure or control.</p>
             </div>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1.5rem;">
                 <h3>Source Protection</h3>
                 <p>The system protects journalistic sources through architectural design, not just policy. To connect a specific camera to a specific image requires:</p>
-                <ol class="technical-list" style="margin-top: 1rem;">
+                <ol class="technical-list" style="margin-top: 0.5rem;">
                     <li>Possessing the original image</li>
                     <li>Compromising the submission server's encrypted logs to find which manufacturer validated it</li>
                     <li>Compelling the manufacturer to reveal the camera identity</li>
                 </ol>
-                <p style="margin-top: 1rem;"><strong>Result:</strong> Fishing expeditions are prevented. Authorities cannot browse the blockchain to identify photographers. Even with complete system access, adversaries can only connect cameras to images they already possess—they cannot predict future images or identify what new images depict.</p>
+                <p style="margin-top: 0.75rem;"><strong>Result:</strong> Fishing expeditions are prevented. Authorities cannot browse the blockchain to identify photographers. Even with complete system access, adversaries can only connect cameras to images they already possess—they cannot predict future images or identify what new images depict.</p>
             </div>
         </div>
     </section>
 
-    <section class="technical-section" style="background: var(--light-gray);">
+    <section class="technical-section" style="background: var(--light-gray); padding: 2rem 0;">
         <div class="container">
             <h2>What This System Does NOT Protect Against</h2>
 
-            <div class="content-block">
+            <div class="content-block" style="margin-top: 1rem;">
                 <ul class="technical-list">
                     <li><strong>Staged scenes:</strong> A real camera can photograph a fake scene</li>
                     <li><strong>Screen photos:</strong> A camera can authenticate a photo of a screen showing an AI-generated image</li>
                     <li><strong>Metadata leakage by the user:</strong> If you share your image with original EXIF data, that data is no longer private</li>
                 </ul>
 
-                <p style="margin-top: 2rem; padding: 1rem; background: white; border-left: 4px solid var(--accent-blue);">
+                <p style="margin-top: 1.5rem; padding: 1rem; background: white; border-left: 4px solid var(--accent-blue);">
                     <strong>Design Philosophy:</strong> The Birthmark Standard proves an image came from a legitimate camera sensor, not AI generation. It does not prove the scene is real, only that a physical camera captured it. Truth verification still requires journalistic judgment and context.
                 </p>
             </div>
