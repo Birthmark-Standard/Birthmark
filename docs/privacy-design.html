@@ -75,72 +75,140 @@
             <h2>What Different Parties See</h2>
 
             <div class="content-block">
-                <h3>🏭 Camera Manufacturer</h3>
-                <div class="diagram-box">
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Validation request received (timestamp when validation requested)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Specific device identifier (if registration records exist)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Deviation test parameters (to validate editing operations)</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content or image hashes</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Which image was authenticated</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Capture timestamp (only validation request time)</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ GPS location</p>
-                    <p style="color: red;">✗ Photographer identity</p>
-                    <p style="margin-top: 1rem; padding: 0.75rem; background: white; border-radius: 4px; font-size: 0.9rem;">
-                        <strong>Key protection:</strong> Manufacturer can identify "Camera #ABC123 validated at 14:32" but has no connection to which image hash was validated or any of its content, metadata, or context.
-                    </p>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: var(--accent-blue); color: white;">
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Data Type</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Camera Manufacturer (SMA)</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Submission Server</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Registry (Blockchain)</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600;">Public Verifier</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Authentication Event</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(generic)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Image Hashes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Image Content</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Specific Camera Identity</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No<br><span style="font-size: 0.85rem; color: #666;">(anonymity sets)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No<br><span style="font-size: 0.85rem; color: #666;">(no visibility)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">NUC Hash</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(decrypts token)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No<br><span style="font-size: 0.85rem; color: #666;">(encrypted)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Table/Key Reference</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(for validation)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Validation Result</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: #666;">N/A<br><span style="font-size: 0.85rem; color: #666;">(generates result)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(PASS/FAIL)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Modification Levels</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(query result)</span></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Authority IDs</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: #666;">N/A<br><span style="font-size: 0.85rem; color: #666;">(is the authority)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Timestamps</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Photographer Identity</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Photo Location</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Capture Timestamp</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Provenance Chain</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
 
-            <div class="content-block">
-                <h3>🖥️ Submission Server & Blockchain Validator</h3>
-                <p style="font-size: 0.9rem; margin-bottom: 1rem; font-style: italic;">(These are the same entity in the Birthmark architecture)</p>
-                <div class="diagram-box">
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Image hashes (to submit to blockchain)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Metadata hashes (timestamp, geotag, lens, owner)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Device manufacturer identity (e.g., "CANON_001")</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Manufacturer validation result (PASS/FAIL)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Encrypted camera identifier (cannot decrypt without manufacturer keys)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Key lookup data (table ID, key index)</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Which specific camera (key table shared by thousands of cameras)</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ NUC hash (encrypted, cannot decrypt)</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content</p>
-                    <p style="color: red;">✗ Actual timestamp, location, or owner (only hashes)</p>
-                </div>
-            </div>
-
-            <div class="content-block">
-                <h3>⛓️ Public Blockchain Records</h3>
-                <div class="diagram-box">
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Image hashes (SHA-256, irreversible)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Modification levels (raw/validated/modified)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Parent image hashes (for edited images)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Metadata hashes (timestamp_hash, geolocation_hash, owner_hash - irreversible)</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Posting timestamp (server processing time rounded to nearest minute)</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Image content</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Actual metadata (timestamp, location, owner)</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Device manufacturer identity</p>
-                    <p style="color: red;">✗ Specific camera identity or photographer identity</p>
-                    <p style="margin-top: 1rem; padding: 0.75rem; background: white; border-radius: 4px; font-size: 0.9rem;">
-                        <strong>Key protection:</strong> Public blockchain records prove authentication occurred but contain no camera or manufacturer identifying information. Manufacturer identity is only stored in submission server logs (encrypted).
-                    </p>
-                </div>
-            </div>
-
-            <div class="content-block">
-                <h3>👥 Public Verifier</h3>
-                <div class="diagram-box">
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ "This hash was authenticated on this date"</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Modification level and parent relationships</p>
-                    <p style="color: green; margin-bottom: 0.5rem;">✓ Can verify metadata authenticity (if they have original metadata to compare)</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Who took the photo</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Which manufacturer validated it</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ Where it was taken</p>
-                    <p style="color: red; margin-bottom: 0.3rem;">✗ When it was captured</p>
-                    <p style="color: red;">✗ Which specific camera unit</p>
-
-                    <p style="margin-top: 1rem; font-style: italic; background: white; padding: 1rem; border-radius: 4px;">
-                        <strong>How hashed metadata works:</strong> If you possess both the image file AND its original metadata (timestamp, GPS coordinates, owner ID), you can hash those values and compare them to the blockchain record to confirm they match. This proves the metadata hasn't been tampered with. But without the original metadata, the hashes reveal nothing—they're cryptographically irreversible.
-                    </p>
+                <div style="margin-top: 2rem; padding: 1.5rem; background: white; border-radius: 8px; border-left: 4px solid var(--accent-blue);">
+                    <h3 style="margin-top: 0; margin-bottom: 1rem;">Key Privacy Protections</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">🏭</span>
+                            <strong>Camera Manufacturer:</strong> Can validate camera authenticity and see which specific camera authenticated, but has no access to image hashes or content
+                        </li>
+                        <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">🖥️</span>
+                            <strong>Submission Server:</strong> Can process and route data but cannot decrypt camera tokens; uses anonymity sets to prevent specific camera identification
+                        </li>
+                        <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">⛓️</span>
+                            <strong>Registry:</strong> Stores only irreversible hashes and metadata with obscured timestamps (rounded to nearest minute); no image content, photographer information, or authority IDs
+                        </li>
+                        <li style="padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">👥</span>
+                            <strong>Public Verifier:</strong> Can verify authenticity of images they possess but gains no information about photographer, location, specific camera, or provenance chain
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
