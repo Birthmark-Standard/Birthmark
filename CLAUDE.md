@@ -462,21 +462,20 @@ CREATE TABLE validation_log (
 
 | Data Type | Submission Server | Camera Manufacturer | Registry (Blockchain) | Public Verifier |
 |-----------|-------------------|---------------------|----------------------|-----------------|
-| **Authentication Event** | ✅ Yes | ✅ Yes (generic) | ✅ Yes | ✅ Yes |
 | **Image Hashes** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes |
-| **Metadata Hashes** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes |
 | **Image Content** | ❌ No | ❌ No | ❌ No | ❌ No |
-| **Specific Camera Identity** | ❌ No (anonymity sets) | ✅ Yes | ❌ No (no visibility) | ❌ No |
+| **Metadata Hashes** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes |
 | **Device Fingerprint (NUC Hash)** | ❌ No (encrypted) | ✅ Yes (decrypts token) | ❌ No | ❌ No |
 | **Table/Key Reference** | ✅ Yes | ✅ Yes (for validation) | ❌ No | ❌ No |
+| **Specific Camera Identity** | ❌ No (anonymity sets) | ✅ Yes | ❌ No (no visibility) | ❌ No |
 | **Validation Result** | ✅ Yes (PASS/FAIL) | N/A (generates result) | ❌ No | ❌ No |
 | **Modification Levels** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes (query result) |
+| **Parent Image Hash** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes (query result) |
 | **Authority IDs** | ✅ Yes | N/A (is the authority) | ❌ No | ❌ No |
-| **Timestamps** | ✅ Yes (obscured timestamp) | ❌ No | ✅ Yes (obscured timestamp) | ✅ Yes (obscured timestamp) |
+| **Processing Timestamp** | ✅ Yes (obscured timestamp) | ❌ No | ✅ Yes (obscured timestamp) | ✅ Yes (obscured timestamp) |
 | **Photographer Identity** | ❌ No | ❌ No | ❌ No | ❌ No |
 | **Photo Location** | ❌ No | ❌ No | ❌ No | ❌ No |
 | **Capture Timestamp** | ❌ No | ❌ No | ❌ No | ❌ No |
-| **Provenance Chain** | ✅ Yes | ❌ No | ✅ Yes | ❌ No |
 
 **Key Privacy Protections:**
 - **Submission Server:** Can process and route data but cannot decrypt camera tokens; uses anonymity sets to prevent specific camera identification
