@@ -80,8 +80,8 @@
                         <thead>
                             <tr style="background: var(--accent-blue); color: white;">
                                 <th style="padding: 1rem; text-align: left; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Data Type</th>
-                                <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Camera Manufacturer (SMA)</th>
                                 <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Submission Server</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Camera Manufacturer</th>
                                 <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Registry (Blockchain)</th>
                                 <th style="padding: 1rem; text-align: center; font-weight: 600;">Public Verifier</th>
                             </tr>
@@ -89,15 +89,22 @@
                         <tbody>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Authentication Event</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(generic)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(generic)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
                                 <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes</td>
                             </tr>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Image Hashes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Metadata Hashes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
                                 <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes</td>
                             </tr>
@@ -110,50 +117,50 @@
                             </tr>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Specific Camera Identity</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No<br><span style="font-size: 0.85rem; color: #666;">(anonymity sets)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No<br><span style="font-size: 0.85rem; color: #666;">(no visibility)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
                             </tr>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
-                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">NUC Hash</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(decrypts token)</span></td>
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Device Fingerprint (NUC Hash)</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No<br><span style="font-size: 0.85rem; color: #666;">(encrypted)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(decrypts token)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
                             </tr>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Table/Key Reference</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(for validation)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(for validation)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
                             </tr>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Validation Result</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: #666;">N/A<br><span style="font-size: 0.85rem; color: #666;">(generates result)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(PASS/FAIL)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: #666;">N/A<br><span style="font-size: 0.85rem; color: #666;">(generates result)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
                             </tr>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Modification Levels</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
                                 <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(query result)</span></td>
                             </tr>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Authority IDs</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: #666;">N/A<br><span style="font-size: 0.85rem; color: #666;">(is the authority)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: #666;">N/A<br><span style="font-size: 0.85rem; color: #666;">(is the authority)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
                             </tr>
                             <tr style="border-bottom: 1px solid var(--light-gray);">
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Timestamps</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
                                 <td style="padding: 0.75rem; text-align: center; color: green;">✅ Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
                             </tr>
@@ -180,8 +187,8 @@
                             </tr>
                             <tr>
                                 <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Provenance Chain</td>
-                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">❌ No</td>
                                 <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">✅ Yes</td>
                                 <td style="padding: 0.75rem; text-align: center; color: red;">❌ No</td>
                             </tr>
@@ -193,12 +200,12 @@
                     <h3 style="margin-top: 0; margin-bottom: 1rem;">Key Privacy Protections</h3>
                     <ul style="list-style: none; padding: 0; margin: 0;">
                         <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
-                            <span style="position: absolute; left: 0; font-weight: 600;">🏭</span>
-                            <strong>Camera Manufacturer:</strong> Can validate camera authenticity and see which specific camera authenticated, but has no access to image hashes or content
-                        </li>
-                        <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
                             <span style="position: absolute; left: 0; font-weight: 600;">🖥️</span>
                             <strong>Submission Server:</strong> Can process and route data but cannot decrypt camera tokens; uses anonymity sets to prevent specific camera identification
+                        </li>
+                        <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">🏭</span>
+                            <strong>Camera Manufacturer:</strong> Can validate camera authenticity and see which specific camera authenticated, but has no access to image hashes or content
                         </li>
                         <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
                             <span style="position: absolute; left: 0; font-weight: 600;">⛓️</span>
