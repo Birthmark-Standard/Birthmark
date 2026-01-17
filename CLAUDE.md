@@ -460,26 +460,27 @@ CREATE TABLE validation_log (
 
 ### What Different Parties See
 
-| Data Type | Camera Manufacturer (SMA) | Submission Server | Registry (Blockchain) | Public Verifier |
-|-----------|---------------------------|-------------------|----------------------|-----------------|
-| **Authentication Event** | ✅ Yes (generic) | ✅ Yes | ✅ Yes | ✅ Yes |
-| **Image Hashes** | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes |
+| Data Type | Submission Server | Camera Manufacturer | Registry (Blockchain) | Public Verifier |
+|-----------|-------------------|---------------------|----------------------|-----------------|
+| **Authentication Event** | ✅ Yes | ✅ Yes (generic) | ✅ Yes | ✅ Yes |
+| **Image Hashes** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes |
+| **Metadata Hashes** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes |
 | **Image Content** | ❌ No | ❌ No | ❌ No | ❌ No |
-| **Specific Camera Identity** | ✅ Yes | ❌ No (anonymity sets) | ❌ No (no visibility) | ❌ No |
-| **NUC Hash** | ✅ Yes (decrypts token) | ❌ No (encrypted) | ❌ No | ❌ No |
-| **Table/Key Reference** | ✅ Yes (for validation) | ✅ Yes | ❌ No | ❌ No |
-| **Validation Result** | N/A (generates result) | ✅ Yes (PASS/FAIL) | ❌ No | ❌ No |
-| **Modification Levels** | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes (query result) |
-| **Authority IDs** | N/A (is the authority) | ✅ Yes | ❌ No | ❌ No |
-| **Timestamps** | ❌ No | ✅ Yes (obscured timestamp) | ✅ Yes (obscured timestamp) | ✅ Yes (obscured timestamp) |
+| **Specific Camera Identity** | ❌ No (anonymity sets) | ✅ Yes | ❌ No (no visibility) | ❌ No |
+| **Device Fingerprint (NUC Hash)** | ❌ No (encrypted) | ✅ Yes (decrypts token) | ❌ No | ❌ No |
+| **Table/Key Reference** | ✅ Yes | ✅ Yes (for validation) | ❌ No | ❌ No |
+| **Validation Result** | ✅ Yes (PASS/FAIL) | N/A (generates result) | ❌ No | ❌ No |
+| **Modification Levels** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes (query result) |
+| **Authority IDs** | ✅ Yes | N/A (is the authority) | ❌ No | ❌ No |
+| **Timestamps** | ✅ Yes (obscured timestamp) | ❌ No | ✅ Yes (obscured timestamp) | ✅ Yes (obscured timestamp) |
 | **Photographer Identity** | ❌ No | ❌ No | ❌ No | ❌ No |
 | **Photo Location** | ❌ No | ❌ No | ❌ No | ❌ No |
 | **Capture Timestamp** | ❌ No | ❌ No | ❌ No | ❌ No |
-| **Provenance Chain** | ❌ No | ✅ Yes | ✅ Yes | ❌ No |
+| **Provenance Chain** | ✅ Yes | ❌ No | ✅ Yes | ❌ No |
 
 **Key Privacy Protections:**
-- **Camera Manufacturer:** Can validate camera authenticity and see which specific camera authenticated, but has no access to image hashes or content
 - **Submission Server:** Can process and route data but cannot decrypt camera tokens; uses anonymity sets to prevent specific camera identification
+- **Camera Manufacturer:** Can validate camera authenticity and see which specific camera authenticated, but has no access to image hashes or content
 - **Registry:** Stores only irreversible hashes and metadata with obscured timestamps (rounded to nearest minute); no image content, photographer information, or authority IDs
 - **Public Verifier:** Can verify authenticity of images they possess but gains no information about photographer, location, specific camera, or provenance chain
 
