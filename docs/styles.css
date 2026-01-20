@@ -74,7 +74,12 @@ h1 {
 
 h1 .the-prefix {
     font-size: 1.0rem;
-    margin-bottom: -0.25rem;
+    line-height: 1;
+}
+
+h1 .org-name {
+    line-height: 1;
+    margin-top: -0.5rem;
 }
 
 nav a {
