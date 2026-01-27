@@ -86,6 +86,42 @@
 
     <section class="technical-section" style="background: var(--light-blue); padding: 2rem 0;">
         <div class="container">
+            <h2>Blockchain Submission Packet</h2>
+            <div class="content-block" style="margin-top: 1rem;">
+                <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <img src="./Blockchain_Submission_Packet.png" alt="Blockchain Submission Packet showing only the Birthmark Record without camera identification" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 300px;">
+                        <p>After the camera manufacturer validates the camera token, only the Birthmark Record is posted to the blockchain. The Manufacturer Certificate is never stored on the blockchain.</p>
+
+                        <p style="margin-top: 1rem;"><strong>What Gets Posted to the Blockchain:</strong></p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li><strong>Image hashes only</strong> - No camera identification data</li>
+                            <li><strong>Modification level</strong> - Transparency about processing</li>
+                            <li><strong>Parent image hash</strong> - Provenance chain for edited images</li>
+                            <li><strong>Metadata hashes</strong> (if provided) - Verifiable without revealing content</li>
+                            <li><strong>Server timestamp</strong> - Processing time, not capture time</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem;"><strong>What Is NOT Posted:</strong></p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li>Camera serial number or device fingerprint</li>
+                            <li>Manufacturer certificate or encrypted tokens</li>
+                            <li>Table/Key references used for validation</li>
+                            <li>Authority IDs or validation endpoints</li>
+                            <li>Photographer identity or capture location</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem; font-style: italic; color: #555;">The blockchain becomes a public registry of verified image hashes without any camera or photographer identification. Privacy is protected by architectural separation—the validation step happens separately and privately.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="padding: 2rem 0;">
+        <div class="container">
             <h2>What Different Parties See</h2>
 
             <div class="content-block" style="margin-top: 1rem;">
