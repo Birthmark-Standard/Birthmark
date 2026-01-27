@@ -1,0 +1,19 @@
+# Birthmark Standard Code Owners
+
+# Default owner for everything
+* @samuelcryan
+
+# White paper and technical documentation
+*.md @samuelcryan
+/documentation/ @samuelcryan
+
+# Core architecture specifications
+/specifications/ @samuelcryan
+
+# Privacy and security models
+*privacy* @samuelcryan
+*security* @samuelcryan
+
+# Grant applications and organizational docs
+/grants/ @samuelcryan
+/governance/ @samuelcryan
