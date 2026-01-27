@@ -86,6 +86,42 @@
 
     <section class="technical-section" style="background: var(--light-blue); padding: 2rem 0;">
         <div class="container">
+            <h2>Blockchain Submission Packet</h2>
+            <div class="content-block" style="margin-top: 1rem;">
+                <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <img src="./Blockchain_Submission_Packet.png" alt="Blockchain Submission Packet showing only the Birthmark Record without camera identification" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 300px;">
+                        <p>After the camera manufacturer validates the camera token, only the Birthmark Record is posted to the blockchain. The Manufacturer Certificate is never stored on the blockchain.</p>
+
+                        <p style="margin-top: 1rem;"><strong>What Gets Posted to the Blockchain:</strong></p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li><strong>Image hashes only</strong> - No camera identification data</li>
+                            <li><strong>Modification level</strong> - Transparency about processing</li>
+                            <li><strong>Parent image hash</strong> - Provenance chain for edited images</li>
+                            <li><strong>Metadata hashes</strong> (if provided) - Verifiable without revealing content</li>
+                            <li><strong>Server timestamp</strong> - Processing time, not capture time</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem;"><strong>What Is NOT Posted:</strong></p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li>Camera serial number or device fingerprint</li>
+                            <li>Manufacturer certificate or encrypted tokens</li>
+                            <li>Table/Key references used for validation</li>
+                            <li>Authority IDs or validation endpoints</li>
+                            <li>Photographer identity or capture location</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem; font-style: italic; color: #555;">The blockchain becomes a public registry of verified image hashes without any camera or photographer identification. Privacy is protected by architectural separation—the validation step happens separately and privately.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="padding: 2rem 0;">
+        <div class="container">
             <h2>What Different Parties See</h2>
 
             <div class="content-block" style="margin-top: 1rem;">
@@ -223,6 +259,42 @@
                             <strong>Public Verifier:</strong> Can verify authenticity of images they possess but gains no information about photographer, location, specific camera, or provenance chain
                         </li>
                     </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue); padding: 2rem 0;">
+        <div class="container">
+            <h2>Complete Authentication Pipeline</h2>
+            <div class="content-block" style="margin-top: 1rem;">
+                <p style="text-align: center; margin-bottom: 2rem;">The Birthmark Standard separates data across multiple parties, ensuring no single entity has complete information about both the photographer and their images.</p>
+
+                <div style="margin-bottom: 3rem;">
+                    <img src="./Full_Visual_Pipeline.png" alt="Full Visual Pipeline showing complete authentication flow from camera to verification" style="width: 100%; max-width: 1000px; margin: 0 auto; display: block; border: 2px solid var(--gray-text); border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                    <p style="text-align: center; margin-top: 1rem; font-style: italic; color: #666;">Complete flow: Camera capture → Submission Server → Manufacturer validation → Blockchain registry → Public verification</p>
+                </div>
+
+                <h3 style="margin-top: 2rem; margin-bottom: 1.5rem;">Privacy at Each Step</h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <img src="./Take_a_picture.png" alt="Step 1: Take a picture with authenticated camera" style="width: 100%; border-radius: 4px; margin-bottom: 1rem;">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 0.5rem;">Step 1: Camera Capture</h4>
+                        <p style="color: #666; font-size: 0.95rem;">Camera creates image hashes and encrypted device token. Image content never leaves the device—only hashes are transmitted.</p>
+                    </div>
+
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <img src="./Validate_the_camera.png" alt="Step 2: Validate the camera through manufacturer" style="width: 100%; border-radius: 4px; margin-bottom: 1rem;">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 0.5rem;">Step 2: Camera Validation</h4>
+                        <p style="color: #666; font-size: 0.95rem;">Manufacturer validates camera authenticity without seeing image hashes. Only the encrypted device token is sent for verification.</p>
+                    </div>
+
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <img src="./Validate_a_picture.png" alt="Step 3: Validate a picture via blockchain" style="width: 100%; border-radius: 4px; margin-bottom: 1rem;">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 0.5rem;">Step 3: Public Verification</h4>
+                        <p style="color: #666; font-size: 0.95rem;">Anyone can verify an image by hashing it and querying the blockchain. No photographer information or camera identity is revealed.</p>
+                    </div>
                 </div>
             </div>
         </div>
