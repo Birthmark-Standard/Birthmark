@@ -58,123 +58,32 @@
 
             <div class="content-block">
                 <h3>Hardware Root of Trust</h3>
-                <p>Every camera sensor has unique manufacturing imperfections creating a Non-Uniformity Correction (NUC) map—as unique as a fingerprint. At manufacturing, the camera stores SHA-256(NUC_map) in its Secure Element (tamper-resistant chip). This becomes the unforgeable hardware identity.</p>
+                <p>Every camera sensor has unique manufacturing imperfections at the microscopic level, creating what's called a Non-Uniformity Correction (NUC) map. These imperfections are as unique as a fingerprint. During manufacturing, the camera stores a cryptographic hash of this NUC map in its Secure Element—a tamper-resistant chip that cannot be cloned or modified. This hash becomes the camera's unforgeable hardware identity.</p>
 
-                <p style="margin-top: 1rem;"><strong>For smartphones without factory calibration:</strong> On first launch, the app captures PRNU (sensor noise pattern), uses it as entropy to generate an ECDSA keypair, stores the private key in the device secure enclave (Android StrongBox, iOS Secure Enclave), then permanently discards the PRNU pattern. The keypair becomes permanent device identity.</p>
+                <p style="margin-top: 1rem;">For smartphones that don't have factory calibration, the approach is slightly different. When you first launch the authentication app, it captures the sensor's Photo Response Non-Uniformity (PRNU)—a stable noise pattern from silicon imperfections. The app uses this PRNU as entropy to generate a cryptographic keypair, stores the private key in the device's secure enclave (Android StrongBox or iOS Secure Enclave), then permanently discards the PRNU pattern. From that moment forward, the keypair serves as the phone's permanent device identity.</p>
             </div>
 
             <div class="content-block">
-                <h3>Parallel Processing at Capture</h3>
-                <p>Two simultaneous processes occur the instant you press the shutter:</p>
+                <h3>What Happens at Capture</h3>
+                <p>The moment you press the shutter, two parallel processes begin simultaneously. The first process handles image hashing. The sensor captures light into raw Bayer data, which gets split via Direct Memory Access into two paths: one path goes to the Secure Element which computes a SHA-256 hash of the raw data, while the other path goes to the Image Signal Processor which converts the raw data into a JPEG or HEIC file, saves it to storage, and then computes a SHA-256 hash of that processed image. The result is two hashes—one proving what the sensor captured (unmodified), and one for the image you'll actually share.</p>
 
-                <div class="diagram-box">
-                    <h4>Process A: Image Hashing</h4>
-                    <div class="code-block">
-Sensor captures → Raw Bayer data
-        ↓
-[DMA splits to two paths]
-        ↓
-    ┌───┴────┐
-    ↓        ↓
-Secure    Image Signal
-Element   Processor (ISP)
-    ↓        ↓
-Hash raw  Process to JPEG
-(SHA-256) Save to storage
-    ↓        ↓
-Raw hash  Hash processed
-          (SHA-256)
-    ↓        ↓
-Raw hash  Processed hash
-                    </div>
-                    <p><strong>Result:</strong> Two hashes—raw sensor data (unmodified) and processed image (what you share).</p>
-                </div>
-
-                <div class="diagram-box" style="margin-top: 1.5rem;">
-                    <h4>Process B: Camera Token Generation</h4>
-                    <div class="code-block">
-Secure Element:
-1. Retrieve stored NUC hash
-2. Randomly select 1 of 3 assigned key tables
-3. Randomly select 1 of 1,000 keys from that table
-4. Encrypt NUC hash with AES-256-GCM
-        ↓
-Camera Token created:
-  • Encrypted NUC hash (ciphertext)
-  • Authentication tag (tamper detection)
-  • Nonce (unique encryption value)
-  • Key reference (table_id + key_index)
-                    </div>
-                    <p><strong>Result:</strong> Encrypted proof only the manufacturer can validate—without seeing your image.</p>
-                </div>
+                <p style="margin-top: 1rem;">The second process generates the camera token. The Secure Element retrieves the stored NUC hash, then randomly selects one of three key tables assigned to this camera during manufacturing. From that table, it randomly selects one of 1,000 keys and uses AES-256-GCM encryption to encrypt the NUC hash. This creates a camera token containing the encrypted NUC hash (ciphertext), an authentication tag for tamper detection, a unique nonce value, and a key reference indicating which table and key index was used. This token is encrypted proof that only the manufacturer can validate—and they can validate it without ever seeing your image.</p>
             </div>
 
             <div class="content-block">
-                <h3>Authentication Packet Assembly</h3>
-                <p>The camera assembles a complete submission packet (~411 bytes total) containing three components bound by cryptographic signatures:</p>
+                <h3>Assembling the Authentication Packet</h3>
+                <p>The camera now assembles a complete submission packet of approximately 411 bytes containing three distinct components. The first component is the <strong>Birthmark Record</strong>, which includes the two image hashes (raw and processed), their modification levels, and optionally some hashed metadata like timestamp, location, or owner information. This is the data that will eventually be stored on the blockchain.</p>
 
-                <div class="diagram-box">
-                    <h4>Component 1: Birthmark Record</h4>
-                    <div class="code-block">
-{
-  "image_hashes": [
-    {
-      "hash": "a9d1dbb063ffd40ed3da020e...",
-      "modification_level": 0,  // Raw
-      "parent_hash": null
-    },
-    {
-      "hash": "29d6c8498815c58cb274cb48...",
-      "modification_level": 1,  // Validated processed
-      "parent_hash": "a9d1dbb063ffd40ed3da020e..."
-    }
-  ],
-  "metadata_hashes": {  // Optional, disabled by default
-    "timestamp_hash": "...",
-    "location_hash": "...",
-    "owner_hash": "..."
-  }
-}
-                    </div>
-                </div>
+                <p style="margin-top: 1rem;">The second component is the <strong>Manufacturer Certificate</strong>, which identifies which manufacturer should validate this submission (like "CANON_001"), contains the encrypted camera token we just created, and includes the key reference needed for decryption. Critically, this certificate contains no image hashes—the manufacturer will validate the camera without ever seeing what you photographed.</p>
 
-                <div class="diagram-box" style="margin-top: 1.5rem;">
-                    <h4>Component 2: Manufacturer Certificate</h4>
-                    <div class="code-block">
-{
-  "validator_id": "CANON_001",
-  "encrypted_token": {
-    "ciphertext": "2f358ac4a60fe672...",
-    "auth_tag": "6acb56f767fc4f1f...",
-    "nonce": "52428f0a..."
-  },
-  "key_reference": {
-    "table_id": 1203,
-    "key_index": 452
-  },
-  "record_hash": "SHA-256(birthmark_record)"
-}
-                    </div>
-                    <p><strong>Critical:</strong> Manufacturer certificate contains NO image hashes. Manufacturer validates camera without seeing what you photographed.</p>
-                </div>
-
-                <div class="diagram-box" style="margin-top: 1.5rem;">
-                    <h4>Component 3: Camera Signature</h4>
-                    <div class="code-block">
-camera_signature = ECDSA_sign(
-  private_key_in_secure_element,
-  SHA-256(manufacturer_certificate)
-)
-                    </div>
-                    <p><strong>Purpose:</strong> Binds the certificate to this specific camera, preventing packet tampering or component mixing attacks.</p>
-                </div>
+                <p style="margin-top: 1rem;">The third component is the <strong>Camera Signature</strong>—the camera uses its private key stored in the Secure Element to sign the manufacturer certificate. This cryptographic signature binds the certificate to this specific camera, preventing anyone from tampering with the packet or mixing components from different submissions.</p>
             </div>
 
             <div class="content-block">
                 <h3>Server Selection and Submission</h3>
-                <p>The camera queries a registry (https://registry.birthmark.org/servers.json) updated every 24 hours, selects three geographically diverse servers (Americas, Europe, Asia-Pacific) excluding the busiest 25%, and submits the authentication packet to two randomly selected servers from this set.</p>
+                <p>Before sending the packet, the camera queries a registry at registry.birthmark.org to get the current list of available submission servers. This list is updated every 24 hours. The camera selects three geographically diverse servers from different regions (Americas, Europe, and Asia-Pacific), deliberately excluding the busiest 25% to balance load. It then randomly picks two servers from this set and submits the authentication packet to both of them simultaneously.</p>
 
-                <p style="margin-top: 1rem;"><strong>Why two servers?</strong> Dual-approval protocol requires validation from two independent servers before blockchain posting, preventing single-server fraud.</p>
+                <p style="margin-top: 1rem;">Why two servers? The system uses a dual-approval protocol. For an image to be posted to the blockchain, it must be independently validated by two different submission servers. This prevents fraud—a single compromised server cannot forge authentication records because it can't produce the second independent approval.</p>
             </div>
         </div>
     </section>
@@ -187,152 +96,49 @@ camera_signature = ECDSA_sign(
 
             <div class="content-block">
                 <h3>Submission Server Processing</h3>
-                <p>When a submission server receives the authentication packet, it executes a strict validation and routing protocol:</p>
+                <p>When a submission server receives an authentication packet, it follows a strict validation protocol. First, it verifies the camera signature to ensure the packet came from a legitimate device and hasn't been tampered with. It checks that the signature is valid and that the certificate hash matches the accompanying birthmark record. If these checks pass, the server extracts the manufacturer certificate and routes it to the appropriate manufacturer authority for validation.</p>
 
-                <div class="diagram-box">
-                    <h4>Validation Flow</h4>
-                    <div class="code-block">
-1. Receive authentication packet
-        ↓
-2. Verify camera signature
-   (Checks: signature valid? certificate hash matches?)
-        ↓
-3. Extract manufacturer certificate
-        ↓
-4. Route to manufacturer authority
-   POST /validate {encrypted_token, key_reference}
-        ↓
-5. Wait for manufacturer response
-        ↓
-    ┌───┴────┐
-    ↓        ↓
-  PASS     FAIL
-    ↓        ↓
-Continue  Reject
-to step 6  packet
-        ↓
-6. Coordinate with second server
-   (Dual-approval requirement)
-        ↓
-7. Both servers sign birthmark record
-        ↓
-8. Submit to blockchain validators
-                    </div>
-                </div>
+                <p style="margin-top: 1rem;">Here's where the architectural separation becomes critical: the submission server can see the image hashes in the birthmark record, but it cannot decrypt the camera token—that encrypted data is opaque to the server. Meanwhile, when the manufacturer receives the certificate for validation, they only see the encrypted token and key reference. They never receive the image hashes, timestamps, or even information about which server sent the request. Each party sees only fragments of the complete picture.</p>
 
-                <p style="margin-top: 1.5rem;"><strong>Critical separation:</strong> Submission servers see image hashes but cannot decrypt camera tokens. Manufacturers see encrypted tokens but never receive image hashes. No single party has complete information.</p>
+                <p style="margin-top: 1rem;">The server waits for the manufacturer's response. If the response is FAIL (indicating an unknown camera or tampered token), the server rejects the entire submission. If the response is PASS, the server continues to the next critical step: coordinating with a second independent server for dual approval.</p>
             </div>
 
             <div class="content-block">
                 <h3>Manufacturer Authority Validation</h3>
-                <p>The manufacturer receives only the encrypted token and key reference—no image hashes, timestamps, or server identifiers:</p>
+                <p>The manufacturer's validation process is deliberately stateless and privacy-preserving. When they receive the encrypted token and key reference, they look up the appropriate decryption key from their secure key table database. Using that key, they decrypt the token with AES-256-GCM to reveal the NUC hash. They then query their production database with a single question: "Is this NUC hash from one of our legitimate cameras?" The database returns either yes or no, without revealing which specific camera it is.</p>
 
-                <div class="diagram-box">
-                    <h4>Manufacturer Validation Process</h4>
-                    <div class="code-block">
-Receive: {encrypted_token, key_reference}
-        ↓
-1. Look up decryption key
-   (table_id: 1203, key_index: 452)
-        ↓
-2. Decrypt token with AES-256-GCM
-   → Decrypted NUC hash
-        ↓
-3. Query production database
-   "Is this NUC hash from a legitimate camera?"
-        ↓
-4. Verify authentication tag
-   "Has token been tampered with?"
-        ↓
-5. Return response:
-   PASS: "Legitimate camera"
-   FAIL: "Unknown or tampered token"
-                    </div>
-                </div>
-
-                <p style="margin-top: 1.5rem;"><strong>Stateless validation:</strong> Manufacturer does not log device identifiers or validation timestamps. Even with database access, adversaries learn only the population of legitimate devices—not which devices authenticated which images or when cameras were active.</p>
+                <p style="margin-top: 1rem;">The manufacturer also verifies the authentication tag to ensure the token hasn't been tampered with since creation. Based on these checks, they return a simple response: PASS if this is a legitimate camera, FAIL if it's an unknown camera or if tampering is detected. Importantly, the manufacturer doesn't log device identifiers or validation timestamps. Even if someone gained access to their entire database, they would only learn the population of legitimate cameras that exist—not which specific devices authenticated which images, or when any particular camera was active.</p>
             </div>
 
             <div class="content-block">
                 <h3>Dual-Approval Protocol</h3>
-                <p>Before blockchain submission, the system enforces dual-approval to prevent single-server fraud:</p>
+                <p>Before anything gets posted to the blockchain, the system enforces dual approval. Both servers that received the camera's submission must independently validate with the manufacturer and both must receive PASS responses. Each server then creates a validation proof containing their server identifier, their cryptographic signature over the birthmark record hash, and the manufacturer's PASS signature.</p>
 
-                <div class="diagram-box">
-                    <div class="code-block">
-Server A validates → Receives PASS from manufacturer
-Server B validates → Receives PASS from manufacturer
-        ↓
-Both servers create validation proof:
-{
-  "server_id": "node-eu-1",
-  "server_signature": ECDSA_sign(record_hash),
-  "record_hash": "SHA-256(birthmark_record)",
-  "validator_signature": manufacturer_PASS_signature
-}
-        ↓
-Blockchain validators verify:
-  ✓ Two different server_ids
-  ✓ Both server signatures valid
-  ✓ Both validator signatures match
-  ✓ Same record_hash from both servers
-        ↓
-If all valid → Post birthmark record to blockchain
-If any fail → Reject submission
-                    </div>
-                </div>
+                <p style="margin-top: 1rem;">When these validation proofs are submitted to the blockchain validators, the blockchain nodes verify several critical properties:</p>
+                <ul class="technical-list">
+                    <li>The two server identifiers must be different (can't be the same server twice)</li>
+                    <li>Both server signatures must be cryptographically valid</li>
+                    <li>Both manufacturer signatures must match and be valid</li>
+                    <li>The record hash must be identical in both validation proofs</li>
+                </ul>
 
-                <p style="margin-top: 1.5rem;"><strong>Security property:</strong> Single compromised server cannot forge manufacturer approval (signatures bind to server_id). Manufacturer cannot post directly to blockchain (requires two independent server approvals).</p>
+                <p style="margin-top: 1rem;">Only when all these conditions are met does the blockchain accept the record. This architecture means that a single compromised server cannot forge manufacturer approval (because signatures are bound to specific server identifiers), and a compromised manufacturer cannot post records directly to the blockchain (because they don't have access to the image hashes and can't produce the required dual server approvals).</p>
             </div>
 
             <div class="content-block">
-                <h3>Blockchain Posting and Storage</h3>
-                <p>After dual-approval validation, only the birthmark record (153 bytes) is posted to the blockchain. The manufacturer certificate and validation proofs (~350 bytes) are verified then discarded:</p>
+                <h3>What Gets Stored on the Blockchain</h3>
+                <p>After successful dual-approval validation, only the essential birthmark record gets stored on the blockchain—approximately 153 bytes. The manufacturer certificate and validation proofs (another ~350 bytes) served their purpose in the validation process and are discarded. The blockchain record contains just what's needed for public verification: the image hash, modification level, parent hash if it's an edited image, any metadata hashes if provided, the identifiers of both posting servers, and a processing timestamp rounded to 10-minute intervals for privacy.</p>
 
-                <div class="diagram-box">
-                    <h4>What Gets Stored On-Chain (153 bytes)</h4>
-                    <div class="code-block">
-{
-  "image_hash": "a9d1dbb063ffd40ed3da020e...",
-  "modification_level": 0,
-  "parent_hash": null,
-  "metadata_hashes": {...},  // If provided
-  "posting_server_ids": "node-eu-1/node-us-3",
-  "posting_timestamp": 1706572800,  // Rounded to 10-min intervals
-  "block_number": 12345
-}
-                    </div>
-                </div>
-
-                <p style="margin-top: 1.5rem;"><strong>Storage efficiency:</strong> At 1 million authentications per day, blockchain grows by only 56GB/year. Validator node costs remain under $200-350/year, making operation sustainable for nonprofit journalism organizations.</p>
-
-                <p style="margin-top: 1rem;"><strong>Consensus:</strong> GRANDPA (GHOST-based Recursive Ancestor Deriving Prefix Agreement) requires 67% validator agreement for block finality. Minimum 4 validators (tolerates 1 Byzantine fault), recommended 10+ validators (tolerates 3 Byzantine faults).</p>
+                <p style="margin-top: 1rem;">This storage efficiency is crucial for sustainability. At one million authentications per day, the blockchain grows by only 56 gigabytes per year. Validator node costs remain under $200-350 annually, making operation feasible for nonprofit journalism organizations. The system uses GRANDPA consensus (GHOST-based Recursive Ancestor Deriving Prefix Agreement) which requires 67% validator agreement for block finality. The network needs a minimum of 4 validators to tolerate 1 Byzantine fault, though 10 or more validators is recommended for stronger fault tolerance (tolerating up to 3 Byzantine failures).</p>
             </div>
 
             <div class="content-block">
-                <h3>ISP Deviation Validation (For Edited Images)</h3>
-                <p>When photographers edit images in software (Lightroom, Photoshop), the editing application can create authenticated records with modification_level=2 by including deviation validation data:</p>
+                <h3>Validation for Edited Images</h3>
+                <p>When photographers edit images in software like Lightroom or Photoshop, the editing application can create authenticated records for the edited versions by including deviation validation data. The software extracts the list of operations performed (like "Exposure +1.5 stops, Crop to 16:9"), then takes 100 random 64x64 pixel patches from the original image. It applies the reported operations to these patches to simulate what the result should look like, then compares the actual edited image to this simulation.</p>
 
-                <div class="diagram-box">
-                    <div class="code-block">
-Software extracts:
-  • Operation list (e.g., "Exposure +1.5, Crop 16:9")
-  • 100 random 64x64 pixel patches from original
-  • Applies reported operations to patches
-  • Compares actual edited result to simulation
-        ↓
-Deviation = % of pixels where RGB distance > threshold
-        ↓
-Standard edits (exposure, white balance, crop):
-  Typical deviation: 8-12%
-  Classification: "Validated" (modification_level=2)
-        ↓
-Content modification (clone stamp, object removal):
-  Typical deviation: >40%
-  Classification: "Content Modified"
-                    </div>
-                </div>
+                <p style="margin-top: 1rem;">The deviation score represents the percentage of pixels where the RGB distance exceeds a threshold. Standard photojournalist edits like exposure adjustment, white balance correction, denoising, and cropping typically produce deviation scores of 8-12%, which manufacturers classify as "Validated" content. Content modification operations like clone stamp, object removal, or generative fill typically produce deviation scores exceeding 40%, classified as "Content Modified."</p>
 
-                <p style="margin-top: 1.5rem;"><strong>Key distinction:</strong> Deviation measures difference from the expected result given reported operations, not difference from original. Standard workflows produce low deviation because the validation service can accurately replicate the adjustments. Content alteration tools cannot simulate results because modifications are unpredictable from operation parameters alone.</p>
+                <p style="margin-top: 1rem;">The key distinction is that deviation measures the difference from the <em>expected</em> result given the reported operations, not the difference from the original. Standard editing workflows produce low deviation scores because the validation service can accurately replicate those adjustments. Content alteration tools cannot simulate expected results because the modifications aren't predictable from operation parameters alone—removing an object requires knowing what was removed and how the gap was filled, information that's not available from the operation parameters.</p>
             </div>
         </div>
     </section>
@@ -344,122 +150,40 @@ Content modification (clone stamp, object removal):
             <p class="section-intro">Once an image hash is recorded on the blockchain, anyone can verify authenticity—no account, no subscription, no gatekeepers required.</p>
 
             <div class="content-block">
-                <h3>Verification Process</h3>
-                <p>Public verification works through hash-based lookup with zero knowledge of photographer identity or device:</p>
+                <h3>How Verification Works</h3>
+                <p>Public verification is straightforward and privacy-preserving. When you have an image you want to verify—whether it's a JPEG, PNG, HEIC, or any other format—you can either upload it to a web verifier or hash it locally on your own device. The verifier calculates the SHA-256 hash of the image bytes, then queries the blockchain with a simple request: "Do you have a record for this hash?"</p>
 
-                <div class="diagram-box">
-                    <h4>Complete Verification Flow</h4>
-                    <div class="code-block">
-User has image (JPEG, PNG, HEIC, etc.)
-        ↓
-Upload to web verifier OR hash locally
-        ↓
-Calculate SHA-256 hash of image bytes
-        ↓
-Query blockchain:
-  GET /verify/{image_hash}
-        ↓
-    ┌───┴────┐
-    ↓        ↓
-  Found   Not Found
-    ↓        ↓
-Return   Return "No record"
-record   (Unverified)
-    ↓
-Display:
-  • Modification level (Raw/Validated/Modified)
-  • Timestamp (server processing time)
-  • Parent hash (if edited image)
-  • Provenance chain (full edit history)
-                    </div>
-                </div>
+                <p style="margin-top: 1rem;">If the blockchain finds a matching record, it returns the stored information: the modification level (indicating whether it's raw sensor data, validated processed content, or modified content), the processing timestamp, the parent hash if it's an edited image, and the complete provenance chain if multiple edits occurred. If the blockchain doesn't find a matching record, it simply returns "No record found"—meaning either the image was never authenticated, or authentication hasn't propagated to the blockchain yet.</p>
 
-                <p style="margin-top: 1.5rem;"><strong>Privacy guarantee:</strong> Blockchain query reveals nothing about photographer identity, camera serial number, capture location, or manufacturer. Query is stateless—blockchain doesn't know who verified the image.</p>
+                <p style="margin-top: 1rem;">This query process is completely stateless from a privacy perspective. The blockchain query reveals nothing about you as the verifier—it doesn't know who's asking, where you're located, or why you're checking this particular image. And importantly, the blockchain record itself contains no information about the photographer's identity, the camera serial number, the capture location, or the manufacturer. You're simply asking "Is this image hash in the registry?" and getting back technical authentication metadata.</p>
             </div>
 
             <div class="content-block">
-                <h3>Modification Level Interpretation</h3>
+                <h3>Understanding Modification Levels</h3>
+                <p><strong>Level 0: "Validated Raw"</strong> indicates raw sensor data from a verified camera with no processing beyond sensor readout. This is maximum authenticity for forensic analysis and evidentiary purposes. You'll typically only see this level when working with raw image files in professional contexts.</p>
 
-                <div class="diagram-box">
-                    <h4>Level 0: "Validated Raw"</h4>
-                    <p><strong>Meaning:</strong> Raw sensor data from verified camera—no processing beyond sensor readout.</p>
-                    <p><strong>Use case:</strong> Maximum authenticity for forensic analysis and evidentiary purposes.</p>
-                </div>
+                <p style="margin-top: 1rem;"><strong>Level 1: "Validated"</strong> means this is a processed image (JPEG or HEIC) from a verified camera with standard in-camera processing applied—white balance, sharpening, compression. This is the standard authentication level for photojournalism and social sharing, representing what you'd expect from a camera's normal operation.</p>
 
-                <div class="diagram-box" style="margin-top: 1rem;">
-                    <h4>Level 1: "Validated"</h4>
-                    <p><strong>Meaning:</strong> Processed image (JPEG/HEIC) from verified camera with standard in-camera white balance, sharpening, and compression.</p>
-                    <p><strong>Use case:</strong> Standard authentication for photojournalism and social sharing.</p>
-                </div>
+                <p style="margin-top: 1rem;"><strong>Level 2: "Modified"</strong> indicates the image was edited in software like Lightroom or Photoshop, but it links back to a validated original through its parent hash. This classification maintains chain of custody while being transparent about post-capture editing. It's appropriate for edited photos that preserve their connection to authenticated hardware capture.</p>
 
-                <div class="diagram-box" style="margin-top: 1rem;">
-                    <h4>Level 2: "Modified"</h4>
-                    <p><strong>Meaning:</strong> Edited in software (Lightroom, Photoshop) but links back to validated original via parent_hash.</p>
-                    <p><strong>Use case:</strong> Edited photos maintaining chain of custody to authenticated capture.</p>
-                </div>
-
-                <div class="diagram-box" style="margin-top: 1rem;">
-                    <h4>Not Found</h4>
-                    <p><strong>Meaning:</strong> No blockchain record exists. Either never authenticated or not yet propagated.</p>
-                    <p><strong>Use case:</strong> Unknown provenance. Treat with appropriate skepticism.</p>
-                </div>
+                <p style="margin-top: 1rem;"><strong>"Not Found"</strong> means no blockchain record exists for this image hash. This could mean the image was never authenticated, authentication failed for some reason, or the blockchain simply doesn't have this record yet. Unknown provenance should be treated with appropriate skepticism.</p>
             </div>
 
             <div class="content-block">
-                <h3>Provenance Chain Verification</h3>
-                <p>For edited images (modification_level=2), verifiers can trace the complete edit history back to the original capture:</p>
-
-                <div class="diagram-box">
-                    <div class="code-block">
-Current image (edited crop)
-  hash: 4f2a3b...
-  modification_level: 2
-  parent_hash: 8c5d9e...
-        ↓
-Query parent (8c5d9e...)
-  modification_level: 2
-  parent_hash: a9d1db...
-        ↓
-Query parent (a9d1db...)
-  modification_level: 0 (raw)
-  parent_hash: null
-        ↓
-Verified chain: Raw → Edit → Crop
-                    </div>
-                </div>
-
-                <p style="margin-top: 1.5rem;"><strong>Result:</strong> Complete transparency about editing workflow while maintaining cryptographic proof that edits derive from authenticated hardware capture, not AI generation.</p>
+                <h3>Tracing Provenance Chains</h3>
+                <p>For edited images with modification level 2, verifiers can trace the complete edit history back to the original capture. Each edited version includes a parent hash pointing to the previous version. When you verify an edited crop, you might see it has a parent hash. Querying that parent hash might reveal it was also edited (level 2) with its own parent hash. Querying that hash might finally reveal the original raw capture (level 0) with no parent. This complete chain—raw to first edit to crop—provides transparency about the entire editing workflow while maintaining cryptographic proof that all edits ultimately derive from authenticated hardware capture, not AI generation.</p>
             </div>
 
             <div class="content-block">
-                <h3>Metadata Independence</h3>
-                <p><strong>The fundamental advantage:</strong> Because authentication records are stored on an independent blockchain rather than embedded in image files, verification survives all forms of metadata loss:</p>
+                <h3>Why This Survives Metadata Loss</h3>
+                <p>The fundamental advantage of the Birthmark approach is that authentication records are stored on an independent blockchain rather than embedded in image files. When you share an image on social media, the platform compresses it, converts formats, and strips all metadata. With C2PA and similar embedded solutions, approximately 95% of credentials are lost in this process. But with Birthmark, the image file can be compressed, converted, cropped, re-saved, screenshot—and the hash remains verifiable by querying the blockchain.</p>
 
-                <ul class="technical-list">
-                    <li>Social media compression and format conversion (95% of C2PA credentials lost)</li>
-                    <li>Email attachment processing and size reduction</li>
-                    <li>Screenshot capture and re-saving</li>
-                    <li>Platform-specific image processing (Instagram filters, Twitter recompression)</li>
-                    <li>Format conversion (JPEG → PNG → WebP)</li>
-                    <li>Cropping, rotation, and resolution scaling</li>
-                </ul>
-
-                <p style="margin-top: 1.5rem;"><strong>Limitation:</strong> If pixel values change (filters, edits, significant compression artifacts), the hash changes and verification requires querying the parent hash. This is why parent_hash linking is critical for edited images.</p>
+                <p style="margin-top: 1rem;">The limitation is that if pixel values actually change—from Instagram filters, significant compression artifacts, or editing—then the hash changes and you need to query the parent hash instead. This is why the parent hash linking is critical for edited images. The system can't protect against pixel changes, but it can maintain the chain of custody through those changes.</p>
             </div>
 
             <div class="content-block">
                 <h3>Verification Tools</h3>
-                <p>Multiple verification paths ensure accessibility:</p>
-
-                <ul class="technical-list">
-                    <li><strong>Web verifier:</strong> Upload image to verify (https://birthmarkstandard.org/verify)</li>
-                    <li><strong>Browser extension:</strong> Right-click any image to verify in-place</li>
-                    <li><strong>Command-line tool:</strong> Local hashing and blockchain query for privacy-conscious users</li>
-                    <li><strong>GIMP plugin:</strong> Integrated verification within photo editing workflow</li>
-                    <li><strong>API access:</strong> Direct blockchain queries for developers and automated systems</li>
-                </ul>
-
-                <p style="margin-top: 1.5rem;"><strong>All tools are open-source:</strong> Anyone can audit verification logic or run their own verification infrastructure.</p>
+                <p>Multiple paths exist for verification to ensure accessibility. You can upload images to the web verifier at birthmarkstandard.org/verify. A browser extension lets you right-click any image to verify it in place. Privacy-conscious users can use the command-line tool to hash locally and query the blockchain directly. There's a GIMP plugin for integrated verification within photo editing workflows. Developers and automated systems can query the blockchain directly through the API. All these tools are open-source, meaning anyone can audit the verification logic or run their own verification infrastructure.</p>
             </div>
         </div>
     </section>
