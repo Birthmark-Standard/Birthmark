@@ -69,17 +69,18 @@
             <div class="content-block">
                 <div class="diagram-box" style="background: white;">
                     <h3 style="margin-top: 0;">What Investigations CAN Reveal:</h3>
-                    <p style="color: green;">✓ Camera serial number (for blacklisting only)</p>
+                    <p style="color: green;">✓ Transaction ID (posted to Public Revocation List for manufacturer blacklisting)</p>
 
                     <h3 style="margin-top: 1rem;">What Investigations CANNOT Reveal:</h3>
+                    <p style="color: red; margin-bottom: 0.2rem;">✗ Camera serial number (manufacturers handle blacklisting internally)</p>
                     <p style="color: red; margin-bottom: 0.2rem;">✗ Photographer identity</p>
-                    <p style="color: red; margin-bottom: 0.2rem;">✗ Image content</p>
+                    <p style="color: red; margin-bottom: 0.2rem;">✗ Image content (Foundation never sees the image)</p>
                     <p style="color: red; margin-bottom: 0.2rem;">✗ Capture locations or times</p>
                     <p style="color: red;">✗ Who you shared images with</p>
 
                     <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #ddd;">
                         <p style="margin-bottom: 0.3rem;"><strong>Trigger cost:</strong> $500 (forfeited if rejected)</p>
-                        <p style="margin-bottom: 0.3rem;"><strong>Evidence required:</strong> Professional forensic analysis</p>
+                        <p style="margin-bottom: 0.3rem;"><strong>Evidence required:</strong> Professional forensic analysis of claimant-submitted image</p>
                         <p><strong>Governance:</strong> 3-member committee (journalism orgs, 6-month rotation)</p>
                     </div>
                 </div>
@@ -98,7 +99,7 @@
 
             <div class="content-block">
                 <h3>Technical Evidence Required</h3>
-                <p>Foundation contracts professional forensic analysts (e.g., Bellingcat). Claims need specific measurable anomalies: noise pattern inconsistencies, impossible lighting geometry, metadata violations. "This looks suspicious" gets rejected immediately.</p>
+                <p>Coalition contracts professional photography forensic analysts (e.g., Bellingcat). Claims require claimant to submit the image file. Analysts examine images for specific measurable anomalies: noise pattern inconsistencies, impossible lighting geometry, metadata violations, sensor artifact mismatches. "This looks suspicious" gets rejected immediately. Foundation never sees submitted images—only image hashes if committee approves action.</p>
             </div>
 
             <div class="content-block">
@@ -115,12 +116,12 @@
 
             <div class="content-block">
                 <h3>Distributed Control</h3>
-                <p>Transaction log decryption requires 3 of 5 geographically distributed key holders. Keys stored cross-jurisdiction (US node's key in Europe). Sequential compromise needed: attacker must compromise first node to identify second target, within key rotation windows.</p>
+                <p>Submission servers encrypt transaction logs after posting to blockchain. Decryption keys are stored on different geographic submission servers with rotating key schedules—each time window requires a different server for decryption. This prevents any single server compromise from revealing historical transaction data and requires sequential attacks within rotation windows.</p>
             </div>
 
             <div class="content-block">
                 <h3>Limited Consequences</h3>
-                <p>Only camera serial number revealed. Historical images remain authenticated—blacklist blocks future submissions only. Successful appeals completely remove blacklist (no "reversed" notation).</p>
+                <p>Only Transaction ID is posted to Public Revocation List. Manufacturers handle device blacklisting internally by referencing the PRL against their own logs. Foundation and Coalition never see camera serial numbers. Historical images remain authenticated—blacklist blocks future submissions only. Successful appeals completely remove Transaction ID from PRL (no "reversed" notation).</p>
             </div>
 
             <div class="content-block">
@@ -136,14 +137,15 @@
 
             <div class="content-block">
                 <ol class="technical-list compact" style="padding-left: 1.5rem;">
-                    <li><strong>Claim Submission:</strong> $500 fee + suspicious image</li>
-                    <li><strong>Preliminary Review:</strong> Professional forensic analysts assess. Rejected if no specific technical indicators.</li>
-                    <li><strong>Committee Vote:</strong> 2 of 3 (standard) or 3 of 3 (high-risk contexts)</li>
-                    <li><strong>Log Decryption:</strong> 3 of 5 distributed key holders cooperate</li>
-                    <li><strong>Manufacturer Query:</strong> NUC hash → camera serial number (manufacturer never sees image content)</li>
-                    <li><strong>Blacklist Decision:</strong> Public record with technical justification. Owner notified.</li>
-                    <li><strong>Appeal:</strong> Independent expert review. During appeal, owner can submit hashes of critical images for immediate authentication.</li>
-                    <li><strong>If Appeal Succeeds:</strong> Blacklist completely removed, no public notation.</li>
+                    <li><strong>Claim Submission:</strong> Claimant submits $500 fee + suspicious image + technical justification</li>
+                    <li><strong>Forensic Analysis:</strong> Coalition-contracted photography forensics analyst examines the submitted image for technical anomalies (noise patterns, lighting geometry, metadata violations). Delivers verdict to committee. Foundation never sees the image.</li>
+                    <li><strong>Committee Review:</strong> 3-member committee reviews forensic analysis. Rejected if no specific technical indicators.</li>
+                    <li><strong>Committee Vote:</strong> 2 of 3 (standard contexts) or 3 of 3 (high-risk contexts requiring unanimous approval)</li>
+                    <li><strong>Transaction ID Lookup:</strong> If approved, committee sends only the image hash to Foundation. Foundation decrypts relevant transaction log to identify Transaction ID.</li>
+                    <li><strong>Public Revocation List:</strong> Foundation posts Transaction ID to PRL with technical justification. No camera identification revealed.</li>
+                    <li><strong>Manufacturer Blacklisting:</strong> Manufacturers reference PRL against their own internal logs and blacklist associated device fingerprints. This happens independently—Foundation and Coalition never learn camera serial numbers.</li>
+                    <li><strong>Appeal:</strong> Device owner (if they learn of blacklist from failed submissions) can appeal. Independent expert review, committee vote. During appeal, owner can submit hashes of critical images for immediate authentication.</li>
+                    <li><strong>If Appeal Succeeds:</strong> Transaction ID completely removed from PRL, no public "reversed" notation.</li>
                 </ol>
             </div>
         </div>
@@ -155,17 +157,17 @@
 
             <div class="content-block">
                 <h3>Can investigations identify photographers?</h3>
-                <p><strong>No.</strong> Only camera serial number. Manufacturers may not have purchaser records (secondhand sales, gifts). Even with serial + purchaser name, cannot link specific images to people without already possessing those images. System designed so no entity correlates "this person took this photo" without outside information.</p>
+                <p><strong>No.</strong> Investigations only reveal Transaction IDs posted to the Public Revocation List. Manufacturers handle device blacklisting internally by referencing the PRL against their own logs. The Coalition, Foundation, and submission servers never learn camera serial numbers. Manufacturers may not have purchaser records (secondhand sales, gifts). System designed so no entity correlates "this person took this photo" without already possessing the image.</p>
             </div>
 
             <div class="content-block">
                 <h3>What protects photographers in dangerous regions?</h3>
-                <p>CPJ Index regions and conflict zones get unanimous vote requirement, mandatory press freedom org consultation, higher evidence threshold, expedited appeals, and escalation rights. Investigation never reveals identity, content, or location—only serial number. If activists strip geotags before sharing (recommended), there's no location to investigate.</p>
+                <p>CPJ Index regions and conflict zones get unanimous vote requirement, mandatory press freedom org consultation, higher evidence threshold, expedited appeals, and escalation rights. Investigations never reveal photographer identity, specific camera serial numbers, content, or location—only Transaction IDs on the PRL. Manufacturers handle blacklisting internally based on their own logs.</p>
             </div>
 
             <div class="content-block">
                 <h3>Investigation and editorial freedom</h3>
-                <p>Images can only be investigated if shared. At that point, risk equals existing forensic analysis (anyone can submit to services like FotoForensics today). Investigation doesn't reveal photographer identity—only determines if camera serial number should be blacklisted.</p>
+                <p>Images can only be investigated if shared with claimants who submit them for forensic analysis. At that point, risk equals existing forensic services (anyone can submit to FotoForensics today). Investigation doesn't reveal photographer identity or specific camera—only posts Transaction ID to PRL for manufacturer reference.</p>
             </div>
 
             <div class="content-block">
@@ -174,8 +176,8 @@
             </div>
 
             <div class="content-block">
-                <h3>Camera blacklist appeals</h3>
-                <p>Submit hashes of critical images immediately (authenticated while appeal proceeds). Provide technical explanation. Independent expert reviews. Committee votes (2 of 3, max 14 days; 7 days for high-risk). If successful, blacklist completely removed with clean records. Coalition Members can expedite for photographers in high-risk contexts.</p>
+                <h3>Device blacklist appeals</h3>
+                <p>Device owners who discover blacklisting (via failed future submissions) can appeal. Submit hashes of critical images immediately (authenticated while appeal proceeds). Provide technical explanation. Independent expert reviews forensic evidence. Committee votes (2 of 3, max 14 days; 7 days for high-risk contexts). If successful, Transaction ID completely removed from PRL with clean records. Coalition Members can expedite for photographers in high-risk contexts.</p>
             </div>
 
             <div class="content-block">
@@ -185,7 +187,7 @@
 
             <div class="content-block">
                 <h3>Can governments compel cooperation?</h3>
-                <p>Manufacturers alone are insufficient—they identify serial numbers but don't know what cameras captured. Coalition cooperation requires compromising multiple nodes across jurisdictions within key rotation windows. Government requests trigger node removal, not compliance (per Governance Charter).</p>
+                <p>Manufacturers handle device blacklisting internally—they can reference the PRL but Coalition never learns camera identities. Accessing encrypted transaction logs requires compromising multiple geographically distributed submission servers within key rotation windows. Government compulsion of Coalition nodes triggers removal, not compliance (per Governance Charter). Transaction IDs on PRL don't reveal photographer identity or which specific camera without manufacturer cooperation.</p>
             </div>
 
             <div class="content-block">
