@@ -1,0 +1,216 @@
+---
+title: "Hardware-Backed Photo Authentication"
+---
+
+    <section class="hero">
+        <div class="container">
+            <h2>Proving Photos Are Real in the Age of AI</h2>
+            <p>A simple system: Take a picture. A unique fingerprint goes on a public blockchain. Anyone can verify it came from a real camera, not AI.</p>
+            <div class="cta-buttons">
+                <a href="#how-it-works" class="btn btn-primary">See How It Works</a>
+                <a href="/verify.html" class="btn btn-secondary">Try Verification</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="problem-section">
+        <div class="container">
+            <h2>The Problem</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <h3>AI-Generated Images Look Real</h3>
+                    <p>Modern AI can create photorealistic images that are indistinguishable from real photographs. How do you know what's real?</p>
+                </div>
+                <div class="problem-card">
+                    <h3>Metadata Gets Stripped</h3>
+                    <p>Social media platforms strip authentication data when you share images. Existing solutions like C2PA lose 95% of their metadata in real-world use.</p>
+                </div>
+                <div class="problem-card">
+                    <h3>Trustworthiness Is Obscured</h3>
+                    <p>Amid the sea of content both real and fake, journalists, photographers, and the public need a way to prove which images came from real cameras.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="technical-section" style="background: var(--light-blue); scroll-margin-top: 80px;">
+        <div class="container">
+            <h2>How It Works (3 Simple Steps)</h2>
+
+            <div class="content-block" style="max-width: 800px; margin: 0 auto;">
+                <div class="diagram-box" style="background: white; margin-bottom: 2rem;">
+                    <h3 style="color: var(--accent-blue);">Step 1: Take a Picture</h3>
+                    <p>Your camera captures the image and immediately creates a unique "fingerprint" (called a hash) of the raw sensor data. This happens automatically in the background.</p>
+                    <p style="margin-top: 1rem; font-style: italic; color: var(--gray-text);">Think of it like a DNA sample from the image—unique and unforgeable.</p>
+                </div>
+
+                <div class="diagram-box" style="background: white; margin-bottom: 2rem;">
+                    <h3 style="color: var(--accent-blue);">Step 2: Hash Goes on Public Ledger</h3>
+                    <p>That fingerprint is sent to a blockchain operated by journalism organizations, universities, and archives. They store it permanently in a public database.</p>
+                    <p style="margin-top: 1rem; font-style: italic; color: var(--gray-text);">No one stores your image—just the fingerprint. Your photo stays private.</p>
+                </div>
+
+                <div class="diagram-box" style="background: white;">
+                    <h3 style="color: var(--accent-blue);">Step 3: Anyone Can Verify</h3>
+                    <p>When someone sees your image online, they can check its fingerprint against the blockchain. If it matches, they know it came from a real camera at a specific time.</p>
+                    <p style="margin-top: 1rem; font-style: italic; color: var(--gray-text);">Works even if the image was converted, cropped, or shared on social media.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Trust Without Access: Our Four Pillars of Privacy</h2>
+            <p style="text-align: center; max-width: 800px; margin: 0 auto 2rem;">The Birthmark Standard is designed to be incapable of betraying you—not through policy, but through architecture.</p>
+
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <h3>🔒 Two-Packet Separation</h3>
+                    <p>Authentication creates two separate data structures sent to different parties that are never combined. Manufacturers validate cameras without seeing what you photographed. The blockchain stores image hashes without knowing which specific camera authenticated them.</p>
+                    <a href="/privacy-design.html#two-packet" style="color: var(--accent-blue); font-size: 0.9rem;">Learn more →</a>
+                </div>
+
+                <div class="problem-card">
+                    <h3>🎭 K-Anonymity (k ≥ 1,000)</h3>
+                    <p>Your device is never a "party of one." Every camera randomly selects from assigned key tables shared by over 1,000 devices. Individual tracking is mathematically infeasible without manufacturer cooperation.</p>
+                    <a href="/privacy-design.html#k-anonymity" style="color: var(--accent-blue); font-size: 0.9rem;">Learn more →</a>
+                </div>
+
+                <div class="problem-card">
+                    <h3>✅ Dual-Approval Security</h3>
+                    <p>No single server can forge a blockchain record. Every entry requires independent validation from two geographically separated submission servers. A single compromised operator cannot create fraudulent authentication.</p>
+                    <a href="/privacy-design.html#dual-approval" style="color: var(--accent-blue); font-size: 0.9rem;">Learn more →</a>
+                </div>
+
+                <div class="problem-card">
+                    <h3>🛡️ Survivability Beyond Metadata</h3>
+                    <p>Unlike systems that hide data in file headers, Birthmark identifies the "DNA" of the pixels themselves. Your authentication survives re-compression, format conversion, social media sharing, and even screenshots.</p>
+                    <a href="/privacy-design.html#survivability" style="color: var(--accent-blue); font-size: 0.9rem;">Learn more →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-gray);">
+        <div class="container">
+            <h2>Current Status</h2>
+            <div class="content-block" style="max-width: 900px; margin: 0 auto;">
+                <h3>✅ Phase 1: Hardware Prototype (Complete)</h3>
+                <p>We've built and validated a complete working system using Raspberry Pi hardware:</p>
+
+                <ul class="technical-list" style="margin-top: 1rem;">
+                    <li>✅ Camera authentication from raw sensor to blockchain</li>
+                    <li>✅ Manufacturer validation system</li>
+                    <li>✅ Public blockchain (Substrate-based)</li>
+                    <li>✅ Verification interface</li>
+                    <li>✅ Storage optimization (69% reduction: 450 → 140 bytes/record)</li>
+                </ul>
+
+                <p style="margin-top: 2rem;"><strong>Economics:</strong> Operating a blockchain node costs $200-350/year even at 1 million images per day, making it sustainable for journalism institutions.</p>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: white; border-radius: 8px;">
+                    <h4>🎥 Demonstration Video (Coming Soon)</h4>
+                    <p>We're producing a complete demonstration video showing the end-to-end workflow: capturing an image, submitting it for validation, and verifying it on the blockchain.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Roadmap: Beyond Photos</h2>
+            <p style="text-align: center; max-width: 700px; margin: 0 auto 2rem;">The same principles that authenticate photos can extend to other media types:</p>
+
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <h3>📹 Video Authentication</h3>
+                    <p>Hash individual frames or frame sequences to prove video came from real cameras. Detect deepfake insertions or frame manipulation.</p>
+                    <p style="margin-top: 1rem; color: var(--gray-text); font-style: italic;">Target: Phase 3</p>
+                </div>
+
+                <div class="problem-card">
+                    <h3>🎤 Audio Authentication</h3>
+                    <p>Validate audio recordings from microphone hardware. Detect AI-generated voices or manipulated speech.</p>
+                    <p style="margin-top: 1rem; color: var(--gray-text); font-style: italic;">Target: Phase 3</p>
+                </div>
+
+                <div class="problem-card">
+                    <h3>🖥️ Screenshot Authentication</h3>
+                    <p>Prove screenshots came from specific devices at specific times. Useful for documenting online content before deletion.</p>
+                    <p style="margin-top: 1rem; color: var(--gray-text); font-style: italic;">Target: Phase 4</p>
+                </div>
+            </div>
+
+            <div class="content-block" style="max-width: 800px; margin: 2rem auto 0;">
+                <h3>Immediate Next Steps (Phase 2)</h3>
+                <ul class="technical-list">
+                    <li><strong>Android camera app:</strong> Native mobile implementation for photographers</li>
+                    <li><strong>User testing:</strong> 50-100 journalists and photographers pilot program</li>
+                    <li><strong>Developer SDKs:</strong> Tools for camera manufacturers and software developers</li>
+                    <li><strong>Performance optimization:</strong> Sub-100ms authentication overhead</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="why-section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2>Why Birthmark Standard?</h2>
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon">🔓</div>
+                    <h3>Open Source</h3>
+                    <p>All code is public. No corporate secrets or proprietary control.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">🛡️</div>
+                    <h3>Privacy First</h3>
+                    <p>Only image fingerprints are stored, never the images themselves. Photographers stay anonymous.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">🌐</div>
+                    <h3>Decentralized</h3>
+                    <p>No single company controls the network. Multiple institutions operate blockchain nodes.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">💰</div>
+                    <h3>Zero Fees</h3>
+                    <p>No gas fees, no transaction costs. Journalism organizations donate hosting as a public service.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">🤝</div>
+                    <h3>C2PA Compatible</h3>
+                    <p>C2PA provides rich metadata. Birthmark provides backup when metadata gets stripped.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">⛓️</div>
+                    <h3>Survives Metadata Loss</h3>
+                    <p>Works even when images are shared on social media, converted to different formats, or cropped.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section">
+        <div class="container">
+            <h2>Get Involved</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <h3>For Photographers & Journalists</h3>
+                    <p>Join our pilot testing program. Help us understand authentication needs for your workflow.</p>
+                    <p style="margin-top: 1rem;"><a href="/contact.html" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Contact Us →</a></p>
+                </div>
+                <div class="problem-card">
+                    <h3>For Developers</h3>
+                    <p>Review the architecture, contribute code, or help with security audits.</p>
+                    <p style="margin-top: 1rem;"><a href="https://github.com/Birthmark-Standard/Birthmark" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">View on GitHub →</a></p>
+                </div>
+                <div class="problem-card">
+                    <h3>For Manufacturers</h3>
+                    <p>Explore hardware integration opportunities and partnership possibilities.</p>
+                    <p style="margin-top: 1rem;"><a href="/contact.html" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">Get in Touch →</a></p>
+                </div>
+            </div>
+        </div>
+    </section>

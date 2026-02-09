@@ -1,0 +1,324 @@
+---
+title: "Privacy Design - The Birthmark Standard Foundation"
+url: "/privacy-design.html"
+---
+
+    <section class="hero" style="padding: 2rem 0;">
+        <div class="container">
+            <h2>Privacy Design</h2>
+            <p style="max-width: 800px; margin: 0 auto;">How the Birthmark Standard protects photographer privacy while enabling verification</p>
+        </div>
+    </section>
+
+    <section class="technical-section" style="padding: 2rem 0;">
+        <div class="container">
+            <h2>Camera Submission Packet</h2>
+            <div class="content-block" style="margin-top: 1rem;">
+                <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <img src="./Camera_Submission_Packet.png" alt="Camera Submission Packet showing Birthmark Record and Manufacturer Certificate" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 300px;">
+                        <p>When a camera authenticates an image, it creates two separate data structures that serve different purposes and go to different recipients. This architectural separation ensures no single party has complete information.</p>
+
+                        <p style="margin-top: 1rem;"><strong>The Birthmark Record</strong> goes to the blockchain for public verification. It contains:</p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li><strong>Image hashes</strong> - SHA-256 of raw and processed images</li>
+                            <li><strong>Modification level</strong> - Raw (0), Validated (1), or Modified (2)</li>
+                            <li><strong>Parent image hash</strong> - Links edited images to their originals</li>
+                            <li><strong>Metadata hashes</strong> (optional) - Irreversible hashes of timestamp, GPS location, lens ID, and owner ID</li>
+                            <li><strong>Processing timestamp</strong> - Server processing time, rounded to nearest minute</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem;"><strong>The Manufacturer Certificate</strong> goes only to the camera manufacturer for validation. It contains:</p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li><strong>Encrypted camera token</strong> - Contains the camera's device fingerprint (NUC hash), encrypted with AES-256-GCM</li>
+                            <li><strong>Table/Key reference</strong> - Specifies which key table and index to use for decryption</li>
+                            <li><strong>Authority ID</strong> - Identifies which manufacturer should validate this camera</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem; font-style: italic; color: #555;">The manufacturer can identify which specific camera authenticated but never sees the image hashes or content. The blockchain stores image hashes but never receives camera identification data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-blue); padding: 2rem 0;">
+        <div class="container">
+            <h2>Blockchain Submission Packet</h2>
+            <div class="content-block" style="margin-top: 1rem;">
+                <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <img src="./Blockchain_Submission_Packet.png" alt="Blockchain Submission Packet showing only the Birthmark Record without camera identification" style="width: 100%; border: 2px solid var(--gray-text); border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 300px;">
+                        <p>After the camera manufacturer validates the camera token, only the Birthmark Record is posted to the blockchain. The Manufacturer Certificate is never stored on the blockchain.</p>
+
+                        <p style="margin-top: 1rem;"><strong>What Gets Posted to the Blockchain:</strong></p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li><strong>Image hashes only</strong> - No camera identification data</li>
+                            <li><strong>Modification level</strong> - Transparency about processing</li>
+                            <li><strong>Parent image hash</strong> - Provenance chain for edited images</li>
+                            <li><strong>Metadata hashes</strong> (if provided) - Verifiable without revealing content</li>
+                            <li><strong>Server timestamp</strong> - Processing time, not capture time</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem;"><strong>What Is NOT Posted:</strong></p>
+                        <ul style="margin-top: 0.5rem; margin-bottom: 0; padding-left: 1.5rem;">
+                            <li>Camera serial number or device fingerprint</li>
+                            <li>Manufacturer certificate or encrypted tokens</li>
+                            <li>Table/Key references used for validation</li>
+                            <li>Authority IDs or validation endpoints</li>
+                            <li>Photographer identity or capture location</li>
+                        </ul>
+
+                        <p style="margin-top: 1rem; font-style: italic; color: #555;">The blockchain becomes a public registry of verified image hashes without any camera or photographer identification. Privacy is protected by architectural separation—the validation step happens separately and privately.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="padding: 2rem 0;">
+        <div class="container">
+            <h2>What Different Parties See</h2>
+
+            <div class="content-block" style="margin-top: 1rem;">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: var(--accent-blue); color: white;">
+                                <th style="padding: 1rem; text-align: left; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Data Type</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Submission Server</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Camera Manufacturer</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600; border-right: 1px solid rgba(255,255,255,0.2);">Registry (Blockchain)</th>
+                                <th style="padding: 1rem; text-align: center; font-weight: 600;">Public Verifier</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Image Hashes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">&#x2705; Yes</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Image Content</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Metadata Hashes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">&#x2705; Yes</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Device Fingerprint (NUC Hash)</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No<br><span style="font-size: 0.85rem; color: #666;">(encrypted)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes<br><span style="font-size: 0.85rem; color: #666;">(decrypts token)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Table/Key Reference</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes<br><span style="font-size: 0.85rem; color: #666;">(for validation)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Specific Camera Identity</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No<br><span style="font-size: 0.85rem; color: #666;">(anonymity sets)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No<br><span style="font-size: 0.85rem; color: #666;">(no visibility)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Validation Result</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes<br><span style="font-size: 0.85rem; color: #666;">(PASS/FAIL)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: #666;">N/A<br><span style="font-size: 0.85rem; color: #666;">(generates result)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Modification Levels</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">&#x2705; Yes<br><span style="font-size: 0.85rem; color: #666;">(query result)</span></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Parent Image Hash</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">&#x2705; Yes<br><span style="font-size: 0.85rem; color: #666;">(query result)</span></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Authority IDs</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: #666;">N/A<br><span style="font-size: 0.85rem; color: #666;">(is the authority)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Processing Timestamp</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: green;">&#x2705; Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
+                                <td style="padding: 0.75rem; text-align: center; color: green;">&#x2705; Yes<br><span style="font-size: 0.85rem; color: #666;">(obscured timestamp)</span></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Photographer Identity</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--light-gray);">
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Photo Location</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.75rem; font-weight: 600; border-right: 1px solid var(--light-gray);">Capture Timestamp</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; border-right: 1px solid var(--light-gray); color: red;">&#x274C; No</td>
+                                <td style="padding: 0.75rem; text-align: center; color: red;">&#x274C; No</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding: 1.5rem; background: white; border-radius: 8px; border-left: 4px solid var(--accent-blue);">
+                    <h3 style="margin-top: 0; margin-bottom: 1rem;">Key Privacy Protections</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">&#x1F5A5;&#xFE0F;</span>
+                            <strong>Submission Server:</strong> Can process and route data but cannot decrypt camera tokens; uses anonymity sets to prevent specific camera identification
+                        </li>
+                        <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">&#x1F3ED;</span>
+                            <strong>Camera Manufacturer:</strong> Can validate camera authenticity and see which specific camera authenticated, but has no access to image hashes or content
+                        </li>
+                        <li style="margin-bottom: 1rem; padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">&#x26D3;&#xFE0F;</span>
+                            <strong>Registry:</strong> Stores only irreversible hashes and metadata with obscured timestamps (rounded to nearest minute); no image content, photographer information, or authority IDs
+                        </li>
+                        <li style="padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; font-weight: 600;">&#x1F465;</span>
+                            <strong>Public Verifier:</strong> Can verify authenticity of images they possess but gains no information about photographer, location, specific camera, or provenance chain
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="padding: 2rem 0;">
+        <div class="container">
+            <h2>Trust Without Access: Our Four Pillars of Privacy</h2>
+            <p style="max-width: 800px; margin: 0 auto 2rem;">The Birthmark Standard is designed to be incapable of betraying you—not through policy, but through architecture.</p>
+
+            <div class="content-block" id="two-packet" style="margin-top: 2rem;">
+                <h3>1. Two-Packet Separation</h3>
+                <p>Authentication creates two separate data structures sent to different parties that are never combined in any public record.</p>
+                <ul class="technical-list" style="margin-top: 1rem;">
+                    <li><strong>Birthmark Record:</strong> Contains image hashes and metadata hashes → Posted to public blockchain for verification</li>
+                    <li><strong>Manufacturer Certificate:</strong> Contains encrypted device token → Sent only to camera manufacturer for validation</li>
+                </ul>
+                <p style="margin-top: 1rem;"><strong>What this means:</strong> The manufacturer validates cameras without seeing what you photographed (they never receive image hashes). The blockchain stores image hashes without knowing which specific camera authenticated them (no camera identity). No single entity sees both image content and camera identity.</p>
+                <p style="margin-top: 0.75rem;"><strong>To connect a specific camera to a specific image requires:</strong> Compromising multiple independent systems with opposing incentives—submission servers, manufacturers, and blockchain validators. This architectural separation makes correlation attacks impractical.</p>
+            </div>
+
+            <div class="content-block" id="k-anonymity" style="margin-top: 2rem;">
+                <h3>2. K-Anonymity with k ≥ 1,000</h3>
+                <p>Your device is never a "party of one." Every camera randomly selects from assigned key tables shared by over 1,000 devices.</p>
+                <p style="margin-top: 1rem;"><strong>How it works:</strong> Each camera is randomly assigned 3 key tables (out of 2,500 global tables). Each table is shared by thousands of cameras. When authenticating, the camera randomly selects one of its 3 assigned tables. The system records which table was used, but that table is shared by 1,000+ other cameras.</p>
+                <p style="margin-top: 1rem;"><strong>What this means:</strong> Even if encrypted transaction logs are decrypted during an investigation, the system reveals only which key table was used—creating an anonymity set of over 1,000 potential cameras. Submission servers and public verifiers cannot identify which specific camera authenticated an image. Only the manufacturer can potentially identify the device through their private validation process, but they never see image hashes or what was authenticated.</p>
+                <p style="margin-top: 0.75rem;"><strong>Result:</strong> Individual tracking is mathematically infeasible without manufacturer cooperation, and manufacturers lack the information to track individual images.</p>
+            </div>
+
+            <div class="content-block" id="dual-approval" style="margin-top: 2rem;">
+                <h3>3. Dual-Approval Security</h3>
+                <p>No single server—and no single person—can forge a blockchain record. Every entry on the Birthmark Media Registry requires independent validation from two geographically separated submission servers.</p>
+                <p style="margin-top: 1rem;"><strong>How it works:</strong> When a camera submits an authentication request, it simultaneously sends identical packets to two independent submission servers in different geographic locations. Both servers must independently validate the manufacturer certificate and agree on posting to the blockchain. If either server rejects the submission or the servers disagree, no blockchain record is created.</p>
+                <p style="margin-top: 1rem;"><strong>What this means:</strong> A single compromised or malicious submission server cannot create fraudulent authentication records—it needs a second independent server in a different jurisdiction to agree. This prevents single-point-of-failure attacks and requires coordination between geographically distributed systems to forge records.</p>
+                <p style="margin-top: 0.75rem;"><strong>Security guarantee:</strong> An attacker must compromise multiple independent systems simultaneously to create false authentication records, making insider attacks and server compromises significantly harder.</p>
+            </div>
+
+            <div class="content-block" id="survivability" style="margin-top: 2rem;">
+                <h3>4. Survivability Beyond Metadata</h3>
+                <p>Unlike C2PA and other systems that hide authentication data in file headers, Birthmark identifies the "DNA" of the pixels themselves through blockchain hash records.</p>
+                <p style="margin-top: 1rem;"><strong>The metadata problem:</strong> When you share images on social media (Facebook, Twitter, Instagram, etc.), these platforms automatically strip EXIF metadata and embedded signatures. C2PA authentication data lives in file headers—when headers are removed, authentication is lost. Studies show 95% of shared images lose their C2PA credentials.</p>
+                <p style="margin-top: 1rem;"><strong>How Birthmark survives:</strong> Instead of hiding authentication in metadata, Birthmark creates a cryptographic hash (fingerprint) of the actual image pixels and stores that hash on a blockchain. The hash is derived from the image content itself, not from removable metadata.</p>
+                <p style="margin-top: 1rem;"><strong>What this means:</strong> Your authentication survives:
+                    <ul class="technical-list" style="margin-top: 0.5rem;">
+                        <li>Social media sharing (metadata stripped)</li>
+                        <li>Format conversion (JPEG → PNG → WebP)</li>
+                        <li>Re-compression (quality adjustments)</li>
+                        <li>Minor edits (cropping, exposure, filters)</li>
+                        <li>Screenshots of the image</li>
+                    </ul>
+                </p>
+                <p style="margin-top: 0.75rem;"><strong>Complementary to C2PA:</strong> Use C2PA for rich metadata and edit history when files stay intact. Use Birthmark as the fallback that survives real-world sharing. Together, they provide comprehensive authentication across all distribution scenarios.</p>
+            </div>
+
+            <div style="margin-top: 3rem; padding: 1.5rem; background: var(--light-blue); border-radius: 8px;">
+                <h3 style="margin-top: 0;">Additional Privacy Mechanisms</h3>
+                <p>Beyond these four pillars, the system includes additional privacy protections:</p>
+            </div>
+
+            <div class="content-block" style="margin-top: 1rem;">
+                <h4 style="color: var(--accent-blue);">Hash-Only Storage</h4>
+                <p>Image content is never transmitted to any server or stored anywhere. Only SHA-256 hashes are submitted to the blockchain. Hash collisions are computationally infeasible (2^256 possibilities), ensuring complete privacy of image content.</p>
+            </div>
+
+            <div class="content-block" style="margin-top: 1rem;">
+                <h4 style="color: var(--accent-blue);">Timestamp Rounding</h4>
+                <p>All timestamps recorded on the blockchain are rounded to the nearest minute. This creates anonymity sets where all submissions within the same 60-second window receive identical timestamps, preventing timing-based correlation attacks and protecting photographers who authenticate multiple images in quick succession.</p>
+            </div>
+
+            <div class="content-block" style="margin-top: 1rem;">
+                <h4 style="color: var(--accent-blue);">Metadata Hashing (Optional)</h4>
+                <p>Timestamp, GPS coordinates, lens ID, and owner ID are hashed before being included in the Birthmark Record. These features are opt-in and disabled by default. The owner_hash uses a unique random salt stored in the image's EXIF metadata, preventing correlation attacks across multiple images. Photographers can prove metadata authenticity without revealing location or identity unless they choose to share the original metadata alongside the image.</p>
+            </div>
+
+            <div class="content-block" style="margin-top: 1rem;">
+                <h4 style="color: var(--accent-blue);">Encrypted Transaction Logs</h4>
+                <p>Submission servers encrypt transaction logs after posting to the blockchain. Decryption keys are stored on different geographic servers with rotating key schedules—each time window requires a different server for decryption. This prevents any single server compromise from revealing historical transaction data and requires sequential attacks within rotation windows.</p>
+            </div>
+
+            <div class="content-block" style="margin-top: 1rem; margin-bottom: 0;">
+                <h4 style="color: var(--accent-blue);">Source Protection by Design</h4>
+                <p>The system protects journalistic sources through architectural design, not just policy. To connect a specific camera to a specific image requires: (1) possessing the original image, (2) compromising submission server encrypted logs to find which manufacturer validated it, and (3) compelling the manufacturer to reveal camera identity. Fishing expeditions are prevented—authorities cannot browse the blockchain to identify photographers. Even with complete system access, adversaries can only connect cameras to images they already possess.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-section" style="background: var(--light-gray); padding: 2rem 0;">
+        <div class="container">
+            <h2>What This System Does NOT Protect Against</h2>
+
+            <div class="content-block" style="margin-top: 1rem;">
+                <ul class="technical-list">
+                    <li><strong>Staged scenes:</strong> A real camera can photograph a fake scene</li>
+                    <li><strong>Screen photos:</strong> A camera can authenticate a photo of a screen showing an AI-generated image</li>
+                    <li><strong>Metadata leakage by the user:</strong> If you share your image with original EXIF data, that data is no longer private</li>
+                </ul>
+
+                <p style="margin-top: 1.5rem; padding: 1rem; background: white; border-left: 4px solid var(--accent-blue);">
+                    <strong>Design Philosophy:</strong> The Birthmark Standard proves an image came from a legitimate camera sensor, not AI generation. It does not prove the scene is real, only that a physical camera captured it. Truth verification still requires journalistic judgment and context.
+                </p>
+            </div>
+        </div>
+    </section>
