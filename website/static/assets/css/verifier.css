@@ -1,0 +1,584 @@
+/**
+ * Birthmark Standard - Image Verifier Styles
+ *
+ * Custom styles for the image verification tool.
+ * Extends the base styles.css with verifier-specific components.
+ */
+
+/* Verifier Section */
+.verifier-section {
+    padding: 3rem 0;
+    background: white;
+}
+
+/* Privacy Notice */
+.privacy-notice {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--light-blue);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.privacy-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.privacy-text {
+    color: var(--gray-text);
+    line-height: 1.6;
+}
+
+.privacy-text strong {
+    color: var(--primary-blue);
+}
+
+/* Upload Container */
+.upload-container {
+    margin: 2rem 0;
+}
+
+/* Drop Zone */
+.drop-zone {
+    border: 3px dashed var(--accent-blue);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: var(--light-gray);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.drop-zone:hover {
+    border-color: var(--primary-blue);
+    background: var(--light-blue);
+}
+
+.drop-zone.drag-over {
+    border-color: var(--primary-blue);
+    background: var(--light-blue);
+    border-style: solid;
+}
+
+.drop-zone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.upload-icon {
+    font-size: 4rem;
+}
+
+.drop-zone h3 {
+    color: var(--primary-blue);
+    margin: 0;
+}
+
+.drop-zone p {
+    color: var(--gray-text);
+    margin: 0;
+}
+
+/* Image Preview */
+.image-preview {
+    text-align: center;
+}
+
+.image-preview img {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-bottom: 1rem;
+}
+
+/* Hash Display */
+.hash-display {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--light-gray);
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.hash-display h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.hash-value {
+    margin-bottom: 1rem;
+}
+
+.hash-computing {
+    color: var(--gray-text);
+    font-style: italic;
+}
+
+.hash-text {
+    font-family: 'Courier New', monospace;
+    background: white;
+    padding: 1rem;
+    border-radius: 4px;
+    word-break: break-all;
+    color: var(--dark-navy);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 0.5rem;
+}
+
+.copy-hash-btn {
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.copy-hash-btn:hover {
+    background: var(--primary-blue);
+}
+
+.hash-explanation {
+    color: var(--gray-text);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+    text-align: center;
+    padding: 2rem;
+}
+
+.spinner {
+    border: 4px solid var(--light-gray);
+    border-top: 4px solid var(--accent-blue);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-indicator p {
+    color: var(--gray-text);
+    font-weight: 600;
+}
+
+/* Verification Status */
+.verification-status {
+    margin: 2rem 0;
+}
+
+/* Result Card */
+.result-card {
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.result-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.result-card h3 {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+/* Result: Not Found */
+.result-not-found {
+    background: #fff9e6;
+    border: 2px solid #f59e0b;
+}
+
+.result-not-found .result-icon {
+    color: #f59e0b;
+}
+
+.result-not-found h3 {
+    color: #92400e;
+}
+
+/* Result: Error */
+.result-error {
+    background: #fee;
+    border: 2px solid #ef4444;
+}
+
+.result-error .result-icon {
+    color: #ef4444;
+}
+
+.result-error h3 {
+    color: #991b1b;
+}
+
+/* Result: Verified */
+.result-verified {
+    background: #f0fdf4;
+    border: 2px solid #22c55e;
+}
+
+.result-verified .result-icon {
+    color: #22c55e;
+    font-size: 4rem;
+    font-weight: bold;
+}
+
+.result-verified h3 {
+    color: #166534;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-validated-raw {
+    background: #dcfce7;
+    color: #166534;
+    border: 2px solid #22c55e;
+}
+
+.status-validated {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 2px solid #3b82f6;
+}
+
+.status-modified {
+    background: #fef3c7;
+    color: #92400e;
+    border: 2px solid #f59e0b;
+}
+
+/* Result Details */
+.result-details {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+}
+
+.result-details p {
+    margin-bottom: 0.5rem;
+    color: var(--gray-text);
+}
+
+.result-details ul {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+    color: var(--gray-text);
+}
+
+.result-details li {
+    margin-bottom: 0.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--primary-blue);
+}
+
+.detail-value {
+    color: var(--gray-text);
+    text-align: right;
+}
+
+/* Level Description */
+.level-description {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.level-description p {
+    color: var(--gray-text);
+    margin-bottom: 0.75rem;
+}
+
+.level-0 {
+    background: #dcfce7;
+    border-left: 4px solid #22c55e;
+}
+
+.level-1 {
+    background: #dbeafe;
+    border-left: 4px solid #3b82f6;
+}
+
+.level-2 {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+}
+
+.guarantee {
+    font-weight: 600;
+    color: var(--dark-navy);
+    margin-top: 1rem;
+}
+
+/* Provenance Chain */
+.provenance-chain {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid var(--accent-blue);
+}
+
+.provenance-chain h4 {
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.provenance-intro {
+    color: var(--gray-text);
+    margin-bottom: 1.5rem;
+}
+
+.chain-items {
+    margin-top: 1rem;
+}
+
+.chain-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background: var(--light-gray);
+    border-left: 4px solid;
+}
+
+.chain-item.chain-current {
+    border-left-color: var(--accent-blue);
+    background: var(--light-blue);
+}
+
+.chain-item.status-validated-raw {
+    border-left-color: #22c55e;
+}
+
+.chain-item.status-validated {
+    border-left-color: #3b82f6;
+}
+
+.chain-item.status-modified {
+    border-left-color: #f59e0b;
+}
+
+.chain-marker {
+    font-weight: 700;
+    color: var(--primary-blue);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    min-width: 60px;
+}
+
+.chain-content {
+    flex: 1;
+}
+
+.chain-hash {
+    font-family: 'Courier New', monospace;
+    color: var(--dark-navy);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.chain-level {
+    font-weight: 600;
+    color: var(--primary-blue);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.chain-time {
+    color: var(--gray-text);
+    font-size: 0.85rem;
+}
+
+.chain-arrow {
+    text-align: center;
+    color: var(--accent-blue);
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+/* Info Section */
+.info-section {
+    padding: 4rem 0;
+    background: var(--light-gray);
+}
+
+.info-section h2 {
+    font-size: 2rem;
+    color: var(--dark-navy);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.provenance-explanation {
+    background: var(--light-blue);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-top: 3rem;
+}
+
+.provenance-explanation h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+}
+
+.provenance-explanation p {
+    color: var(--gray-text);
+}
+
+/* FAQ Section */
+.faq-section {
+    padding: 4rem 0;
+    background: white;
+}
+
+.faq-section h2 {
+    font-size: 2rem;
+    color: var(--dark-navy);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.faq-item {
+    padding: 2rem;
+    background: var(--light-gray);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-blue);
+}
+
+.faq-item h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.faq-item p {
+    color: var(--gray-text);
+    margin-bottom: 0.5rem;
+}
+
+.faq-item ul {
+    color: var(--gray-text);
+}
+
+.faq-item li {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .drop-zone {
+        padding: 2rem 1rem;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+    }
+
+    .drop-zone h3 {
+        font-size: 1.1rem;
+    }
+
+    .result-card {
+        padding: 1.5rem;
+    }
+
+    .result-icon {
+        font-size: 2.5rem;
+    }
+
+    .result-card h3 {
+        font-size: 1.5rem;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .detail-value {
+        text-align: left;
+    }
+
+    .chain-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hash-text {
+        font-size: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .faq-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .provenance-explanation {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .privacy-notice {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 0.4rem 1rem;
+    }
+}

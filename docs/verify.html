@@ -3,38 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Image - Birthmark Standard</title>
-    <link rel="icon" type="image/svg+xml" href="Birthmark_logo_trimmed.svg">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="assets/css/verifier.css">
+    <title>Verify Image - Birthmark Standard - The Birthmark Standard Foundation</title>
+    <link rel="icon" type="image/svg+xml" href="/Birthmark_logo_trimmed.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/styles.css">
+    
+
+
+<link rel="stylesheet" href="/assets/css/verifier.css">
+
+
+
 </head>
 <body>
-    <header>
+        <header>
         <div class="container">
             <div class="header-content">
                 <div class="logo-section">
                     <div class="logo">
-                        <img src="./Birthmark_logo_transparent.svg" alt="Birthmark Standard Foundation Logo">
+                        <img src="/Birthmark_logo_transparent.svg" alt="Birthmark Standard Foundation Logo">
                     </div>
                     <h1><span class="the-prefix">The</span><span class="org-name">Birthmark Standard Foundation</span></h1>
                 </div>
                 <nav>
-                    <a href="verify.html" style="background: var(--accent-blue); padding: 0.5rem 1rem; border-radius: 4px;">Verify Image</a>
-                    <a href="index.html">Home</a>
+                    <a href="/verify.html" style="background: var(--accent-blue); padding: 0.5rem 1rem; border-radius: 4px;">Verify Image</a>
+                    <a href="/">Home</a>
+                    <a href="/blog/">Blog</a>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle">How It Works ▾</a>
                         <div class="dropdown-menu">
-                            <a href="technical-architecture.html">Technical Architecture</a>
-                            <a href="privacy-design.html">Privacy Design</a>
-                            <a href="governance.html">Governance Plan</a>
-                            <a href="investigation-framework.html">Investigation Framework</a>
+                            <a href="/technical-architecture.html">Technical Architecture</a>
+                            <a href="/privacy-design.html">Privacy Design</a>
+                            <a href="/governance.html">Governance Plan</a>
+                            <a href="/investigation-framework.html">Investigation Framework</a>
                         </div>
                     </div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle">The People ▾</a>
                         <div class="dropdown-menu">
-                            <a href="contact.html">Contact</a>
+                            <a href="/contact.html">Contact</a>
                             <a href="https://www.linkedin.com/company/birthmarkstandard/" class="external-link">LinkedIn ↗</a>
                             <a href="https://github.com/Birthmark-Standard/Birthmark" class="external-link">GitHub ↗</a>
                         </div>
@@ -44,146 +51,153 @@
         </div>
     </header>
 
-    <section class="hero">
-        <div class="container">
-            <h2>Image Authenticity Verifier</h2>
-            <p>Verify image authenticity against the Birthmark blockchain. Your image is never uploaded—all processing happens locally in your browser.</p>
-        </div>
-    </section>
 
-    <section class="verifier-section">
-        <div class="container">
-            <div class="privacy-notice">
-                <div class="privacy-icon">🔒</div>
-                <div class="privacy-text">
-                    <strong>Privacy First:</strong> Your image never leaves your device. We compute the SHA-256 hash locally in your browser and only send the hash (not the image) to query the blockchain.
-                </div>
-            </div>
+    
+<pre><code>&lt;section class=&quot;hero&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Image Authenticity Verifier&lt;/h2&gt;
+        &lt;p&gt;Verify image authenticity against the Birthmark blockchain. Your image is never uploaded—all processing happens locally in your browser.&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-            <div class="upload-container">
-                <div class="drop-zone" id="dropZone">
-                    <div class="drop-zone-content">
-                        <div class="upload-icon">📸</div>
-                        <h3>Drop an image here or click to select</h3>
-                        <p>Supports: JPG, PNG, GIF, WebP, and most image formats</p>
-                        <input type="file" id="fileInput" accept="image/*" hidden>
-                        <button class="btn btn-primary" id="selectButton">Select Image</button>
-                    </div>
-                </div>
+&lt;section class=&quot;verifier-section&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;div class=&quot;privacy-notice&quot;&gt;
+            &lt;div class=&quot;privacy-icon&quot;&gt;🔒&lt;/div&gt;
+            &lt;div class=&quot;privacy-text&quot;&gt;
+                &lt;strong&gt;Privacy First:&lt;/strong&gt; Your image never leaves your device. We compute the SHA-256 hash locally in your browser and only send the hash (not the image) to query the blockchain.
+            &lt;/div&gt;
+        &lt;/div&gt;
 
-                <div class="image-preview" id="imagePreview" style="display: none;">
-                    <img id="previewImage" alt="Selected image">
-                    <button class="btn btn-secondary" id="clearButton">Select Different Image</button>
-                </div>
-            </div>
+        &lt;div class=&quot;upload-container&quot;&gt;
+            &lt;div class=&quot;drop-zone&quot; id=&quot;dropZone&quot;&gt;
+                &lt;div class=&quot;drop-zone-content&quot;&gt;
+                    &lt;div class=&quot;upload-icon&quot;&gt;📸&lt;/div&gt;
+                    &lt;h3&gt;Drop an image here or click to select&lt;/h3&gt;
+                    &lt;p&gt;Supports: JPG, PNG, GIF, WebP, and most image formats&lt;/p&gt;
+                    &lt;input type=&quot;file&quot; id=&quot;fileInput&quot; accept=&quot;image/*&quot; hidden&gt;
+                    &lt;button class=&quot;btn btn-primary&quot; id=&quot;selectButton&quot;&gt;Select Image&lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
 
-            <div class="hash-display" id="hashDisplay" style="display: none;">
-                <h3>Image Hash (SHA-256)</h3>
-                <div class="hash-value" id="hashValue"></div>
-                <div class="hash-explanation">
-                    This unique fingerprint identifies your image. Even the smallest change would produce a completely different hash.
-                </div>
-            </div>
+            &lt;div class=&quot;image-preview&quot; id=&quot;imagePreview&quot; style=&quot;display: none;&quot;&gt;
+                &lt;img id=&quot;previewImage&quot; alt=&quot;Selected image&quot;&gt;
+                &lt;button class=&quot;btn btn-secondary&quot; id=&quot;clearButton&quot;&gt;Select Different Image&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
 
-            <div class="verification-status" id="verificationStatus" style="display: none;">
-                <!-- Will be populated by JavaScript -->
-            </div>
+        &lt;div class=&quot;hash-display&quot; id=&quot;hashDisplay&quot; style=&quot;display: none;&quot;&gt;
+            &lt;h3&gt;Image Hash (SHA-256)&lt;/h3&gt;
+            &lt;div class=&quot;hash-value&quot; id=&quot;hashValue&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;hash-explanation&quot;&gt;
+                This unique fingerprint identifies your image. Even the smallest change would produce a completely different hash.
+            &lt;/div&gt;
+        &lt;/div&gt;
 
-            <div class="loading-indicator" id="loadingIndicator" style="display: none;">
-                <div class="spinner"></div>
-                <p>Querying Birthmark Media Registry...</p>
-            </div>
-        </div>
-    </section>
+        &lt;div class=&quot;verification-status&quot; id=&quot;verificationStatus&quot; style=&quot;display: none;&quot;&gt;
+            &lt;!-- Will be populated by JavaScript --&gt;
+        &lt;/div&gt;
 
-    <section class="info-section">
-        <div class="container">
-            <h2>Understanding Verification Results</h2>
-            <div class="problem-grid">
-                <div class="problem-card">
-                    <div class="status-badge status-validated-raw">Validated Raw</div>
-                    <h3>Modification Level 0</h3>
-                    <p>Unprocessed sensor data directly from a verified camera. This is the purest form of authenticated imagery—raw Bayer data before any image processing.</p>
-                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);"><strong>Guarantee:</strong> Untouched sensor capture from authenticated hardware.</p>
-                </div>
+        &lt;div class=&quot;loading-indicator&quot; id=&quot;loadingIndicator&quot; style=&quot;display: none;&quot;&gt;
+            &lt;div class=&quot;spinner&quot;&gt;&lt;/div&gt;
+            &lt;p&gt;Querying Birthmark Media Registry...&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-                <div class="problem-card">
-                    <div class="status-badge status-validated">Validated</div>
-                    <h3>Modification Level 1</h3>
-                    <p>Processed by the camera's Image Signal Processor (ISP) OR edited using standard photo adjustments like exposure correction, cropping, or color grading.</p>
-                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);"><strong>Guarantee:</strong> Content originated from authenticated camera; may have non-destructive edits.</p>
-                </div>
+&lt;section class=&quot;info-section&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Understanding Verification Results&lt;/h2&gt;
+        &lt;div class=&quot;problem-grid&quot;&gt;
+            &lt;div class=&quot;problem-card&quot;&gt;
+                &lt;div class=&quot;status-badge status-validated-raw&quot;&gt;Validated Raw&lt;/div&gt;
+                &lt;h3&gt;Modification Level 0&lt;/h3&gt;
+                &lt;p&gt;Unprocessed sensor data directly from a verified camera. This is the purest form of authenticated imagery—raw Bayer data before any image processing.&lt;/p&gt;
+                &lt;p style=&quot;margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);&quot;&gt;&lt;strong&gt;Guarantee:&lt;/strong&gt; Untouched sensor capture from authenticated hardware.&lt;/p&gt;
+            &lt;/div&gt;
 
-                <div class="problem-card">
-                    <div class="status-badge status-modified">Modified</div>
-                    <h3>Modification Level 2</h3>
-                    <p>Significant content modifications such as compositing, content-aware fill, object removal, or other alterations that change the semantic content of the image.</p>
-                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);"><strong>Guarantee:</strong> Derived from authenticated source, but content has been altered.</p>
-                </div>
-            </div>
+            &lt;div class=&quot;problem-card&quot;&gt;
+                &lt;div class=&quot;status-badge status-validated&quot;&gt;Validated&lt;/div&gt;
+                &lt;h3&gt;Modification Level 1&lt;/h3&gt;
+                &lt;p&gt;Processed by the camera's Image Signal Processor (ISP) OR edited using standard photo adjustments like exposure correction, cropping, or color grading.&lt;/p&gt;
+                &lt;p style=&quot;margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);&quot;&gt;&lt;strong&gt;Guarantee:&lt;/strong&gt; Content originated from authenticated camera; may have non-destructive edits.&lt;/p&gt;
+            &lt;/div&gt;
 
-            <div class="provenance-explanation" style="margin-top: 3rem; padding: 2rem; background: var(--light-blue); border-radius: 8px;">
-                <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Provenance Chain</h3>
-                <p style="color: var(--gray-text);">When an image has been edited, the verification result shows its <strong>provenance chain</strong>—the complete lineage tracing back to the original camera capture. This allows you to verify that even heavily edited images originated from authentic sources.</p>
-                <div style="margin-top: 1rem; padding: 1rem; background: white; border-left: 4px solid var(--accent-blue); border-radius: 4px;">
-                    <p style="color: var(--gray-text); margin: 0;"><strong>Example:</strong> A news photo that has been cropped and color-corrected will show as "Validated" (Level 1) with a provenance chain linking back to the "Validated Raw" (Level 0) sensor capture.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+            &lt;div class=&quot;problem-card&quot;&gt;
+                &lt;div class=&quot;status-badge status-modified&quot;&gt;Modified&lt;/div&gt;
+                &lt;h3&gt;Modification Level 2&lt;/h3&gt;
+                &lt;p&gt;Significant content modifications such as compositing, content-aware fill, object removal, or other alterations that change the semantic content of the image.&lt;/p&gt;
+                &lt;p style=&quot;margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);&quot;&gt;&lt;strong&gt;Guarantee:&lt;/strong&gt; Derived from authenticated source, but content has been altered.&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
 
-    <section class="faq-section">
-        <div class="container">
-            <h2>Frequently Asked Questions</h2>
-            <div class="faq-grid">
-                <div class="faq-item">
-                    <h3>What if my image is not found?</h3>
-                    <p>If the blockchain has no record of your image's hash, it means the image was not authenticated through the Birthmark Standard. This could be because:</p>
-                    <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
-                        <li>The image was captured by a camera without Birthmark hardware</li>
-                        <li>The image was AI-generated or created digitally</li>
-                        <li>The image predates the Birthmark system</li>
-                    </ul>
-                </div>
+        &lt;div class=&quot;provenance-explanation&quot; style=&quot;margin-top: 3rem; padding: 2rem; background: var(--light-blue); border-radius: 8px;&quot;&gt;
+            &lt;h3 style=&quot;color: var(--primary-blue); margin-bottom: 1rem;&quot;&gt;Provenance Chain&lt;/h3&gt;
+            &lt;p style=&quot;color: var(--gray-text);&quot;&gt;When an image has been edited, the verification result shows its &lt;strong&gt;provenance chain&lt;/strong&gt;—the complete lineage tracing back to the original camera capture. This allows you to verify that even heavily edited images originated from authentic sources.&lt;/p&gt;
+            &lt;div style=&quot;margin-top: 1rem; padding: 1rem; background: white; border-left: 4px solid var(--accent-blue); border-radius: 4px;&quot;&gt;
+                &lt;p style=&quot;color: var(--gray-text); margin: 0;&quot;&gt;&lt;strong&gt;Example:&lt;/strong&gt; A news photo that has been cropped and color-corrected will show as &quot;Validated&quot; (Level 1) with a provenance chain linking back to the &quot;Validated Raw&quot; (Level 0) sensor capture.&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-                <div class="faq-item">
-                    <h3>Why does my photo show as "Modified"?</h3>
-                    <p>The blockchain records the hash of the image exactly as it was submitted. If you've cropped, compressed, or made any changes since authentication, the hash will be different. However, if the original authenticated version was registered, you can verify the edited version by checking if it links to the original through the provenance chain.</p>
-                </div>
+&lt;section class=&quot;faq-section&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Frequently Asked Questions&lt;/h2&gt;
+        &lt;div class=&quot;faq-grid&quot;&gt;
+            &lt;div class=&quot;faq-item&quot;&gt;
+                &lt;h3&gt;What if my image is not found?&lt;/h3&gt;
+                &lt;p&gt;If the blockchain has no record of your image's hash, it means the image was not authenticated through the Birthmark Standard. This could be because:&lt;/p&gt;
+                &lt;ul style=&quot;margin-top: 0.5rem; padding-left: 1.5rem;&quot;&gt;
+                    &lt;li&gt;The image was captured by a camera without Birthmark hardware&lt;/li&gt;
+                    &lt;li&gt;The image was AI-generated or created digitally&lt;/li&gt;
+                    &lt;li&gt;The image predates the Birthmark system&lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/div&gt;
 
-                <div class="faq-item">
-                    <h3>Can screenshots be verified?</h3>
-                    <p>Screenshots of authenticated images cannot be directly verified because taking a screenshot changes the image data (and thus the hash). However, if you have the original file—even if it's been shared via email or social media—its hash should still match the blockchain record.</p>
-                </div>
+            &lt;div class=&quot;faq-item&quot;&gt;
+                &lt;h3&gt;Why does my photo show as &quot;Modified&quot;?&lt;/h3&gt;
+                &lt;p&gt;The blockchain records the hash of the image exactly as it was submitted. If you've cropped, compressed, or made any changes since authentication, the hash will be different. However, if the original authenticated version was registered, you can verify the edited version by checking if it links to the original through the provenance chain.&lt;/p&gt;
+            &lt;/div&gt;
 
-                <div class="faq-item">
-                    <h3>What about social media compression?</h3>
-                    <p>Social media platforms often compress uploaded images, which changes the hash. This is why Birthmark uses blockchain verification instead of embedded metadata (which gets stripped). If you have the pre-compression version, it will verify. For shared images, photographers can include the blockchain hash in captions or descriptions.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+            &lt;div class=&quot;faq-item&quot;&gt;
+                &lt;h3&gt;Can screenshots be verified?&lt;/h3&gt;
+                &lt;p&gt;Screenshots of authenticated images cannot be directly verified because taking a screenshot changes the image data (and thus the hash). However, if you have the original file—even if it's been shared via email or social media—its hash should still match the blockchain record.&lt;/p&gt;
+            &lt;/div&gt;
 
-    <footer id="about">
+            &lt;div class=&quot;faq-item&quot;&gt;
+                &lt;h3&gt;What about social media compression?&lt;/h3&gt;
+                &lt;p&gt;Social media platforms often compress uploaded images, which changes the hash. This is why Birthmark uses blockchain verification instead of embedded metadata (which gets stripped). If you have the pre-compression version, it will verify. For shared images, photographers can include the blockchain hash in captions or descriptions.&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+</code></pre>
+
+
+
+        <footer id="about">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>The Birthmark Standard Foundation</h3>
-                    <p>Creating hardware-backed photo authentication infrastructure on a custom blockchain operated by trusted institutions as a public good.</p>
+                    <p>Building open-source photo authentication infrastructure as a public good. No tokens, no speculation—just infrastructure for truth.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">501(c)(3) nonprofit in formation</p>
                 </div>
                 <div class="footer-section">
                     <h3>Resources</h3>
-                    <a href="index.html">Home</a>
-                    <a href="technical-architecture.html">Technical Architecture</a>
-                    <a href="governance.html">Governance Charter</a>
-                    <a href="contact.html">Contact</a>
+                    <a href="/technical-architecture.html">Technical Architecture</a>
+                    <a href="/privacy-design.html">Privacy Design</a>
+                    <a href="/governance.html">Governance Plan</a>
+                    <a href="/investigation-framework.html">Investigation Framework</a>
+                    <a href="/blog/">Blog</a>
+                    <a href="/contact.html">Contact</a>
                     <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
                     <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
-                    <a href="https://www.linkedin.com/company/birthmarkstandard/" class="external-link">LinkedIn ↗</a>
-                    <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
+                    <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -192,10 +206,9 @@
         </div>
     </footer>
 
-    <script src="assets/js/verifier.js"></script>
 
-    <style>
-        /* Dropdown menu styles */
+        <style>
+         
         .dropdown {
             position: relative;
             display: inline-block;
@@ -209,7 +222,7 @@
             display: none;
             position: absolute;
             background-color: white;
-            min-width: 180px;
+            min-width: 220px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 4px;
             z-index: 1000;
@@ -238,7 +251,7 @@
             display: block;
         }
 
-        /* External link styling */
+         
         .dropdown-menu a.external-link {
             color: var(--accent-blue);
         }
@@ -248,8 +261,8 @@
             background-color: var(--light-blue);
         }
 
-        /* Responsive dropdown - make clickable on mobile */
-         (max-width: 768px) {
+         
+        @media (max-width: 768px) {
             .dropdown-toggle {
                 pointer-events: auto;
             }
@@ -262,7 +275,7 @@
                 background-color: rgba(255, 255, 255, 0.95);
             }
 
-            /* On mobile, toggle dropdown with click instead of hover */
+             
             .dropdown.active .dropdown-menu {
                 display: block;
             }
@@ -271,21 +284,10 @@
                 display: none;
             }
         }
-
-        /* External link styling */
-        .dropdown-menu a.external-link {
-            color: var(--accent-blue);
-        }
-
-        .dropdown-menu a.external-link:hover {
-            color: var(--accent-blue);
-            background-color: var(--light-blue);
-        }
-        }
     </style>
 
     <script>
-        // Mobile dropdown toggle functionality
+        
         document.addEventListener('DOMContentLoaded', function() {
             if (window.innerWidth <= 768) {
                 const dropdowns = document.querySelectorAll('.dropdown');
@@ -296,19 +298,19 @@
                     toggle.addEventListener('click', function(e) {
                         e.preventDefault();
 
-                        // Close other dropdowns
+                        
                         dropdowns.forEach(other => {
                             if (other !== dropdown) {
                                 other.classList.remove('active');
                             }
                         });
 
-                        // Toggle this dropdown
+                        
                         dropdown.classList.toggle('active');
                     });
                 });
 
-                // Close dropdowns when clicking outside
+                
                 document.addEventListener('click', function(e) {
                     if (!e.target.closest('.dropdown')) {
                         dropdowns.forEach(dropdown => {
@@ -319,5 +321,15 @@
             }
         });
     </script>
+
+
+    
+
+
+<script src="/assets/js/verifier.js"></script>
+
+
+
+
 </body>
 </html>

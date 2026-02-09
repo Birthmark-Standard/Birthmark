@@ -1,0 +1,24 @@
+{{ define "extra_head" }}
+{{ with .Params.extra_css }}
+{{ range . }}
+<link rel="stylesheet" href="{{ . }}">
+{{ end }}
+{{ end }}
+{{ end }}
+
+{{ define "main" }}
+{{ .Content }}
+{{ end }}
+
+{{ define "extra_scripts" }}
+{{ with .Params.extra_js }}
+{{ range . }}
+<script src="{{ . }}"></script>
+{{ end }}
+{{ end }}
+{{ with .Params.extra_styles }}
+<style>
+{{ . | safeCSS }}
+</style>
+{{ end }}
+{{ end }}

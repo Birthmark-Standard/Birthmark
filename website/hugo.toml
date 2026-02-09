@@ -1,0 +1,18 @@
+baseURL = 'https://birthmarkstandard.org/'
+languageCode = 'en-us'
+title = 'The Birthmark Standard Foundation'
+publishDir = '../docs'
+disableKinds = ['taxonomy', 'term', 'RSS', 'sitemap']
+
+[pagination]
+  pagerSize = 6
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[outputs]
+  home = ["HTML"]
+  section = ["HTML"]
+  page = ["HTML"]

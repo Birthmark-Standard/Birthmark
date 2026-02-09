@@ -1,0 +1,114 @@
+    <style>
+        /* Dropdown menu styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 220px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            z-index: 1000;
+            top: 100%;
+            left: 0;
+            margin-top: 0;
+            padding-top: 0.25rem;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--light-blue);
+            color: #333;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* External link styling */
+        .dropdown-menu a.external-link {
+            color: var(--accent-blue);
+        }
+
+        .dropdown-menu a.external-link:hover {
+            color: var(--accent-blue);
+            background-color: var(--light-blue);
+        }
+
+        /* Responsive dropdown - make clickable on mobile */
+        @media (max-width: 768px) {
+            .dropdown-toggle {
+                pointer-events: auto;
+            }
+
+            .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                margin-top: 0.5rem;
+                padding-top: 0;
+                background-color: rgba(255, 255, 255, 0.95);
+            }
+
+            /* On mobile, toggle dropdown with click instead of hover */
+            .dropdown.active .dropdown-menu {
+                display: block;
+            }
+
+            .dropdown:hover .dropdown-menu {
+                display: none;
+            }
+        }
+    </style>
+
+    <script>
+        // Mobile dropdown toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth <= 768) {
+                const dropdowns = document.querySelectorAll('.dropdown');
+
+                dropdowns.forEach(dropdown => {
+                    const toggle = dropdown.querySelector('.dropdown-toggle');
+
+                    toggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+
+                        // Close other dropdowns
+                        dropdowns.forEach(other => {
+                            if (other !== dropdown) {
+                                other.classList.remove('active');
+                            }
+                        });
+
+                        // Toggle this dropdown
+                        dropdown.classList.toggle('active');
+                    });
+                });
+
+                // Close dropdowns when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.dropdown')) {
+                        dropdowns.forEach(dropdown => {
+                            dropdown.classList.remove('active');
+                        });
+                    }
+                });
+            }
+        });
+    </script>

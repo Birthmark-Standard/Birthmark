@@ -4,36 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Investigation and Accountability Framework - The Birthmark Standard Foundation</title>
-    <link rel="icon" type="image/svg+xml" href="Birthmark_logo_trimmed.svg">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="/Birthmark_logo_trimmed.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/styles.css">
+    
+
+
 </head>
 <body>
-    <header>
+        <header>
         <div class="container">
             <div class="header-content">
                 <div class="logo-section">
                     <div class="logo">
-                        <img src="./Birthmark_logo_transparent.svg" alt="Birthmark Standard Foundation Logo">
+                        <img src="/Birthmark_logo_transparent.svg" alt="Birthmark Standard Foundation Logo">
                     </div>
                     <h1><span class="the-prefix">The</span><span class="org-name">Birthmark Standard Foundation</span></h1>
                 </div>
                 <nav>
-                    <a href="verify.html" style="background: var(--accent-blue); padding: 0.5rem 1rem; border-radius: 4px;">Verify Image</a>
-                    <a href="index.html">Home</a>
+                    <a href="/verify.html" style="background: var(--accent-blue); padding: 0.5rem 1rem; border-radius: 4px;">Verify Image</a>
+                    <a href="/">Home</a>
+                    <a href="/blog/">Blog</a>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle">How It Works ▾</a>
                         <div class="dropdown-menu">
-                            <a href="technical-architecture.html">Technical Architecture</a>
-                            <a href="privacy-design.html">Privacy Design</a>
-                            <a href="governance.html">Governance Plan</a>
-                            <a href="investigation-framework.html">Investigation Framework</a>
+                            <a href="/technical-architecture.html">Technical Architecture</a>
+                            <a href="/privacy-design.html">Privacy Design</a>
+                            <a href="/governance.html">Governance Plan</a>
+                            <a href="/investigation-framework.html">Investigation Framework</a>
                         </div>
                     </div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle">The People ▾</a>
                         <div class="dropdown-menu">
-                            <a href="contact.html">Contact</a>
+                            <a href="/contact.html">Contact</a>
                             <a href="https://www.linkedin.com/company/birthmarkstandard/" class="external-link">LinkedIn ↗</a>
                             <a href="https://github.com/Birthmark-Standard/Birthmark" class="external-link">GitHub ↗</a>
                         </div>
@@ -43,210 +47,217 @@
         </div>
     </header>
 
-    <section class="hero" style="padding: 2rem 0;">
-        <div class="container">
-            <h2>Investigation and Accountability Framework</h2>
-            <p style="max-width: 800px; margin: 0 auto;">Contingency plan for maintaining system integrity while preserving photographer privacy.</p>
-        </div>
-    </section>
 
-    <section class="technical-section compact">
-        <div class="container">
-            <div class="content-block">
-                <p><strong>The Birthmark Standard is designed to never need investigations.</strong> Camera compromise requires ~$100K-$1M per device. But we need a response plan for state-level attacks and credibility challenges. This documents our contingency—transparent safeguards for Coalition members, privacy advocates, and journalists evaluating the system.</p>
+    
+<pre><code>&lt;section class=&quot;hero&quot; style=&quot;padding: 2rem 0;&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Investigation and Accountability Framework&lt;/h2&gt;
+        &lt;p style=&quot;max-width: 800px; margin: 0 auto;&quot;&gt;Contingency plan for maintaining system integrity while preserving photographer privacy.&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-                <div class="diagram-box" style="margin-top: 1rem; background: #f0f8ff; border-left: 4px solid var(--accent-blue);">
-                    <p><strong>Key point:</strong> Investigations don't create new risks. Anyone can submit images to forensic services today—we're formalizing it with oversight and stronger protections.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+&lt;section class=&quot;technical-section compact&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;p&gt;&lt;strong&gt;The Birthmark Standard is designed to never need investigations.&lt;/strong&gt; Camera compromise requires ~$100K-$1M per device. But we need a response plan for state-level attacks and credibility challenges. This documents our contingency—transparent safeguards for Coalition members, privacy advocates, and journalists evaluating the system.&lt;/p&gt;
 
-    <section class="technical-section compact" style="background: var(--light-blue);">
-        <div class="container">
-            <h2>Scope and Limitations</h2>
+            &lt;div class=&quot;diagram-box&quot; style=&quot;margin-top: 1rem; background: #f0f8ff; border-left: 4px solid var(--accent-blue);&quot;&gt;
+                &lt;p&gt;&lt;strong&gt;Key point:&lt;/strong&gt; Investigations don't create new risks. Anyone can submit images to forensic services today—we're formalizing it with oversight and stronger protections.&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-            <div class="content-block">
-                <div class="diagram-box" style="background: white;">
-                    <h3 style="margin-top: 0;">What Investigations CAN Reveal:</h3>
-                    <p style="color: green;">✓ Transaction ID (posted to Public Revocation List for manufacturer blacklisting)</p>
+&lt;section class=&quot;technical-section compact&quot; style=&quot;background: var(--light-blue);&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Scope and Limitations&lt;/h2&gt;
 
-                    <h3 style="margin-top: 1rem;">What Investigations CANNOT Reveal:</h3>
-                    <p style="color: red; margin-bottom: 0.2rem;">✗ Camera serial number (manufacturers handle blacklisting internally)</p>
-                    <p style="color: red; margin-bottom: 0.2rem;">✗ Photographer identity</p>
-                    <p style="color: red; margin-bottom: 0.2rem;">✗ Image content (Foundation never sees the image)</p>
-                    <p style="color: red; margin-bottom: 0.2rem;">✗ Capture locations or times</p>
-                    <p style="color: red;">✗ Who you shared images with</p>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;div class=&quot;diagram-box&quot; style=&quot;background: white;&quot;&gt;
+                &lt;h3 style=&quot;margin-top: 0;&quot;&gt;What Investigations CAN Reveal:&lt;/h3&gt;
+                &lt;p style=&quot;color: green;&quot;&gt;✓ Transaction ID (posted to Public Revocation List for manufacturer blacklisting)&lt;/p&gt;
 
-                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #ddd;">
-                        <p style="margin-bottom: 0.3rem;"><strong>Trigger cost:</strong> $500 (forfeited if rejected)</p>
-                        <p style="margin-bottom: 0.3rem;"><strong>Evidence required:</strong> Professional forensic analysis of claimant-submitted image</p>
-                        <p><strong>Governance:</strong> 3-member committee (journalism orgs, 6-month rotation)</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                &lt;h3 style=&quot;margin-top: 1rem;&quot;&gt;What Investigations CANNOT Reveal:&lt;/h3&gt;
+                &lt;p style=&quot;color: red; margin-bottom: 0.2rem;&quot;&gt;✗ Camera serial number (manufacturers handle blacklisting internally)&lt;/p&gt;
+                &lt;p style=&quot;color: red; margin-bottom: 0.2rem;&quot;&gt;✗ Photographer identity&lt;/p&gt;
+                &lt;p style=&quot;color: red; margin-bottom: 0.2rem;&quot;&gt;✗ Image content (Foundation never sees the image)&lt;/p&gt;
+                &lt;p style=&quot;color: red; margin-bottom: 0.2rem;&quot;&gt;✗ Capture locations or times&lt;/p&gt;
+                &lt;p style=&quot;color: red;&quot;&gt;✗ Who you shared images with&lt;/p&gt;
 
-    <section class="technical-section compact">
-        <div class="container">
-            <h2>Core Safeguards</h2>
+                &lt;div style=&quot;margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #ddd;&quot;&gt;
+                    &lt;p style=&quot;margin-bottom: 0.3rem;&quot;&gt;&lt;strong&gt;Trigger cost:&lt;/strong&gt; $500 (forfeited if rejected)&lt;/p&gt;
+                    &lt;p style=&quot;margin-bottom: 0.3rem;&quot;&gt;&lt;strong&gt;Evidence required:&lt;/strong&gt; Professional forensic analysis of claimant-submitted image&lt;/p&gt;
+                    &lt;p&gt;&lt;strong&gt;Governance:&lt;/strong&gt; 3-member committee (journalism orgs, 6-month rotation)&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-            <div class="content-block">
-                <h3>Financial Barriers</h3>
-                <p>$500 claim fee, forfeited if rejected. $1,000 total return if camera blacklisted ($500 refund + $500 bounty). Makes frivolous claims expensive while rewarding legitimate concerns. Any Coalition Member can waive fees for credible cases.</p>
-            </div>
+&lt;section class=&quot;technical-section compact&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Core Safeguards&lt;/h2&gt;
 
-            <div class="content-block">
-                <h3>Technical Evidence Required</h3>
-                <p>Coalition contracts professional photography forensic analysts (e.g., Bellingcat). Claims require claimant to submit the image file. Analysts examine images for specific measurable anomalies: noise pattern inconsistencies, impossible lighting geometry, metadata violations, sensor artifact mismatches. "This looks suspicious" gets rejected immediately. Foundation never sees submitted images—only image hashes if committee approves action.</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Financial Barriers&lt;/h3&gt;
+            &lt;p&gt;$500 claim fee, forfeited if rejected. $1,000 total return if camera blacklisted ($500 refund + $500 bounty). Makes frivolous claims expensive while rewarding legitimate concerns. Any Coalition Member can waive fees for credible cases.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>Enhanced Protections for High-Risk Contexts</h3>
-                <p>Regions on CPJ's Global Impunity Index or active conflict zones require:</p>
-                <ul class="technical-list compact">
-                    <li><strong>Unanimous vote</strong> (3 of 3, not 2 of 3)</li>
-                    <li><strong>Mandatory consultation</strong> with press freedom organizations (RSF, CPJ)</li>
-                    <li><strong>Higher evidence threshold</strong> (multiple independent anomalies)</li>
-                    <li><strong>Expedited appeals</strong> (7 days vs. 14 days)</li>
-                    <li><strong>Escalation rights</strong> to full Coalition vote if consultation ignored</li>
-                </ul>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Technical Evidence Required&lt;/h3&gt;
+            &lt;p&gt;Coalition contracts professional photography forensic analysts (e.g., Bellingcat). Claims require claimant to submit the image file. Analysts examine images for specific measurable anomalies: noise pattern inconsistencies, impossible lighting geometry, metadata violations, sensor artifact mismatches. &quot;This looks suspicious&quot; gets rejected immediately. Foundation never sees submitted images—only image hashes if committee approves action.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>Distributed Control</h3>
-                <p>Submission servers encrypt transaction logs after posting to blockchain. Decryption keys are stored on different geographic submission servers with rotating key schedules—each time window requires a different server for decryption. This prevents any single server compromise from revealing historical transaction data and requires sequential attacks within rotation windows.</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Enhanced Protections for High-Risk Contexts&lt;/h3&gt;
+            &lt;p&gt;Regions on CPJ's Global Impunity Index or active conflict zones require:&lt;/p&gt;
+            &lt;ul class=&quot;technical-list compact&quot;&gt;
+                &lt;li&gt;&lt;strong&gt;Unanimous vote&lt;/strong&gt; (3 of 3, not 2 of 3)&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Mandatory consultation&lt;/strong&gt; with press freedom organizations (RSF, CPJ)&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Higher evidence threshold&lt;/strong&gt; (multiple independent anomalies)&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Expedited appeals&lt;/strong&gt; (7 days vs. 14 days)&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Escalation rights&lt;/strong&gt; to full Coalition vote if consultation ignored&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>Limited Consequences</h3>
-                <p>Only Transaction ID is posted to Public Revocation List. Manufacturers handle device blacklisting internally by referencing the PRL against their own logs. Foundation and Coalition never see camera serial numbers. Historical images remain authenticated—blacklist blocks future submissions only. Successful appeals completely remove Transaction ID from PRL (no "reversed" notation).</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Distributed Control&lt;/h3&gt;
+            &lt;p&gt;Submission servers encrypt transaction logs after posting to blockchain. Decryption keys are stored on different geographic submission servers with rotating key schedules—each time window requires a different server for decryption. This prevents any single server compromise from revealing historical transaction data and requires sequential attacks within rotation windows.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>Transparency & Sunset</h3>
-                <p>Annual public reports (claims, blacklists, appeals, geographic distribution). Any Coalition Member can access investigation materials. <strong>Five-year recurring review with option to sunset investigations</strong> if Coalition determines capability has become harmful or unnecessary.</p>
-            </div>
-        </div>
-    </section>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Limited Consequences&lt;/h3&gt;
+            &lt;p&gt;Only Transaction ID is posted to Public Revocation List. Manufacturers handle device blacklisting internally by referencing the PRL against their own logs. Foundation and Coalition never see camera serial numbers. Historical images remain authenticated—blacklist blocks future submissions only. Successful appeals completely remove Transaction ID from PRL (no &quot;reversed&quot; notation).&lt;/p&gt;
+        &lt;/div&gt;
 
-    <section class="technical-section compact" style="background: var(--light-blue);">
-        <div class="container">
-            <h2>Investigation Process</h2>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Transparency &amp; Sunset&lt;/h3&gt;
+            &lt;p&gt;Annual public reports (claims, blacklists, appeals, geographic distribution). Any Coalition Member can access investigation materials. &lt;strong&gt;Five-year recurring review with option to sunset investigations&lt;/strong&gt; if Coalition determines capability has become harmful or unnecessary.&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-            <div class="content-block">
-                <ol class="technical-list compact" style="padding-left: 1.5rem;">
-                    <li><strong>Claim Submission:</strong> Claimant submits $500 fee + suspicious image + technical justification</li>
-                    <li><strong>Forensic Analysis:</strong> Coalition-contracted photography forensics analyst examines the submitted image for technical anomalies (noise patterns, lighting geometry, metadata violations). Delivers verdict to committee. Foundation never sees the image.</li>
-                    <li><strong>Committee Review:</strong> 3-member committee reviews forensic analysis. Rejected if no specific technical indicators.</li>
-                    <li><strong>Committee Vote:</strong> 2 of 3 (standard contexts) or 3 of 3 (high-risk contexts requiring unanimous approval)</li>
-                    <li><strong>Transaction ID Lookup:</strong> If approved, committee sends only the image hash to Foundation. Foundation decrypts relevant transaction log to identify Transaction ID.</li>
-                    <li><strong>Public Revocation List:</strong> Foundation posts Transaction ID to PRL with technical justification. No camera identification revealed.</li>
-                    <li><strong>Manufacturer Blacklisting:</strong> Manufacturers reference PRL against their own internal logs and blacklist associated device fingerprints. This happens independently—Foundation and Coalition never learn camera serial numbers.</li>
-                    <li><strong>Appeal:</strong> Device owner (if they learn of blacklist from failed submissions) can appeal. Independent expert review, committee vote. During appeal, owner can submit hashes of critical images for immediate authentication.</li>
-                    <li><strong>If Appeal Succeeds:</strong> Transaction ID completely removed from PRL, no public "reversed" notation.</li>
-                </ol>
-            </div>
-        </div>
-    </section>
+&lt;section class=&quot;technical-section compact&quot; style=&quot;background: var(--light-blue);&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Investigation Process&lt;/h2&gt;
 
-    <section class="technical-section compact">
-        <div class="container">
-            <h2>Key Questions</h2>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;ol class=&quot;technical-list compact&quot; style=&quot;padding-left: 1.5rem;&quot;&gt;
+                &lt;li&gt;&lt;strong&gt;Claim Submission:&lt;/strong&gt; Claimant submits $500 fee + suspicious image + technical justification&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Forensic Analysis:&lt;/strong&gt; Coalition-contracted photography forensics analyst examines the submitted image for technical anomalies (noise patterns, lighting geometry, metadata violations). Delivers verdict to committee. Foundation never sees the image.&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Committee Review:&lt;/strong&gt; 3-member committee reviews forensic analysis. Rejected if no specific technical indicators.&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Committee Vote:&lt;/strong&gt; 2 of 3 (standard contexts) or 3 of 3 (high-risk contexts requiring unanimous approval)&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Transaction ID Lookup:&lt;/strong&gt; If approved, committee sends only the image hash to Foundation. Foundation decrypts relevant transaction log to identify Transaction ID.&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Public Revocation List:&lt;/strong&gt; Foundation posts Transaction ID to PRL with technical justification. No camera identification revealed.&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Manufacturer Blacklisting:&lt;/strong&gt; Manufacturers reference PRL against their own internal logs and blacklist associated device fingerprints. This happens independently—Foundation and Coalition never learn camera serial numbers.&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;Appeal:&lt;/strong&gt; Device owner (if they learn of blacklist from failed submissions) can appeal. Independent expert review, committee vote. During appeal, owner can submit hashes of critical images for immediate authentication.&lt;/li&gt;
+                &lt;li&gt;&lt;strong&gt;If Appeal Succeeds:&lt;/strong&gt; Transaction ID completely removed from PRL, no public &quot;reversed&quot; notation.&lt;/li&gt;
+            &lt;/ol&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-            <div class="content-block">
-                <h3>Can investigations identify photographers?</h3>
-                <p><strong>No.</strong> Investigations only reveal Transaction IDs posted to the Public Revocation List. Manufacturers handle device blacklisting internally by referencing the PRL against their own logs. The Coalition, Foundation, and submission servers never learn camera serial numbers. Manufacturers may not have purchaser records (secondhand sales, gifts). System designed so no entity correlates "this person took this photo" without already possessing the image.</p>
-            </div>
+&lt;section class=&quot;technical-section compact&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Key Questions&lt;/h2&gt;
 
-            <div class="content-block">
-                <h3>What protects photographers in dangerous regions?</h3>
-                <p>CPJ Index regions and conflict zones get unanimous vote requirement, mandatory press freedom org consultation, higher evidence threshold, expedited appeals, and escalation rights. Investigations never reveal photographer identity, specific camera serial numbers, content, or location—only Transaction IDs on the PRL. Manufacturers handle blacklisting internally based on their own logs.</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Can investigations identify photographers?&lt;/h3&gt;
+            &lt;p&gt;&lt;strong&gt;No.&lt;/strong&gt; Investigations only reveal Transaction IDs posted to the Public Revocation List. Manufacturers handle device blacklisting internally by referencing the PRL against their own logs. The Coalition, Foundation, and submission servers never learn camera serial numbers. Manufacturers may not have purchaser records (secondhand sales, gifts). System designed so no entity correlates &quot;this person took this photo&quot; without already possessing the image.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>Investigation and editorial freedom</h3>
-                <p>Images can only be investigated if shared with claimants who submit them for forensic analysis. At that point, risk equals existing forensic services (anyone can submit to FotoForensics today). Investigation doesn't reveal photographer identity or specific camera—only posts Transaction ID to PRL for manufacturer reference.</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;What protects photographers in dangerous regions?&lt;/h3&gt;
+            &lt;p&gt;CPJ Index regions and conflict zones get unanimous vote requirement, mandatory press freedom org consultation, higher evidence threshold, expedited appeals, and escalation rights. Investigations never reveal photographer identity, specific camera serial numbers, content, or location—only Transaction IDs on the PRL. Manufacturers handle blacklisting internally based on their own logs.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>What prevents governments flooding with false claims?</h3>
-                <p>$500 non-refundable fee per rejected claim. Claims need professional forensic evidence before reaching committee. "This makes us look bad" gets rejected at preliminary review, fee forfeited.</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Investigation and editorial freedom&lt;/h3&gt;
+            &lt;p&gt;Images can only be investigated if shared with claimants who submit them for forensic analysis. At that point, risk equals existing forensic services (anyone can submit to FotoForensics today). Investigation doesn't reveal photographer identity or specific camera—only posts Transaction ID to PRL for manufacturer reference.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>Device blacklist appeals</h3>
-                <p>Device owners who discover blacklisting (via failed future submissions) can appeal. Submit hashes of critical images immediately (authenticated while appeal proceeds). Provide technical explanation. Independent expert reviews forensic evidence. Committee votes (2 of 3, max 14 days; 7 days for high-risk contexts). If successful, Transaction ID completely removed from PRL with clean records. Coalition Members can expedite for photographers in high-risk contexts.</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;What prevents governments flooding with false claims?&lt;/h3&gt;
+            &lt;p&gt;$500 non-refundable fee per rejected claim. Claims need professional forensic evidence before reaching committee. &quot;This makes us look bad&quot; gets rejected at preliminary review, fee forfeited.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>What prevents scope creep?</h3>
-                <p>Coalition consists of journalism/press freedom orgs (NPPA, CPJ, RSF, IFCN) whose mission is protecting against surveillance expansions. Using investigations for non-technical purposes is explicit grounds for removal per Governance Charter. Annual public reports enable external monitoring. Five-year sunset reviews acknowledge this may not always be necessary.</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Device blacklist appeals&lt;/h3&gt;
+            &lt;p&gt;Device owners who discover blacklisting (via failed future submissions) can appeal. Submit hashes of critical images immediately (authenticated while appeal proceeds). Provide technical explanation. Independent expert reviews forensic evidence. Committee votes (2 of 3, max 14 days; 7 days for high-risk contexts). If successful, Transaction ID completely removed from PRL with clean records. Coalition Members can expedite for photographers in high-risk contexts.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>Can governments compel cooperation?</h3>
-                <p>Manufacturers handle device blacklisting internally—they can reference the PRL but Coalition never learns camera identities. Accessing encrypted transaction logs requires compromising multiple geographically distributed submission servers within key rotation windows. Government compulsion of Coalition nodes triggers removal, not compliance (per Governance Charter). Transaction IDs on PRL don't reveal photographer identity or which specific camera without manufacturer cooperation.</p>
-            </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;What prevents scope creep?&lt;/h3&gt;
+            &lt;p&gt;Coalition consists of journalism/press freedom orgs (NPPA, CPJ, RSF, IFCN) whose mission is protecting against surveillance expansions. Using investigations for non-technical purposes is explicit grounds for removal per Governance Charter. Annual public reports enable external monitoring. Five-year sunset reviews acknowledge this may not always be necessary.&lt;/p&gt;
+        &lt;/div&gt;
 
-            <div class="content-block">
-                <h3>Why is this necessary?</h3>
-                <p>If compromised cameras can mint valid certificates for AI-generated images indefinitely, the system becomes worthless. The alternative is accepting a single breach authenticates unlimited fakes forever. Question isn't "should investigations exist?" but "how do we make them as safe as possible while maintaining integrity?" This framework balances system credibility with photographer protection.</p>
-            </div>
-        </div>
-    </section>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Can governments compel cooperation?&lt;/h3&gt;
+            &lt;p&gt;Manufacturers handle device blacklisting internally—they can reference the PRL but Coalition never learns camera identities. Accessing encrypted transaction logs requires compromising multiple geographically distributed submission servers within key rotation windows. Government compulsion of Coalition nodes triggers removal, not compliance (per Governance Charter). Transaction IDs on PRL don't reveal photographer identity or which specific camera without manufacturer cooperation.&lt;/p&gt;
+        &lt;/div&gt;
 
-    <section class="technical-section compact" style="background: var(--light-blue);">
-        <div class="container">
-            <h2>Our Commitment</h2>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;h3&gt;Why is this necessary?&lt;/h3&gt;
+            &lt;p&gt;If compromised cameras can mint valid certificates for AI-generated images indefinitely, the system becomes worthless. The alternative is accepting a single breach authenticates unlimited fakes forever. Question isn't &quot;should investigations exist?&quot; but &quot;how do we make them as safe as possible while maintaining integrity?&quot; This framework balances system credibility with photographer protection.&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
 
-            <div class="content-block">
-                <p><strong>Transparency:</strong> Annual public reports enable external monitoring.</p>
-                <p><strong>Accountability:</strong> Any Coalition Member can access materials and escalate decisions.</p>
-                <p><strong>Adaptability:</strong> Five-year reviews with sunset option as threats evolve.</p>
-                <p><strong>Trust:</strong> Journalism orgs govern this system. If they determine investigations have become surveillance tools, they can vote to sunset the capability.</p>
+&lt;section class=&quot;technical-section compact&quot; style=&quot;background: var(--light-blue);&quot;&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h2&gt;Our Commitment&lt;/h2&gt;
 
-                <div class="diagram-box" style="margin-top: 1rem; background: white; border-left: 4px solid var(--accent-blue);">
-                    <p><strong>Coalition members can vote to sunset investigations entirely</strong> if they determine the capability has become harmful or is no longer necessary. This isn't permanent infrastructure—it's a contingency plan subject to ongoing evaluation by organizations whose mission is protecting press freedom.</p>
-                </div>
+        &lt;div class=&quot;content-block&quot;&gt;
+            &lt;p&gt;&lt;strong&gt;Transparency:&lt;/strong&gt; Annual public reports enable external monitoring.&lt;/p&gt;
+            &lt;p&gt;&lt;strong&gt;Accountability:&lt;/strong&gt; Any Coalition Member can access materials and escalate decisions.&lt;/p&gt;
+            &lt;p&gt;&lt;strong&gt;Adaptability:&lt;/strong&gt; Five-year reviews with sunset option as threats evolve.&lt;/p&gt;
+            &lt;p&gt;&lt;strong&gt;Trust:&lt;/strong&gt; Journalism orgs govern this system. If they determine investigations have become surveillance tools, they can vote to sunset the capability.&lt;/p&gt;
 
-                <p style="margin-top: 1.5rem;"><strong>Questions?</strong> <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a></p>
-            </div>
-        </div>
-    </section>
+            &lt;div class=&quot;diagram-box&quot; style=&quot;margin-top: 1rem; background: white; border-left: 4px solid var(--accent-blue);&quot;&gt;
+                &lt;p&gt;&lt;strong&gt;Coalition members can vote to sunset investigations entirely&lt;/strong&gt; if they determine the capability has become harmful or is no longer necessary. This isn't permanent infrastructure—it's a contingency plan subject to ongoing evaluation by organizations whose mission is protecting press freedom.&lt;/p&gt;
+            &lt;/div&gt;
 
-    <footer id="about">
+            &lt;p style=&quot;margin-top: 1.5rem;&quot;&gt;&lt;strong&gt;Questions?&lt;/strong&gt; &lt;a href=&quot;mailto:contact@birthmarkstandard.org&quot;&gt;contact@birthmarkstandard.org&lt;/a&gt;&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+</code></pre>
+
+
+
+        <footer id="about">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>The Birthmark Standard Foundation</h3>
-                    <p>Creating hardware-backed photo authentication infrastructure on a custom blockchain operated by trusted institutions as a public good.</p>
+                    <p>Building open-source photo authentication infrastructure as a public good. No tokens, no speculation—just infrastructure for truth.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">501(c)(3) nonprofit in formation</p>
                 </div>
                 <div class="footer-section">
                     <h3>Resources</h3>
-                    <a href="index.html">Home</a>
-                    <a href="technical-architecture.html">Technical Architecture</a>
-                    <a href="governance.html">Governance</a>
-                    <a href="contact.html">Contact</a>
+                    <a href="/technical-architecture.html">Technical Architecture</a>
+                    <a href="/privacy-design.html">Privacy Design</a>
+                    <a href="/governance.html">Governance Plan</a>
+                    <a href="/investigation-framework.html">Investigation Framework</a>
+                    <a href="/blog/">Blog</a>
+                    <a href="/contact.html">Contact</a>
                     <a href="https://github.com/Birthmark-Standard/Birthmark">GitHub Repository</a>
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
                     <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
-                    <a href="https://www.linkedin.com/company/birthmarkstandard/" class="external-link">LinkedIn ↗</a>
-                    <p style="margin-top: 1rem;">The Birthmark Standard Foundation<br>501(c)(3) in formation</p>
+                    <a href="https://www.linkedin.com/company/birthmarkstandard/">LinkedIn</a>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 The Birthmark Standard Foundation. Dual license: AGPL-3.0 (blockchain) / Apache-2.0 (tools).</p>
-                <p style="margin-top: 0.5rem;">Last Updated: January 2026 | Next Review: January 2031</p>
             </div>
         </div>
     </footer>
 
-    <style>
-        /* Dropdown menu styles */
+
+        <style>
+         
         .dropdown {
             position: relative;
             display: inline-block;
@@ -289,7 +300,7 @@
             display: block;
         }
 
-        /* External link styling */
+         
         .dropdown-menu a.external-link {
             color: var(--accent-blue);
         }
@@ -299,47 +310,8 @@
             background-color: var(--light-blue);
         }
 
-        /* Compact styling for investigation page */
-        .technical-section.compact {
-            padding: 1.5rem 0;
-        }
-
-        .technical-section.compact h2 {
-            margin-bottom: 1rem;
-        }
-
-        .technical-section.compact h3 {
-            margin-top: 0;
-            margin-bottom: 0.5rem;
-        }
-
-        .technical-section.compact .content-block {
-            margin-bottom: 1.25rem;
-        }
-
-        .technical-section.compact .content-block:last-child {
-            margin-bottom: 0;
-        }
-
-        .technical-section.compact p {
-            margin-bottom: 0.5rem;
-        }
-
-        .technical-section.compact p:last-child {
-            margin-bottom: 0;
-        }
-
-        .technical-list.compact {
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .technical-list.compact li {
-            margin-bottom: 0.3rem;
-        }
-
-        /* Responsive dropdown - make clickable on mobile */
-         (max-width: 768px) {
+         
+        @media (max-width: 768px) {
             .dropdown-toggle {
                 pointer-events: auto;
             }
@@ -352,7 +324,7 @@
                 background-color: rgba(255, 255, 255, 0.95);
             }
 
-            /* On mobile, toggle dropdown with click instead of hover */
+             
             .dropdown.active .dropdown-menu {
                 display: block;
             }
@@ -361,21 +333,10 @@
                 display: none;
             }
         }
-
-        /* External link styling */
-        .dropdown-menu a.external-link {
-            color: var(--accent-blue);
-        }
-
-        .dropdown-menu a.external-link:hover {
-            color: var(--accent-blue);
-            background-color: var(--light-blue);
-        }
-        }
     </style>
 
     <script>
-        // Mobile dropdown toggle functionality
+        
         document.addEventListener('DOMContentLoaded', function() {
             if (window.innerWidth <= 768) {
                 const dropdowns = document.querySelectorAll('.dropdown');
@@ -386,19 +347,19 @@
                     toggle.addEventListener('click', function(e) {
                         e.preventDefault();
 
-                        // Close other dropdowns
+                        
                         dropdowns.forEach(other => {
                             if (other !== dropdown) {
                                 other.classList.remove('active');
                             }
                         });
 
-                        // Toggle this dropdown
+                        
                         dropdown.classList.toggle('active');
                     });
                 });
 
-                // Close dropdowns when clicking outside
+                
                 document.addEventListener('click', function(e) {
                     if (!e.target.closest('.dropdown')) {
                         dropdowns.forEach(dropdown => {
@@ -409,5 +370,44 @@
             }
         });
     </script>
+
+
+    
+
+
+<style>
+.technical-section.compact {
+    padding: 1.5rem 0;
+}
+.technical-section.compact h2 {
+    margin-bottom: 1rem;
+}
+.technical-section.compact h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+.technical-section.compact .content-block {
+    margin-bottom: 1.25rem;
+}
+.technical-section.compact .content-block:last-child {
+    margin-bottom: 0;
+}
+.technical-section.compact p {
+    margin-bottom: 0.5rem;
+}
+.technical-section.compact p:last-child {
+    margin-bottom: 0;
+}
+.technical-list.compact {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.technical-list.compact li {
+    margin-bottom: 0.3rem;
+}
+
+</style>
+
+
 </body>
 </html>
