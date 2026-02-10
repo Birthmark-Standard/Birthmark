@@ -1,0 +1,22 @@
+backend:
+  name: github
+  repo: Birthmark-Standard/Birthmark
+  branch: main
+
+media_folder: "website/static/images/blog"
+public_folder: "/images/blog"
+
+collections:
+  - name: "blog"
+    label: "Blog Posts"
+    folder: "website/content/blog"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Author", name: "author", widget: "string", default: "Samuel C. Ryan" }
+      - { label: "Excerpt", name: "excerpt", widget: "text", required: false, hint: "Short summary shown on blog listing cards" }
+      - { label: "Featured Image", name: "image", widget: "image", required: false, hint: "Image shown on blog card and post header" }
+      - { label: "Body", name: "body", widget: "markdown" }
