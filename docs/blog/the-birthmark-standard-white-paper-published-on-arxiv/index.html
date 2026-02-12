@@ -3,139 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog - The Birthmark Standard Foundation</title>
+    <title>The Birthmark Standard White Paper: Published on arXiv - The Birthmark Standard Foundation</title>
     <link rel="icon" type="image/svg+xml" href="/Birthmark_logo_trimmed.svg">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="/styles.css">
     
 <style>
-    .blog-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-        gap: 2rem;
-        margin-top: 2rem;
-    }
-
-    .blog-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .blog-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    }
-
-    .blog-card-image {
-        width: 100%;
-        height: 200px;
-        overflow: hidden;
-    }
-
-    .blog-card-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s;
-    }
-
-    .blog-card:hover .blog-card-image img {
-        transform: scale(1.05);
-    }
-
-    .blog-card-content {
-        padding: 1.5rem;
-    }
-
-    .blog-card-meta {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 0.75rem;
-        font-size: 0.85rem;
+    .blog-post-content {
         color: var(--gray-text);
+        line-height: 1.8;
     }
 
-    .blog-card-author::before {
-        content: "·";
-        margin-right: 0.5rem;
-    }
-
-    .blog-card-content h3 {
-        font-size: 1.25rem;
-        color: var(--primary-blue);
-        margin-bottom: 0.75rem;
-        line-height: 1.4;
-    }
-
-    .blog-card-content h3 a {
-        color: inherit;
-        text-decoration: none;
-    }
-
-    .blog-card-content h3 a:hover {
-        color: var(--accent-blue);
-    }
-
-    .blog-card-content p {
-        color: var(--gray-text);
+    .blog-post-content h2 {
+        color: var(--dark-navy);
+        margin-top: 2.5rem;
         margin-bottom: 1rem;
-        line-height: 1.6;
+        font-size: 1.75rem;
     }
 
-    .blog-read-more {
-        color: var(--accent-blue);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
+    .blog-post-content h3 {
+        color: var(--primary-blue);
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
+        font-size: 1.35rem;
     }
 
-    .blog-read-more:hover {
-        text-decoration: underline;
+    .blog-post-content p {
+        margin-bottom: 1.25rem;
     }
 
-    .blog-pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 2rem;
-        margin-top: 3rem;
-        padding-top: 2rem;
-        border-top: 1px solid #e2e8f0;
+    .blog-post-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .pagination-link {
-        color: var(--accent-blue);
-        text-decoration: none;
-        font-weight: 600;
-        padding: 0.5rem 1rem;
-        border: 2px solid var(--accent-blue);
+    .blog-post-content blockquote {
+        border-left: 4px solid var(--accent-blue);
+        padding: 1rem 1.5rem;
+        margin: 1.5rem 0;
+        background: var(--light-blue);
+        border-radius: 0 8px 8px 0;
+    }
+
+    .blog-post-content blockquote p {
+        margin-bottom: 0;
+    }
+
+    .blog-post-content ul, .blog-post-content ol {
+        margin-bottom: 1.25rem;
+        padding-left: 1.5rem;
+    }
+
+    .blog-post-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .blog-post-content code {
+        background: var(--light-gray);
+        padding: 0.2rem 0.4rem;
         border-radius: 4px;
-        transition: all 0.3s;
+        font-size: 0.9em;
     }
 
-    .pagination-link:hover {
-        background: var(--accent-blue);
-        color: white;
+    .blog-post-content pre {
+        background: var(--dark-navy);
+        color: #a0d8f1;
+        padding: 1.5rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1.5rem 0;
     }
 
-    .pagination-info {
-        color: var(--gray-text);
-        font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-        .blog-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .blog-pagination {
-            flex-direction: column;
-            gap: 1rem;
-        }
+    .blog-post-content pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
     }
 </style>
 
@@ -178,45 +123,51 @@
 
 
     
-    <section class="hero" style="padding: 3rem 0;">
+    <section class="hero" style="padding: 2rem 0;">
         <div class="container">
-            <h2>Blog</h2>
-            <p style="max-width: 800px; margin: 0 auto;">News, updates, and insights from The Birthmark Standard Foundation.</p>
+            <h2>The Birthmark Standard White Paper: Published on arXiv</h2>
+            <div style="margin-top: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
+                <time datetime="2026-02-05">February 5, 2026</time>
+                
+                <span> · Samuel C. Ryan</span>
+                
+            </div>
         </div>
     </section>
 
     <section class="technical-section">
         <div class="container">
-            
-            
-            <div class="blog-grid">
+            <div class="blog-post-content" style="max-width: 800px; margin: 0 auto;">
                 
-                <article class="blog-card">
-                    
-                    <div class="blog-card-image">
-                        <a href="/blog/">
-                            <img src="/images/blog/White%20paper%20published.png" alt="Blog">
-                        </a>
-                    </div>
-                    
-                    <div class="blog-card-content">
-                        <div class="blog-card-meta">
-                            <time datetime="2026-02-05">February 5, 2026</time>
-                            
-                            <span class="blog-card-author">Samuel C. Ryan</span>
-                            
-                        </div>
-                        <h3><a href="/blog/the-birthmark-standard-white-paper-published-on-arxiv/">The Birthmark Standard White Paper: Published on arXiv</a></h3>
-                        <p><p>We&rsquo;ve published the technical specification and security analysis for the Birthmark Standard on arXiv: <a href="https://arxiv.org/abs/2602.04933">https://arxiv.org/abs/2602.04933</a></p>
-<p>The paper runs 32 pages and covers the complete architecture. How camera sensor fingerprints create hardware roots of trust. How the privacy model prevents surveillance while enabling authentication. How the consortium blockchain survives metadata stripping. There&rsquo;s formal verification of privacy properties using ProVerif, attack-defense analysis, and performance projections. If you want the technical details, they&rsquo;re all there.</p></p>
-                        <a href="/blog/the-birthmark-standard-white-paper-published-on-arxiv/" class="blog-read-more">Read more →</a>
-                    </div>
-                </article>
+                <img src="/images/blog/White%20paper%20published.png" alt="The Birthmark Standard White Paper: Published on arXiv" style="width: 100%; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 
+
+                <p>We&rsquo;ve published the technical specification and security analysis for the Birthmark Standard on arXiv: <a href="https://arxiv.org/abs/2602.04933">https://arxiv.org/abs/2602.04933</a></p>
+<p>The paper runs 32 pages and covers the complete architecture. How camera sensor fingerprints create hardware roots of trust. How the privacy model prevents surveillance while enabling authentication. How the consortium blockchain survives metadata stripping. There&rsquo;s formal verification of privacy properties using ProVerif, attack-defense analysis, and performance projections. If you want the technical details, they&rsquo;re all there.</p>
+<p>But the context matters more than the cryptography.</p>
+<p><strong>The Problem We&rsquo;re Trying to Solve</strong></p>
+<p>A photograph used to be hard to argue with. That&rsquo;s no longer true. AI image generators produce output that passes as authentic photography. Any inconvenient image can be dismissed as AI-generated, and that dismissal is plausible enough to stick. Researchers call this the &ldquo;liar&rsquo;s dividend.&rdquo; The mere existence of convincing fakes erodes trust in all visual evidence, real or not.</p>
+<p>Photography competitions are pulling AI submissions they can&rsquo;t distinguish from real work. News organizations are struggling to verify images from conflict zones. The foundation for visual evidence as a form of proof is breaking down.</p>
+<p>The standard industry response embeds cryptographic signatures directly into image files. That works when metadata is preserved. But social media platforms strip metadata through compression and format conversion. That&rsquo;s where most photos actually get shared and where misinformation actually spreads. Authentication breaks right where it matters most.</p>
+<p><strong>How Birthmark Addresses This Problem</strong></p>
+<p>The authentication record lives on a blockchain, not in the image file. When platforms strip metadata, verification still works. The photographer hashes the image, the camera creates a cryptographic certificate tied to its sensor fingerprint, and that record goes on-chain. The image can be compressed, converted, screenshotted, printed and rescanned. Verification survives because it&rsquo;s checking against an independent record, not embedded metadata.</p>
+<p>Camera sensor fingerprints provide the hardware root of trust. Every sensor has unique physical manufacturing variations that AI generators can&rsquo;t replicate without access to the actual hardware. This proves &ldquo;came from a camera&rdquo; versus &ldquo;came from Midjourney.&rdquo;</p>
+<p>The privacy model lets journalists in conflict zones authenticate work without surveillance risk. Manufacturers validate cameras but can&rsquo;t track which photographer took which image. Blockchain observers verify authenticity but can&rsquo;t identify devices. The architectural separation prevents correlation even if parts of the system are compromised.</p>
+<p>Governance sits with journalism organizations. Fact-checking networks, press freedom advocates, groups that validate and protect media rather than monetize it. Different incentive structure than platforms or tech companies.</p>
+<p><strong>Current Status</strong></p>
+<p>The prototype works. We&rsquo;ve demonstrated the full cryptographic pipeline from sensor capture through blockchain verification using Raspberry Pi 4 hardware. The architecture is designed. The security analysis is published.</p>
+<p>What we need now are partners. Journalism organizations willing to evaluate this system, run pilot programs, and eventually operate it as shared infrastructure. We&rsquo;re pursuing fiscal sponsorship to enable grant funding, forming a board, and building coalition support.</p>
+<p>The white paper is the technical foundation. The hard work is proving this is worth building, that people will use it, that it creates value. That&rsquo;s what comes next.</p>
+<p>If you&rsquo;re from a journalism organization, fact-checking network, or press freedom group and this problem matters to you, we&rsquo;d like to talk.</p>
+<p><strong>Contact:</strong> <a href="mailto:contact@birthmarkstandard.org">contact@birthmarkstandard.org</a>
+<strong>White Paper:</strong> <a href="https://arxiv.org/abs/2602.04933">https://arxiv.org/abs/2602.04933</a>
+<strong>Code:</strong> github.com/Birthmark-Standard/Birthmark</p>
+
             </div>
 
-            
-            
+            <div style="max-width: 800px; margin: 3rem auto 0; padding-top: 2rem; border-top: 1px solid #e2e8f0;">
+                <a href="/blog/" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">← Back to Blog</a>
+            </div>
         </div>
     </section>
 
