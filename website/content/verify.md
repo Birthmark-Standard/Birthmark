@@ -1,0 +1,128 @@
+---
+title: "Verify Image - Birthmark Standard"
+url: "/verify.html"
+extra_css:
+  - "/assets/css/verifier.css"
+extra_js:
+  - "/assets/js/verifier.js"
+---
+
+    <section class="hero">
+        <div class="container">
+            <h2>Image Authenticity Verifier</h2>
+            <p>Verify image authenticity against the Birthmark blockchain. Your image is never uploaded—all processing happens locally in your browser.</p>
+        </div>
+    </section>
+
+    <section class="verifier-section">
+        <div class="container">
+            <div class="privacy-notice">
+                <div class="privacy-icon">🔒</div>
+                <div class="privacy-text">
+                    <strong>Privacy First:</strong> Your image never leaves your device. We compute the SHA-256 hash locally in your browser and only send the hash (not the image) to query the blockchain.
+                </div>
+            </div>
+
+            <div class="upload-container">
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-content">
+                        <div class="upload-icon">📸</div>
+                        <h3>Drop an image here or click to select</h3>
+                        <p>Supports: JPG, PNG, GIF, WebP, and most image formats</p>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                        <button class="btn btn-primary" id="selectButton">Select Image</button>
+                    </div>
+                </div>
+
+                <div class="image-preview" id="imagePreview" style="display: none;">
+                    <img id="previewImage" alt="Selected image">
+                    <button class="btn btn-secondary" id="clearButton">Select Different Image</button>
+                </div>
+            </div>
+
+            <div class="hash-display" id="hashDisplay" style="display: none;">
+                <h3>Image Hash (SHA-256)</h3>
+                <div class="hash-value" id="hashValue"></div>
+                <div class="hash-explanation">
+                    This unique fingerprint identifies your image. Even the smallest change would produce a completely different hash.
+                </div>
+            </div>
+
+            <div class="verification-status" id="verificationStatus" style="display: none;">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <div class="loading-indicator" id="loadingIndicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Querying Birthmark Media Registry...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="container">
+            <h2>Understanding Verification Results</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="status-badge status-validated-raw">Validated Raw</div>
+                    <h3>Modification Level 0</h3>
+                    <p>Unprocessed sensor data directly from a verified camera. This is the purest form of authenticated imagery—raw Bayer data before any image processing.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);"><strong>Guarantee:</strong> Untouched sensor capture from authenticated hardware.</p>
+                </div>
+
+                <div class="problem-card">
+                    <div class="status-badge status-validated">Validated</div>
+                    <h3>Modification Level 1</h3>
+                    <p>Processed by the camera's Image Signal Processor (ISP) OR edited using standard photo adjustments like exposure correction, cropping, or color grading.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);"><strong>Guarantee:</strong> Content originated from authenticated camera; may have non-destructive edits.</p>
+                </div>
+
+                <div class="problem-card">
+                    <div class="status-badge status-modified">Modified</div>
+                    <h3>Modification Level 2</h3>
+                    <p>Significant content modifications such as compositing, content-aware fill, object removal, or other alterations that change the semantic content of the image.</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);"><strong>Guarantee:</strong> Derived from authenticated source, but content has been altered.</p>
+                </div>
+            </div>
+
+            <div class="provenance-explanation" style="margin-top: 3rem; padding: 2rem; background: var(--light-blue); border-radius: 8px;">
+                <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Provenance Chain</h3>
+                <p style="color: var(--gray-text);">When an image has been edited, the verification result shows its <strong>provenance chain</strong>—the complete lineage tracing back to the original camera capture. This allows you to verify that even heavily edited images originated from authentic sources.</p>
+                <div style="margin-top: 1rem; padding: 1rem; background: white; border-left: 4px solid var(--accent-blue); border-radius: 4px;">
+                    <p style="color: var(--gray-text); margin: 0;"><strong>Example:</strong> A news photo that has been cropped and color-corrected will show as "Validated" (Level 1) with a provenance chain linking back to the "Validated Raw" (Level 0) sensor capture.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="faq-section">
+        <div class="container">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3>What if my image is not found?</h3>
+                    <p>If the blockchain has no record of your image's hash, it means the image was not authenticated through the Birthmark Standard. This could be because:</p>
+                    <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                        <li>The image was captured by a camera without Birthmark hardware</li>
+                        <li>The image was AI-generated or created digitally</li>
+                        <li>The image predates the Birthmark system</li>
+                    </ul>
+                </div>
+
+                <div class="faq-item">
+                    <h3>Why does my photo show as "Modified"?</h3>
+                    <p>The blockchain records the hash of the image exactly as it was submitted. If you've cropped, compressed, or made any changes since authentication, the hash will be different. However, if the original authenticated version was registered, you can verify the edited version by checking if it links to the original through the provenance chain.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>Can screenshots be verified?</h3>
+                    <p>Screenshots of authenticated images cannot be directly verified because taking a screenshot changes the image data (and thus the hash). However, if you have the original file—even if it's been shared via email or social media—its hash should still match the blockchain record.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>What about social media compression?</h3>
+                    <p>Social media platforms often compress uploaded images, which changes the hash. This is why Birthmark uses blockchain verification instead of embedded metadata (which gets stripped). If you have the pre-compression version, it will verify. For shared images, photographers can include the blockchain hash in captions or descriptions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
