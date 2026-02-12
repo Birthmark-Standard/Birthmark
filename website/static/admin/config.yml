@@ -1,7 +1,7 @@
 backend:
   name: github
   repo: Birthmark-Standard/Birthmark
-  branch: main
+  branch: blog-drafts
 
 media_folder: "website/static/images/blog"
 public_folder: "/images/blog"
