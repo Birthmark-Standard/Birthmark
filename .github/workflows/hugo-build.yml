@@ -1,0 +1,40 @@
+name: Build Hugo Site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/**'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.139.0'
+          extended: true
+
+      - name: Build
+        working-directory: website
+        run: hugo --minify
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Rebuild site from Hugo source"
+            git push
+          fi
