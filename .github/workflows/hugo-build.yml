@@ -1,0 +1,39 @@
+name: Build Hugo Site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.139.0'
+          extended: true
+
+      - name: Build
+        working-directory: website
+        run: hugo --minify
+
+      - name: Create PR with rebuilt site
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Rebuild site from Hugo source"
+          title: "Auto-rebuild: Update docs/ from Hugo source"
+          body: "Automated Hugo build triggered by changes to `website/`. Merge this to update the live site."
+          branch: auto-hugo-build
+          add-paths: docs/
+          delete-branch: true
