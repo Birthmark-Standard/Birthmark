@@ -3,139 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog - The Birthmark Standard Foundation</title>
+    <title>Why Photo Authentication Keeps Failing (And What We&#39;re Learning Building an Alternative) - The Birthmark Standard Foundation</title>
     <link rel="icon" type="image/svg+xml" href="/Birthmark_logo_trimmed.svg">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="/styles.css">
     
 <style>
-    .blog-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-        gap: 2rem;
-        margin-top: 2rem;
-    }
-
-    .blog-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .blog-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    }
-
-    .blog-card-image {
-        width: 100%;
-        height: 200px;
-        overflow: hidden;
-    }
-
-    .blog-card-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s;
-    }
-
-    .blog-card:hover .blog-card-image img {
-        transform: scale(1.05);
-    }
-
-    .blog-card-content {
-        padding: 1.5rem;
-    }
-
-    .blog-card-meta {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 0.75rem;
-        font-size: 0.85rem;
+    .blog-post-content {
         color: var(--gray-text);
+        line-height: 1.8;
     }
 
-    .blog-card-author::before {
-        content: "·";
-        margin-right: 0.5rem;
-    }
-
-    .blog-card-content h3 {
-        font-size: 1.25rem;
-        color: var(--primary-blue);
-        margin-bottom: 0.75rem;
-        line-height: 1.4;
-    }
-
-    .blog-card-content h3 a {
-        color: inherit;
-        text-decoration: none;
-    }
-
-    .blog-card-content h3 a:hover {
-        color: var(--accent-blue);
-    }
-
-    .blog-card-content p {
-        color: var(--gray-text);
+    .blog-post-content h2 {
+        color: var(--dark-navy);
+        margin-top: 2.5rem;
         margin-bottom: 1rem;
-        line-height: 1.6;
+        font-size: 1.75rem;
     }
 
-    .blog-read-more {
-        color: var(--accent-blue);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
+    .blog-post-content h3 {
+        color: var(--primary-blue);
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
+        font-size: 1.35rem;
     }
 
-    .blog-read-more:hover {
-        text-decoration: underline;
+    .blog-post-content p {
+        margin-bottom: 1.25rem;
     }
 
-    .blog-pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 2rem;
-        margin-top: 3rem;
-        padding-top: 2rem;
-        border-top: 1px solid #e2e8f0;
+    .blog-post-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .pagination-link {
-        color: var(--accent-blue);
-        text-decoration: none;
-        font-weight: 600;
-        padding: 0.5rem 1rem;
-        border: 2px solid var(--accent-blue);
+    .blog-post-content blockquote {
+        border-left: 4px solid var(--accent-blue);
+        padding: 1rem 1.5rem;
+        margin: 1.5rem 0;
+        background: var(--light-blue);
+        border-radius: 0 8px 8px 0;
+    }
+
+    .blog-post-content blockquote p {
+        margin-bottom: 0;
+    }
+
+    .blog-post-content ul, .blog-post-content ol {
+        margin-bottom: 1.25rem;
+        padding-left: 1.5rem;
+    }
+
+    .blog-post-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .blog-post-content code {
+        background: var(--light-gray);
+        padding: 0.2rem 0.4rem;
         border-radius: 4px;
-        transition: all 0.3s;
+        font-size: 0.9em;
     }
 
-    .pagination-link:hover {
-        background: var(--accent-blue);
-        color: white;
+    .blog-post-content pre {
+        background: var(--dark-navy);
+        color: #a0d8f1;
+        padding: 1.5rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1.5rem 0;
     }
 
-    .pagination-info {
-        color: var(--gray-text);
-        font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-        .blog-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .blog-pagination {
-            flex-direction: column;
-            gap: 1rem;
-        }
+    .blog-post-content pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
     }
 </style>
 
@@ -178,66 +123,36 @@
 
 
     
-    <section class="hero" style="padding: 3rem 0;">
+    <section class="hero" style="padding: 2rem 0;">
         <div class="container">
-            <h2>Blog</h2>
-            <p style="max-width: 800px; margin: 0 auto;">News, updates, and insights from The Birthmark Standard Foundation.</p>
+            <h2>Why Photo Authentication Keeps Failing (And What We&#39;re Learning Building an Alternative)</h2>
+            <div style="margin-top: 0.75rem; font-size: 0.95rem; opacity: 0.9;">
+                <time datetime="2026-02-12">February 12, 2026</time>
+                
+                <span> · Samuel C. Ryan</span>
+                
+            </div>
         </div>
     </section>
 
     <section class="technical-section">
         <div class="container">
-            
-            
-            <div class="blog-grid">
+            <div class="blog-post-content" style="max-width: 800px; margin: 0 auto;">
                 
-                <article class="blog-card">
-                    
-                    <div class="blog-card-image">
-                        <a href="/blog/">
-                            <img src="/images/blog/ff5ef42b-9cfb-4ef9-847c-cc0c4debf202.png" alt="Blog">
-                        </a>
-                    </div>
-                    
-                    <div class="blog-card-content">
-                        <div class="blog-card-meta">
-                            <time datetime="2026-02-12">February 12, 2026</time>
-                            
-                            <span class="blog-card-author">Samuel C. Ryan</span>
-                            
-                        </div>
-                        <h3><a href="/blog/why-photo-authentication-keeps-failing-and-what-we-re-learning-building-an-alternative/">Why Photo Authentication Keeps Failing (And What We&#39;re Learning Building an Alternative)</a></h3>
-                        <p><p>When Reuters had to pull AI-generated images from their wire service in 2024, they identified the fakes using Adobe&rsquo;s Content Credentials. The system worked—in that controlled workflow, with preserved metadata, in a professional newsroom. But The Verge just published an <a href="https://www.theverge.com/decoder-podcast-with-nilay-patel">interview with reporter Jess Weatherbed</a> documenting why this approach fails everywhere else. Her conclusion after months covering C2PA adoption: &ldquo;there is not going to be a point in the next three, five years where we sign on and go, &lsquo;I can now tell what&rsquo;s real and what&rsquo;s not because of C2PA.&rsquo;&rdquo; The problem isn&rsquo;t cryptography—it&rsquo;s that 95% of authenticated images lose their metadata when shared on social media. Instagram, Facebook, Twitter all strip EXIF data during upload. C2PA credentials get destroyed along with everything else. OpenAI, which sits on C2PA&rsquo;s steering committee, openly admits their implementation is &ldquo;incredibly easy to strip.&rdquo;</p></p>
-                        <a href="/blog/why-photo-authentication-keeps-failing-and-what-we-re-learning-building-an-alternative/" class="blog-read-more">Read more →</a>
-                    </div>
-                </article>
+                <img src="/images/blog/ff5ef42b-9cfb-4ef9-847c-cc0c4debf202.png" alt="Why Photo Authentication Keeps Failing (And What We&#39;re Learning Building an Alternative)" style="width: 100%; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 
-                <article class="blog-card">
-                    
-                    <div class="blog-card-image">
-                        <a href="/blog/">
-                            <img src="/images/blog/White%20paper%20published.png" alt="Blog">
-                        </a>
-                    </div>
-                    
-                    <div class="blog-card-content">
-                        <div class="blog-card-meta">
-                            <time datetime="2026-02-05">February 5, 2026</time>
-                            
-                            <span class="blog-card-author">Samuel C. Ryan</span>
-                            
-                        </div>
-                        <h3><a href="/blog/the-birthmark-standard-white-paper-published-on-arxiv/">The Birthmark Standard White Paper: Published on arXiv</a></h3>
-                        <p><p>We&rsquo;ve published the technical specification and security analysis for the Birthmark Standard on arXiv: <a href="https://arxiv.org/abs/2602.04933">https://arxiv.org/abs/2602.04933</a></p>
-<p>The paper runs 32 pages and covers the complete architecture. How camera sensor fingerprints create hardware roots of trust. How the privacy model prevents surveillance while enabling authentication. How the consortium blockchain survives metadata stripping. There&rsquo;s formal verification of privacy properties using ProVerif, attack-defense analysis, and performance projections. If you want the technical details, they&rsquo;re all there.</p></p>
-                        <a href="/blog/the-birthmark-standard-white-paper-published-on-arxiv/" class="blog-read-more">Read more →</a>
-                    </div>
-                </article>
-                
+
+                <p>When Reuters had to pull AI-generated images from their wire service in 2024, they identified the fakes using Adobe&rsquo;s Content Credentials. The system worked—in that controlled workflow, with preserved metadata, in a professional newsroom. But The Verge just published an <a href="https://www.theverge.com/decoder-podcast-with-nilay-patel">interview with reporter Jess Weatherbed</a> documenting why this approach fails everywhere else. Her conclusion after months covering C2PA adoption: &ldquo;there is not going to be a point in the next three, five years where we sign on and go, &lsquo;I can now tell what&rsquo;s real and what&rsquo;s not because of C2PA.&rsquo;&rdquo; The problem isn&rsquo;t cryptography—it&rsquo;s that 95% of authenticated images lose their metadata when shared on social media. Instagram, Facebook, Twitter all strip EXIF data during upload. C2PA credentials get destroyed along with everything else. OpenAI, which sits on C2PA&rsquo;s steering committee, openly admits their implementation is &ldquo;incredibly easy to strip.&rdquo;</p>
+<p>There&rsquo;s also a structural issue Weatherbed identifies: verification infrastructure controlled by corporations with commercial incentives that conflict with truth. Adobe controls Content Credentials, platforms gate API access, terms change. She quotes journalists being &ldquo;hesitant to depend on corporate-controlled infrastructure for truth verification.&rdquo; This matches what organizations have told us directly—they want authentication infrastructure they control, not rent from tech companies who can change terms or shut down services.</p>
+<p>We&rsquo;re prototyping an approach that separates authentication from file metadata entirely. Instead of embedding credentials in images, cameras submit cryptographic hashes to a public registry at the moment of capture. When someone encounters an image anywhere—after Instagram compression, in screenshots, wherever—they hash what they&rsquo;re looking at and check the registry. Match means it came from an authenticated camera. No match means it didn&rsquo;t. The registry uses consortium blockchain architecture (yes, blockchain—not for crypto ideology but because journalism organizations need infrastructure they operate rather than depend on corporate APIs) with validator nodes run by fact-checking networks and press freedom organizations at roughly $100-150/month per node. We&rsquo;re using camera sensor fingerprints (PRNU patterns) as hardware roots of trust that AI generators can&rsquo;t replicate without physical camera access.</p>
+<p>What this solves: proving hardware origin versus AI generation. What it doesn&rsquo;t solve: scene manipulation, staged photos, Photoshop edits after capture. That&rsquo;s a narrower problem than C2PA attempted, which might be why it&rsquo;s solvable. We&rsquo;re currently assembling Phase 1 prototype hardware (Raspberry Pi + camera sensor, arriving this week) to validate the cryptographic pipeline. Phase 2 moves to mobile app implementation—photographers simply take pictures normally while authentication happens invisibly in the background. The submission record is roughly 2KB (a tiny fraction of the image data itself), making the process fast enough to be unnoticeable. Verification happens via browser extension or platform integration for anyone viewing the image later. We&rsquo;re targeting 50-100 beta users in photojournalism and fact-checking communities by Q2 2026, with initial deployment focused on photography competitions where AI submission fraud is immediate and submission/validation processes are already controlled. We&rsquo;re in early discussions with WITNESS and have received positive responses from IFCN, though no formal partnerships yet.</p>
+<p>The hardest problems aren&rsquo;t technical. They&rsquo;re adoption (why would photographers change workflows?), governance (who decides what&rsquo;s authenticated and what validator node operators are trusted?), and sustainability (how does registry infrastructure stay funded long-term?). Current discussions focus on governance models where validator node decisions require supermajority consensus among mission-aligned organizations, preventing any single entity from controlling authentication. We&rsquo;re publishing everything openly—<a href="https://birthmarkstandard.org/whitepaper">technical specs</a>, threat models, economic analysis—specifically so these questions get scrutinized before we&rsquo;re too far down a wrong path. Weatherbed&rsquo;s reporting confirms metadata-based authentication has failed. We&rsquo;re testing whether registry-based authentication works any better. Early results in a few months.</p>
+
             </div>
 
-            
-            
+            <div style="max-width: 800px; margin: 3rem auto 0; padding-top: 2rem; border-top: 1px solid #e2e8f0;">
+                <a href="/blog/" style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">← Back to Blog</a>
+            </div>
         </div>
     </section>
 
