@@ -1,15 +1,18 @@
-name: Build Hugo Site
+name: Deploy Hugo Site
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'website/**'
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -24,16 +27,25 @@ jobs:
           hugo-version: '0.139.0'
           extended: true
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
       - name: Build
         working-directory: website
-        run: hugo --minify
+        run: hugo --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
 
-      - name: Create PR with rebuilt site
-        uses: peter-evans/create-pull-request@v7
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          commit-message: "Rebuild site from Hugo source"
-          title: "Auto-rebuild: Update docs/ from Hugo source"
-          body: "Automated Hugo build triggered by changes to `website/`. Merge this to update the live site."
-          branch: auto-hugo-build
-          add-paths: docs/
-          delete-branch: true
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
